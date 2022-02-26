@@ -19,7 +19,10 @@ import java.util.regex.Pattern;
 // Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
 class EndpointDiscoveryService {
 	// TODO: check against https://datatracker.ietf.org/doc/html/rfc5988#section-5
-	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile("<(?<url>.*)>; rel=\"webmention\"");
+	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile("^<(?<url>.*)>; rel=\"webmention\"$");
+
+	// Match HTML, regardless of e.g. charset.
+	private static final Pattern CONTENT_TYPE_HTML = Pattern.compile("^text/html(?:;.+)?$", Pattern.CASE_INSENSITIVE);
 
 	private final HttpClient httpClient;
 
@@ -55,25 +58,13 @@ class EndpointDiscoveryService {
 			return fromHeader.map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
 		}
 
-		// TODO: extract and validate that e.g 'text/htmlxyz' does not match.
-		if (response.headers().firstValue("Content-Type")
+		if (isHtml(response.headers())) {
 			// Charset can be ignored, HttpClient already handled it
-			.map(contentType -> contentType.startsWith("text/html")).orElse(false)) {
-			return extractEndpointFromHtml(uri, response.body()).map(endpointUri -> postProcessEndpointUri(uri,
-				endpointUri));
+			Optional<URI> fromBody = extractEndpointFromHtml(uri, response.body());
+			return fromBody.map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
 		}
 
 		return Optional.empty();
-	}
-
-	@NotNull
-	private URI postProcessEndpointUri(@NotNull URI baseUri, @NotNull URI uri) {
-		/*
-		 * Spec:
-		 * 'The endpoint MAY be a relative URL,
-		 * in which case the sender MUST resolve it relative to the target URL'.
-		 */
-		return baseUri.resolve(uri);
 	}
 
 	@NotNull
@@ -83,7 +74,7 @@ class EndpointDiscoveryService {
 			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link);
 			if (matcher.matches()) {
 				URI endpoint = URI.create(matcher.group("url"));
-				// Return first match, ignore others.
+				// Spec: 'The first HTTP Link header takes precedence'
 				return Optional.of(endpoint);
 			}
 		}
@@ -105,6 +96,23 @@ class EndpointDiscoveryService {
 			return Optional.of(endpoint);
 		}
 		return Optional.empty();
+	}
+
+	@NotNull
+	private URI postProcessEndpointUri(@NotNull URI baseUri, @NotNull URI uri) {
+		/*
+		 * Spec:
+		 * 'The endpoint MAY be a relative URL,
+		 * in which case the sender MUST resolve it relative to the target URL'.
+		 */
+		return baseUri.resolve(uri);
+	}
+
+	@NotNull
+	private Boolean isHtml(@NotNull HttpHeaders httpHeaders) {
+		return httpHeaders.firstValue("Content-Type")
+			.map(contentType -> CONTENT_TYPE_HTML.matcher(contentType).matches())
+			.orElse(false);
 	}
 
 }
