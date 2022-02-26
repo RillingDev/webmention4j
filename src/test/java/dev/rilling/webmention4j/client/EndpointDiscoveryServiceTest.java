@@ -139,10 +139,10 @@ class EndpointDiscoveryServiceTest {
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
 	void adaptsRelativeUriForHeader() throws Exception {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Link",
 			"<../webmention-endpoint>; rel=\"webmention\"")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
 
 		URI endpointUri = URI.create(WIREMOCK.url("/webmention-endpoint"));
@@ -152,7 +152,7 @@ class EndpointDiscoveryServiceTest {
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
 	void adaptsRelativeUriForElement() throws Exception {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -162,7 +162,7 @@ class EndpointDiscoveryServiceTest {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
 
 		URI endpointUri = URI.create(WIREMOCK.url("/webmention-endpoint"));

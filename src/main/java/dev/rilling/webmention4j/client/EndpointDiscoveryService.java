@@ -52,20 +52,32 @@ class EndpointDiscoveryService {
 		// TODO: check headers before receiving body.
 		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers());
 		if (fromHeader.isPresent()) {
-			return fromHeader;
+			return fromHeader.map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
 		}
 
 		// TODO: extract and validate that e.g 'text/htmlxyz' does not match.
 		if (response.headers().firstValue("Content-Type")
 			// Charset can be ignored, HttpClient already handled it
 			.map(contentType -> contentType.startsWith("text/html")).orElse(false)) {
-			return extractEndpointFromHtml(uri, response.body());
+			return extractEndpointFromHtml(uri, response.body()).map(endpointUri -> postProcessEndpointUri(uri,
+				endpointUri));
 		}
 
 		return Optional.empty();
 	}
 
-	private Optional<URI> extractEndpointFromHeader(HttpHeaders httpHeaders) {
+	@NotNull
+	private URI postProcessEndpointUri(@NotNull URI baseUri, @NotNull URI uri) {
+		/*
+		 * Spec:
+		 * 'The endpoint MAY be a relative URL,
+		 * in which case the sender MUST resolve it relative to the target URL'.
+		 */
+		return baseUri.resolve(uri);
+	}
+
+	@NotNull
+	private Optional<URI> extractEndpointFromHeader(@NotNull HttpHeaders httpHeaders) {
 		// https://datatracker.ietf.org/doc/html/rfc5988
 		for (String link : httpHeaders.allValues("Link")) {
 			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link);
@@ -78,7 +90,8 @@ class EndpointDiscoveryService {
 		return Optional.empty();
 	}
 
-	private Optional<URI> extractEndpointFromHtml(URI baseUri, String body) {
+	@NotNull
+	private Optional<URI> extractEndpointFromHtml(@NotNull URI baseUri, @NotNull String body) {
 		Document document = Jsoup.parse(body, baseUri.toString());
 		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
 			@Override
@@ -88,12 +101,7 @@ class EndpointDiscoveryService {
 			}
 		});
 		if (firstWebmentionElement != null) {
-			/*
-			 * Spec:
-			 * 'The endpoint MAY be a relative URL,
-			 * in which case the sender MUST resolve it relative to the target URL'.
-			 */
-			URI endpoint = URI.create(firstWebmentionElement.absUrl("href"));
+			URI endpoint = URI.create(firstWebmentionElement.attr("href"));
 			return Optional.of(endpoint);
 		}
 		return Optional.empty();
