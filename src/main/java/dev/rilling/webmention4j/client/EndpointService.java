@@ -31,8 +31,7 @@ class EndpointService {
 		 */
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", source.toString());
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", target.toString());
-		ClassicHttpRequest request = ClassicRequestBuilder.post()
-			.setUri(endpoint)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(endpoint)
 			.addParameters(sourcePair, targetPair)
 			.setCharset(StandardCharsets.UTF_8) // Not part of spec, but probably better than ISO
 			.build();

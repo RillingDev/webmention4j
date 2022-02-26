@@ -1,5 +1,7 @@
 package dev.rilling.webmention4j.client;
 
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +22,7 @@ public final class WebmentionSender {
 		// 3.1.2: Follow all redirects.
 		// TODO: set fitting UA
 		HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-		EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(httpClient);
+		EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
 
 		URI endpoint = endpointDiscoveryService.discover(uri).orElseThrow(() -> new IOException(
 			"Could not find any webmention endpoint URI in the target resource."));

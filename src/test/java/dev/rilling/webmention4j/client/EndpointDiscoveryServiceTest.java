@@ -1,19 +1,18 @@
 package dev.rilling.webmention4j.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EndpointDiscoveryServiceTest {
 
@@ -22,21 +21,25 @@ class EndpointDiscoveryServiceTest {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClient.newBuilder()
-		.followRedirects(HttpClient.Redirect.ALWAYS)
-		.build());
+	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
 
 	@Test
 	@DisplayName("Spec: 'Follow redirects'")
-	void enforcesRedirects() {
-		assertThatThrownBy(() -> new EndpointDiscoveryService(HttpClient.newBuilder()
-			.followRedirects(HttpClient.Redirect.NEVER)
-			.build())).isInstanceOf(IllegalArgumentException.class);
+	void followsRedirects() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron-redirect").willReturn(permanentRedirect("/post-by-aaron")));
+
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron-redirect"));
+		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 	}
 
 	@Test
 	@DisplayName("Spec: 'Check for an HTTP Link header with a rel value of webmention'")
-	void usesLinkHeader() throws Exception {
+	void usesLinkHeader() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
@@ -49,7 +52,7 @@ class EndpointDiscoveryServiceTest {
 	@Test
 	@DisplayName("Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML <link> " +
 		"[...] element with a rel value of webmention'")
-	void usesLinkHtmlElement() throws Exception {
+	void usesLinkHtmlElement() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
@@ -70,7 +73,7 @@ class EndpointDiscoveryServiceTest {
 	@DisplayName(
 		"Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML [...] <a> " +
 			"element with a rel value of webmention'")
-	void usesAnchorHtmlElement() throws Exception {
+	void usesAnchorHtmlElement() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
@@ -90,7 +93,7 @@ class EndpointDiscoveryServiceTest {
 
 	@Test
 	@DisplayName("Spec: 'If more than one of these is present, the first HTTP Link header takes precedence'")
-	void prioritizesHeader() throws Exception {
+	void prioritizesHeader() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
 				"<http://aaronpk.example/webmention-endpoint1>; rel=\"webmention\"")
 			.withHeader("Content-Type", "text/html")
@@ -116,7 +119,7 @@ class EndpointDiscoveryServiceTest {
 	@Test
 	@DisplayName("Spec: 'If more than one of these is present, [...] takes precedence, followed by the first <link> " +
 		"or <a> element in document order'")
-	void prioritizesFirstElement() throws Exception {
+	void prioritizesFirstElement() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
@@ -138,7 +141,7 @@ class EndpointDiscoveryServiceTest {
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
-	void adaptsRelativeUriForHeader() throws Exception {
+	void adaptsRelativeUriForHeader() throws IOException {
 		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Link",
 			"<../webmention-endpoint>; rel=\"webmention\"")));
 
@@ -151,7 +154,7 @@ class EndpointDiscoveryServiceTest {
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
-	void adaptsRelativeUriForElement() throws Exception {
+	void adaptsRelativeUriForElement() throws IOException {
 		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
@@ -171,7 +174,7 @@ class EndpointDiscoveryServiceTest {
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
-	void preservesQueryParamsForHeader() throws Exception {
+	void preservesQueryParamsForHeader() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
 
@@ -183,7 +186,7 @@ class EndpointDiscoveryServiceTest {
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
-	void preservesQueryParamsForElement() throws Exception {
+	void preservesQueryParamsForElement() throws IOException {
 		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
 			<html lang="en">
 			<head>
