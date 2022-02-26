@@ -42,13 +42,13 @@ class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	public Optional<URI> discover(@NotNull URI uri) throws IOException, InterruptedException {
+	public Optional<URI> discover(@NotNull URI target) throws IOException, InterruptedException {
 		// Spec: 'The sender MUST fetch the target URL'
-		HttpRequest request = HttpRequest.newBuilder().GET().uri(uri).build();
+		HttpRequest request = HttpRequest.newBuilder().GET().uri(target).build();
 
-		LOGGER.debug("Requesting endpoint information from '{}'.", uri);
+		LOGGER.debug("Requesting endpoint information from '{}'.", target);
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-		LOGGER.trace("Received response '{}' from '{}'.", response, uri);
+		LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
 		/*
 		 * Spec:
@@ -63,9 +63,9 @@ class EndpointDiscoveryService {
 		 */
 
 		// TODO: check headers before receiving body.
-		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers()).map(endpointUri -> postProcessEndpointUri(
-			uri,
-			endpointUri));
+		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers()).map(endpoint -> postProcessEndpointUri(
+			target,
+			endpoint));
 		if (fromHeader.isPresent()) {
 			LOGGER.debug("Found endpoint '{}' in header.", fromHeader.get());
 			return fromHeader;
@@ -73,13 +73,13 @@ class EndpointDiscoveryService {
 
 		if (isHtml(response.headers())) {
 			// Charset can be ignored, HttpClient already handled it
-			Optional<URI> fromBody = extractEndpointFromHtml(uri,
-				response.body()).map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
+			Optional<URI> fromBody = extractEndpointFromHtml(target,
+				response.body()).map(endpoint -> postProcessEndpointUri(target, endpoint));
 			fromBody.ifPresent(value -> LOGGER.debug("Found endpoint '{}' in body.", value));
 			return fromBody;
 		}
 
-		LOGGER.debug("Found no endpoint for '{}'.", uri);
+		LOGGER.debug("Found no endpoint for '{}'.", target);
 		return Optional.empty();
 	}
 
@@ -114,13 +114,13 @@ class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	private URI postProcessEndpointUri(@NotNull URI baseUri, @NotNull URI uri) {
+	private URI postProcessEndpointUri(@NotNull URI base, @NotNull URI endpoint) {
 		/*
 		 * Spec:
 		 * 'The endpoint MAY be a relative URL,
 		 * in which case the sender MUST resolve it relative to the target URL'.
 		 */
-		return baseUri.resolve(uri);
+		return base.resolve(endpoint);
 	}
 
 	@NotNull
