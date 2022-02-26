@@ -49,11 +49,13 @@ class EndpointDiscoveryService {
 		 * Senders MUST support all three options and fall back in this order.'
 		 */
 
+		// TODO: check headers before receiving body.
 		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers());
 		if (fromHeader.isPresent()) {
 			return fromHeader;
 		}
 
+		// TODO: extract and validate that e.g 'text/htmlxyz' does not match.
 		if (response.headers().firstValue("Content-Type")
 			// Charset can be ignored, HttpClient already handled it
 			.map(contentType -> contentType.startsWith("text/html")).orElse(false)) {
