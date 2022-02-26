@@ -29,7 +29,7 @@ final class EndpointDiscoveryService {
 	// Very primitive parser for checking that 'rel="webmention"' is present.
 	// Spec: https://datatracker.ietf.org/doc/html/rfc5988#section-5
 	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile(
-		"^<(?<url>.*)>.*;\\s*rel\\s*=\\s*\"webmention\".*$");
+		"^<(?<url>.*)>.*;\\s*rel\\s*=\\s*\"?webmention\"?.*$");
 
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 
