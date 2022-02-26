@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EndpointDiscoveryServiceTest {
 
@@ -22,6 +24,25 @@ class EndpointDiscoveryServiceTest {
 		.build();
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
+
+
+	@Test
+	@DisplayName("Misc: 'Throws on IO error'")
+	void throwsOnError() {
+		WIREMOCK.stubFor(get("/client-error").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
+		WIREMOCK.stubFor(get("/not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		WIREMOCK.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
+		WIREMOCK.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
+
+		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(
+			IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(
+			IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(
+			IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(
+			IOException.class);
+	}
 
 	@Test
 	@DisplayName("Spec: 'Follow redirects'")

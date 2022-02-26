@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -50,11 +51,9 @@ class EndpointServiceTest {
 	@Test
 	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success.'")
 	void allows2XXStatus() throws IOException {
-		WIREMOCK.stubFor(post("/webmention-endpoint-ok").willReturn(aResponse().withStatus(200)));
-		WIREMOCK.stubFor(post("/webmention-endpoint-created").willReturn(aResponse().withStatus(201)));
-		WIREMOCK.stubFor(post("/webmention-endpoint-accepted").willReturn(aResponse().withStatus(201)));
-		WIREMOCK.stubFor(post("/webmention-endpoint-error-client").willReturn(aResponse().withStatus(400)));
-		WIREMOCK.stubFor(post("/webmention-endpoint-error-server").willReturn(aResponse().withStatus(500)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-ok").willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-created").willReturn(aResponse().withStatus(HttpStatus.SC_CREATED)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-accepted").willReturn(aResponse().withStatus(HttpStatus.SC_ACCEPTED)));
 
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
@@ -62,11 +61,29 @@ class EndpointServiceTest {
 		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-ok")), source, target);
 		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-created")), source, target);
 		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-accepted")), source, target);
+	}
 
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-error-client")),
+	@Test
+	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success.'")
+	void throwsForNon2XXStatus() {
+		WIREMOCK.stubFor(post("/webmention-endpoint-client").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		WIREMOCK.stubFor(post("/webmention-endpoint-server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
+
+		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
+		URI target = URI.create("https://aaronpk.example/post-by-aaron");
+
+		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-client")),
 			source,
 			target)).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-error-server")),
+		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-unauthorized")),
+			source,
+			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-not-found")),
+			source,
+			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-server-error")),
 			source,
 			target)).isInstanceOf(IOException.class);
 	}
