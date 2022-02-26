@@ -22,8 +22,10 @@ import java.util.regex.Pattern;
 class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
-	// TODO: check against https://datatracker.ietf.org/doc/html/rfc5988#section-5
-	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile("^<(?<url>.*)>; rel=\"webmention\"$");
+	// Very primitive parser for checking that 'rel="webmention"' is present.
+	// Spec: https://datatracker.ietf.org/doc/html/rfc5988#section-5
+	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile(
+		"^<(?<url>.*)>.*;\\s*rel\\s*=\\s*\"webmention\".*$");
 
 	// Match HTML, regardless of e.g. charset.
 	private static final Pattern CONTENT_TYPE_HTML = Pattern.compile("^text/html(?:;.+)?$", Pattern.CASE_INSENSITIVE);
@@ -81,7 +83,6 @@ class EndpointDiscoveryService {
 
 	@NotNull
 	private Optional<URI> extractEndpointFromHeader(@NotNull HttpHeaders httpHeaders) {
-		// https://datatracker.ietf.org/doc/html/rfc5988
 		for (String link : httpHeaders.allValues("Link")) {
 			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link);
 			if (matcher.matches()) {
