@@ -58,6 +58,8 @@ class EndpointDiscoveryService {
 		 * If more than one of these is present, the first HTTP Link header takes precedence,
 		 * followed by the first <link> or <a> element in document order.
 		 * Senders MUST support all three options and fall back in this order.'
+		 *
+		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'
 		 */
 
 		// TODO: check headers before receiving body.

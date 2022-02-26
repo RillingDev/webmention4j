@@ -168,4 +168,35 @@ class EndpointDiscoveryServiceTest {
 		URI endpointUri = URI.create(WIREMOCK.url("/webmention-endpoint"));
 		assertThat(endpoint).contains(endpointUri);
 	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
+	void preservesQueryParamsForHeader() throws Exception {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
+	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
+	void preservesQueryParamsForElement() throws Exception {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="http://aaronpk.example/webmention-endpoint?version=1" rel="webmention">webmention</a>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
+	}
 }

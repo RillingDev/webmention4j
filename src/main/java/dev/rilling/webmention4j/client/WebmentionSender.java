@@ -18,6 +18,7 @@ public final class WebmentionSender {
 
 	public static WebmentionSender forUri(URI uri) throws IOException, InterruptedException {
 		// 3.1.2: Follow all redirects.
+		// TODO: set fitting UA
 		HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 		EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(httpClient);
 
