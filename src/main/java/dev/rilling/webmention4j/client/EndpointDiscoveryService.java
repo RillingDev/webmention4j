@@ -5,6 +5,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Evaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,6 +20,8 @@ import java.util.regex.Pattern;
 
 // Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
 class EndpointDiscoveryService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
+
 	// TODO: check against https://datatracker.ietf.org/doc/html/rfc5988#section-5
 	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile("^<(?<url>.*)>; rel=\"webmention\"$");
 
@@ -40,7 +44,9 @@ class EndpointDiscoveryService {
 		// Spec: 'The sender MUST fetch the target URL'
 		HttpRequest request = HttpRequest.newBuilder().GET().uri(uri).build();
 
+		LOGGER.debug("Requesting endpoint information from '{}'.", uri);
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+		LOGGER.trace("Received response '{}' from '{}'.", response, uri);
 
 		/*
 		 * Spec:
@@ -53,17 +59,23 @@ class EndpointDiscoveryService {
 		 */
 
 		// TODO: check headers before receiving body.
-		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers());
+		Optional<URI> fromHeader = extractEndpointFromHeader(response.headers()).map(endpointUri -> postProcessEndpointUri(
+			uri,
+			endpointUri));
 		if (fromHeader.isPresent()) {
-			return fromHeader.map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
+			LOGGER.debug("Found endpoint '{}' in header.", fromHeader.get());
+			return fromHeader;
 		}
 
 		if (isHtml(response.headers())) {
 			// Charset can be ignored, HttpClient already handled it
-			Optional<URI> fromBody = extractEndpointFromHtml(uri, response.body());
-			return fromBody.map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
+			Optional<URI> fromBody = extractEndpointFromHtml(uri,
+				response.body()).map(endpointUri -> postProcessEndpointUri(uri, endpointUri));
+			fromBody.ifPresent(value -> LOGGER.debug("Found endpoint '{}' in body.", value));
+			return fromBody;
 		}
 
+		LOGGER.debug("Found no endpoint for '{}'.", uri);
 		return Optional.empty();
 	}
 
