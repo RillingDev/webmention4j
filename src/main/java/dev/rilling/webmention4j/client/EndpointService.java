@@ -7,6 +7,8 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,6 +19,8 @@ import java.util.function.Supplier;
  * Service handling endpoint contact.
  */
 final class EndpointService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointService.class);
+
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 
 	/**
@@ -54,8 +58,11 @@ final class EndpointService {
 			.setCharset(StandardCharsets.UTF_8) // Not part of spec, but probably better than ISO
 			.build();
 
+		LOGGER.debug("Sending request '{}'.", request);
 		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
 			request)) {
+			LOGGER.trace("Received response '{}' from '{}'.", response, target);
+
 			/*
 			 * Spec:
 			 * 'The Webmention endpoint will validate and process the request, and return an HTTP status code.
