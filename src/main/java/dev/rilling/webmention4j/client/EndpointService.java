@@ -1,8 +1,9 @@
 package dev.rilling.webmention4j.client;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,7 @@ class EndpointService {
 			.setCharset(StandardCharsets.UTF_8) // Not part of spec, but probably better than ISO
 			.build();
 
-		try (CloseableHttpClient httpClient = httpClientFactory.get(); CloseableHttpResponse response = httpClient.execute(
+		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
 			request)) {
 			/*
 			 * Spec:
@@ -48,14 +49,12 @@ class EndpointService {
 			 *
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
-			if (!isSuccessful(response.getCode())) {
-				throw new IOException("Received unexpected response: '%d - %s'.".formatted(response.getCode(),
+			if (!HttpStatusUtils.isSuccessful(response.getCode())) {
+				EntityUtils.consume(response.getEntity());
+				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 					response.getReasonPhrase()));
 			}
 		}
 	}
 
-	private boolean isSuccessful(int responseCode) {
-		return String.valueOf(responseCode).startsWith("2");
-	}
 }

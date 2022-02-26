@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.client;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
@@ -59,15 +58,22 @@ class EndpointDiscoveryService {
 		ClassicHttpRequest request = ClassicRequestBuilder.get(target).build();
 
 		LOGGER.debug("Requesting endpoint information from '{}'.", target);
-		try (CloseableHttpClient httpClient = httpClientFactory.get(); CloseableHttpResponse response = httpClient.execute(
+		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
 			request)) {
 			return discover(target, response);
 		}
 	}
 
 	@NotNull
-	private Optional<URI> discover(@NotNull URI target, @NotNull CloseableHttpResponse response) throws IOException {
+	private Optional<URI> discover(@NotNull URI target, @NotNull ClassicHttpResponse response) throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
+
+		if (!HttpStatusUtils.isSuccessful(response.getCode())) {
+			EntityUtils.consume(response.getEntity());
+			throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
+				response.getReasonPhrase()));
+		}
+
 		/*
 		 * Spec:
 		 * 'Check for an HTTP Link header with a rel value of webmention.
@@ -85,7 +91,6 @@ class EndpointDiscoveryService {
 			LOGGER.debug("Found endpoint '{}' in header.", fromHeader.get());
 			return fromHeader;
 		}
-
 
 		if (isHtml(response)) {
 			String body;
