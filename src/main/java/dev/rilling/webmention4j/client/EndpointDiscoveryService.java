@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * Service handling Webmention endpoint detection.
  */
 // Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
-class EndpointDiscoveryService {
+final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
 	// Very primitive parser for checking that 'rel="webmention"' is present.
@@ -40,7 +40,12 @@ class EndpointDiscoveryService {
 	 *                          Must be configured to follow redirects.
 	 *                          May be configured to present an UA that references Webmention.
 	 */
-	// Spec: 'follow redirects'
+	/*
+	 * Spec:
+	 * 'follow redirects'
+	 * 'Senders MAY customize the HTTP User Agent used when fetching the target URL
+	 * in order to indicate to the recipient that this request is made as part of Webmention discovery.'
+	 */
 	EndpointDiscoveryService(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
 		this.httpClientFactory = httpClientFactory;
 	}
