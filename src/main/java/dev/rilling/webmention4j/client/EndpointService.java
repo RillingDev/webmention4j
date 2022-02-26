@@ -66,6 +66,7 @@ final class EndpointService {
 			 *
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
+			// TODO: consume Location header
 			if (!HttpStatusUtils.isSuccessful(response.getCode())) {
 				EntityUtils.consume(response.getEntity());
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),

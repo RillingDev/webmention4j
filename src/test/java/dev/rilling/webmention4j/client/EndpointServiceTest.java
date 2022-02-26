@@ -85,4 +85,23 @@ class EndpointServiceTest {
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(URI.create(WIREMOCK.url(
 			"/webmention-endpoint-server-error")), source, target)).isInstanceOf(IOException.class);
 	}
+
+	@Test
+	@DisplayName("Spec: 'Note that if the Webmention endpoint URL contains query string parameters," +
+		"the query string parameters MUST be preserved, and MUST NOT be sent in the POST body.'")
+	void keepsQueryParams() throws IOException {
+		WIREMOCK.stubFor(post("/webmention-endpoint?version=1").willReturn(ok()));
+
+		URI endpoint = URI.create(WIREMOCK.url("/webmention-endpoint?version=1"));
+		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
+		URI target = URI.create("https://aaronpk.example/post-by-aaron");
+
+		endpointService.notifyEndpoint(endpoint, source, target);
+
+		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint?version=1", false), false);
+		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +
+			"&target=https%3A%2F%2Faaronpk.example%2Fpost-by-aaron");
+		WIREMOCK.verify(RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlPattern)
+			.withRequestBody(bodyPattern));
+	}
 }
