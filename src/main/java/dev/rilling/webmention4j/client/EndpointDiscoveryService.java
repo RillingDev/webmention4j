@@ -121,6 +121,7 @@ final class EndpointDiscoveryService {
 	@NotNull
 	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) {
 		for (Header link : httpResponse.getHeaders("Link")) {
+			// FIXME: Regex seems counterproductive (e.g. https://webmention.rocks/test/19), implement something else.
 			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link.getValue());
 			if (matcher.matches()) {
 				URI endpoint = URI.create(matcher.group("url"));
@@ -137,7 +138,10 @@ final class EndpointDiscoveryService {
 		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
 			@Override
 			public boolean matches(@NotNull Element root, @NotNull Element element) {
-				if (Set.of("link", "a").contains(element.normalName())) {
+				if (Set.of("link", "a").contains(element.normalName()) &&
+					element.hasAttr("href") // link/a tags without href must be ignored
+				) {
+					// `rel` may contain more than one item.
 					List<String> relValues = Arrays.asList(element.attr("rel").split(" "));
 					return relValues.contains("webmention");
 				}

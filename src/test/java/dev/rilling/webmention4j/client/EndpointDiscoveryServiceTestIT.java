@@ -26,7 +26,18 @@ class EndpointDiscoveryServiceTestIT {
 		"https://webmention.rocks/test/9, https://webmention.rocks/test/9/webmention",
 		"https://webmention.rocks/test/10, https://webmention.rocks/test/10/webmention",
 		"https://webmention.rocks/test/11, https://webmention.rocks/test/11/webmention",
-		"https://webmention.rocks/test/12, https://webmention.rocks/test/12/webmention",})
+		"https://webmention.rocks/test/12, https://webmention.rocks/test/12/webmention",
+		"https://webmention.rocks/test/13, https://webmention.rocks/test/13/webmention",
+		"https://webmention.rocks/test/14, https://webmention.rocks/test/14/webmention",
+		"https://webmention.rocks/test/15, https://webmention.rocks/test/15",
+		"https://webmention.rocks/test/16, https://webmention.rocks/test/16/webmention",
+		"https://webmention.rocks/test/17, https://webmention.rocks/test/17/webmention",
+		"https://webmention.rocks/test/18, https://webmention.rocks/test/18/webmention",
+		"https://webmention.rocks/test/19, https://webmention.rocks/test/19/webmention",
+		"https://webmention.rocks/test/20, https://webmention.rocks/test/20/webmention",
+		"https://webmention.rocks/test/21, https://webmention.rocks/test/21/webmention?query=yes",
+		"https://webmention.rocks/test/22, https://webmention.rocks/test/22/webmention",
+		"https://webmention.rocks/test/23, https://webmention.rocks/test/23/page/webmention-endpoint/V2POoo8odnb11d1S0OPD",})
 	void test1(String targetStr, String actualEndpointStr) throws IOException {
 		assertThat(endpointDiscoveryService.discoverEndpoint(URI.create(targetStr))).contains(URI.create(
 			actualEndpointStr));
