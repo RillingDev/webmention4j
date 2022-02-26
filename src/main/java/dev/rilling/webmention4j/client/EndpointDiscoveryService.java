@@ -2,10 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -34,9 +31,6 @@ class EndpointDiscoveryService {
 	// Spec: https://datatracker.ietf.org/doc/html/rfc5988#section-5
 	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile(
 		"^<(?<url>.*)>.*;\\s*rel\\s*=\\s*\"webmention\".*$");
-
-	// Match HTML, regardless of e.g. charset.
-	private static final Pattern CONTENT_TYPE_HTML = Pattern.compile("^text/html(?:;.+)?$", Pattern.CASE_INSENSITIVE);
 
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 
@@ -129,7 +123,8 @@ class EndpointDiscoveryService {
 		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
 			@Override
 			public boolean matches(@NotNull Element root, @NotNull Element element) {
-				return ("link".equals(element.normalName()) || "a".equals(element.normalName())) && "webmention".equals(element.attr("rel"));
+				return ("link".equals(element.normalName()) || "a".equals(element.normalName())) &&
+					"webmention".equals(element.attr("rel"));
 			}
 		});
 		if (firstWebmentionElement != null) {
@@ -150,7 +145,7 @@ class EndpointDiscoveryService {
 	}
 
 	private boolean isHtml(@NotNull HttpResponse httpResponse) {
-		return httpResponse.containsHeader("Content-Type") &&
-			CONTENT_TYPE_HTML.matcher(httpResponse.getFirstHeader("Content-Type").getValue()).matches();
+		Header contentType = httpResponse.getFirstHeader("Content-Type");
+		return contentType != null && ContentType.parse(contentType.getValue()).isSameMimeType(ContentType.TEXT_HTML);
 	}
 }
