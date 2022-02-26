@@ -24,8 +24,8 @@ public final class WebmentionSender {
 		HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 		EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
 
-		URI endpoint = endpointDiscoveryService.discover(uri).orElseThrow(() -> new IOException(
-			"Could not find any webmention endpoint URI in the target resource."));
+		URI endpoint = endpointDiscoveryService.discoverEndpoint(uri)
+			.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
 
 		return new WebmentionSender(endpoint);
 	}

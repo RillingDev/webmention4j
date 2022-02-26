@@ -34,13 +34,13 @@ class EndpointDiscoveryServiceTest {
 		WIREMOCK.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
 		WIREMOCK.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
 
-		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(
 			IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(
 			IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(
 			IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discover(URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(
 			IOException.class);
 	}
 
@@ -53,7 +53,7 @@ class EndpointDiscoveryServiceTest {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron-redirect"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 	}
@@ -65,7 +65,7 @@ class EndpointDiscoveryServiceTest {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 	}
@@ -85,7 +85,7 @@ class EndpointDiscoveryServiceTest {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 	}
@@ -106,7 +106,7 @@ class EndpointDiscoveryServiceTest {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 	}
@@ -132,7 +132,7 @@ class EndpointDiscoveryServiceTest {
 				</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 	}
@@ -155,7 +155,7 @@ class EndpointDiscoveryServiceTest {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 	}
@@ -167,7 +167,7 @@ class EndpointDiscoveryServiceTest {
 			"<../webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		URI endpointUri = URI.create(WIREMOCK.url("/webmention-endpoint"));
 		assertThat(endpoint).contains(endpointUri);
@@ -187,7 +187,7 @@ class EndpointDiscoveryServiceTest {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		URI endpointUri = URI.create(WIREMOCK.url("/webmention-endpoint"));
 		assertThat(endpoint).contains(endpointUri);
@@ -200,7 +200,7 @@ class EndpointDiscoveryServiceTest {
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 	}
@@ -219,7 +219,7 @@ class EndpointDiscoveryServiceTest {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discover(targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(targetUri);
 
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 	}

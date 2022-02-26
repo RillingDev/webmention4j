@@ -2,7 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import org.apache.hc.core5.http.HttpStatus;
 
-public final class HttpStatusUtils {
+final class HttpStatusUtils {
 	private HttpStatusUtils() {
 	}
 

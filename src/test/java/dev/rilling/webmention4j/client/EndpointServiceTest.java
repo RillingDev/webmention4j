@@ -37,7 +37,7 @@ class EndpointServiceTest {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notify(endpoint, source, target);
+		endpointService.notifyEndpoint(endpoint, source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint", false), false);
 		EqualToPattern contentTypePattern = new EqualToPattern("application/x-www-form-urlencoded; charset=UTF-8");
@@ -58,9 +58,9 @@ class EndpointServiceTest {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-ok")), source, target);
-		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-created")), source, target);
-		endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-accepted")), source, target);
+		endpointService.notifyEndpoint(URI.create(WIREMOCK.url("/webmention-endpoint-ok")), source, target);
+		endpointService.notifyEndpoint(URI.create(WIREMOCK.url("/webmention-endpoint-created")), source, target);
+		endpointService.notifyEndpoint(URI.create(WIREMOCK.url("/webmention-endpoint-accepted")), source, target);
 	}
 
 	@Test
@@ -74,17 +74,15 @@ class EndpointServiceTest {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-client")),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(URI.create(WIREMOCK.url("/webmention-endpoint-client")),
 			source,
 			target)).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-unauthorized")),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(URI.create(WIREMOCK.url(
+			"/webmention-endpoint-unauthorized")), source, target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(URI.create(WIREMOCK.url("/webmention-endpoint-not-found")),
 			source,
 			target)).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-not-found")),
-			source,
-			target)).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notify(URI.create(WIREMOCK.url("/webmention-endpoint-server-error")),
-			source,
-			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(URI.create(WIREMOCK.url(
+			"/webmention-endpoint-server-error")), source, target)).isInstanceOf(IOException.class);
 	}
 }

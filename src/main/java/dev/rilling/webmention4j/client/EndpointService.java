@@ -20,7 +20,7 @@ class EndpointService {
 		this.httpClientFactory = httpClientFactory;
 	}
 
-	public void notify(@NotNull URI endpoint, @NotNull URI source, @NotNull URI target) throws IOException {
+	public void notifyEndpoint(@NotNull URI endpoint, @NotNull URI source, @NotNull URI target) throws IOException {
 		/*
 		 * Spec:
 		 * 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention endpoint,

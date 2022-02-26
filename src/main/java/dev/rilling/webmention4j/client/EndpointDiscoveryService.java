@@ -53,19 +53,20 @@ class EndpointDiscoveryService {
 	 * @throws IOException If IO fails.
 	 */
 	@NotNull
-	public Optional<URI> discover(@NotNull URI target) throws IOException {
+	public Optional<URI> discoverEndpoint(@NotNull URI target) throws IOException {
 		// Spec: 'The sender MUST fetch the target URL'
 		ClassicHttpRequest request = ClassicRequestBuilder.get(target).build();
 
 		LOGGER.debug("Requesting endpoint information from '{}'.", target);
 		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
 			request)) {
-			return discover(target, response);
+			return discoverEndpoint(target, response);
 		}
 	}
 
 	@NotNull
-	private Optional<URI> discover(@NotNull URI target, @NotNull ClassicHttpResponse response) throws IOException {
+	private Optional<URI> discoverEndpoint(@NotNull URI target, @NotNull ClassicHttpResponse response)
+		throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
 		if (!HttpStatusUtils.isSuccessful(response.getCode())) {
