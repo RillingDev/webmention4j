@@ -119,12 +119,12 @@ final class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) {
+	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) throws IOException {
 		for (Header link : httpResponse.getHeaders("Link")) {
 			// FIXME: Regex seems counterproductive (e.g. https://webmention.rocks/test/19), implement something else.
 			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link.getValue());
 			if (matcher.matches()) {
-				URI endpoint = URI.create(matcher.group("url"));
+				URI endpoint = parseUri(matcher.group("url"));
 				// Spec: 'The first HTTP Link header takes precedence'
 				return Optional.of(endpoint);
 			}
@@ -133,7 +133,7 @@ final class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	private Optional<URI> extractEndpointFromHtml(@NotNull URI baseUri, @NotNull String body) {
+	private Optional<URI> extractEndpointFromHtml(@NotNull URI baseUri, @NotNull String body) throws IOException {
 		Document document = Jsoup.parse(body, baseUri.toString());
 		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
 			@Override
@@ -149,7 +149,7 @@ final class EndpointDiscoveryService {
 			}
 		});
 		if (firstWebmentionElement != null) {
-			URI endpoint = URI.create(firstWebmentionElement.attr("href"));
+			URI endpoint = parseUri(firstWebmentionElement.attr("href"));
 			return Optional.of(endpoint);
 		}
 		return Optional.empty();
@@ -168,5 +168,14 @@ final class EndpointDiscoveryService {
 	private boolean isHtml(@NotNull HttpResponse httpResponse) {
 		Header contentType = httpResponse.getFirstHeader("Content-Type");
 		return contentType != null && ContentType.parse(contentType.getValue()).isSameMimeType(ContentType.TEXT_HTML);
+	}
+
+	@NotNull
+	private URI parseUri(@NotNull String uriStr) throws IOException {
+		try {
+			return URI.create(uriStr);
+		} catch (IllegalArgumentException e) {
+			throw new IOException("Could not parse URI.", e);
+		}
 	}
 }
