@@ -14,7 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -134,8 +137,11 @@ final class EndpointDiscoveryService {
 		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
 			@Override
 			public boolean matches(@NotNull Element root, @NotNull Element element) {
-				return ("link".equals(element.normalName()) || "a".equals(element.normalName())) &&
-					"webmention".equals(element.attr("rel"));
+				if (Set.of("link", "a").contains(element.normalName())) {
+					List<String> relValues = Arrays.asList(element.attr("rel").split(" "));
+					return relValues.contains("webmention");
+				}
+				return false;
 			}
 		});
 		if (firstWebmentionElement != null) {
