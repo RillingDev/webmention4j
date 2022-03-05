@@ -2,14 +2,11 @@ package dev.rilling.webmention4j.client;
 
 import jakarta.ws.rs.core.Link;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Evaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +14,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -29,6 +25,7 @@ final class EndpointDiscoveryService {
 
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 	private final @NotNull LinkParser headerLinkParser;
+	private final @NotNull LinkParser htmlLinkParser;
 
 	/**
 	 * Constructor.
@@ -36,7 +33,8 @@ final class EndpointDiscoveryService {
 	 * @param httpClientFactory Factory to create {@link CloseableHttpClient}s from.
 	 *                          Must be configured to follow redirects.
 	 *                          May be configured to present an UA that references Webmention.
-	 * @param headerLinkParser
+	 * @param headerLinkParser  A {@link LinkParser} capable of header parsing.
+	 * @param htmlLinkParser    A {@link LinkParser} capable of HTML parsing.
 	 */
 	/*
 	 * Spec:
@@ -45,9 +43,11 @@ final class EndpointDiscoveryService {
 	 * in order to indicate to the recipient that this request is made as part of Webmention discovery.'
 	 */
 	EndpointDiscoveryService(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
-							 @NotNull LinkParser headerLinkParser) {
+							 @NotNull LinkParser headerLinkParser,
+							 @NotNull LinkParser htmlLinkParser) {
 		this.httpClientFactory = httpClientFactory;
 		this.headerLinkParser = headerLinkParser;
+		this.htmlLinkParser = htmlLinkParser;
 	}
 
 	/**
@@ -91,23 +91,15 @@ final class EndpointDiscoveryService {
 		 *
 		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'
 		 */
-		Optional<URI> fromHeader = extractEndpointFromHeader(response).map(endpoint -> postProcessEndpointUri(target,
-			endpoint));
+		Optional<URI> fromHeader = extractEndpoint(headerLinkParser, target, response);
 		if (fromHeader.isPresent()) {
 			LOGGER.debug("Found endpoint '{}' in header.", fromHeader.get());
 			return fromHeader;
 		}
 
-		if (isHtml(response)) {
-			String body;
-			try {
-				body = EntityUtils.toString(response.getEntity());
-			} catch (ParseException e) {
-				throw new IOException("Could not parse body.", e);
-			}
-			Optional<URI> fromBody = extractEndpointFromHtml(target,
-				body).map(endpoint -> postProcessEndpointUri(target, endpoint));
-			fromBody.ifPresent(value -> LOGGER.debug("Found endpoint '{}' in body.", value));
+		Optional<URI> fromBody = extractEndpoint(htmlLinkParser, target, response);
+		if (fromBody.isPresent()) {
+			LOGGER.debug("Found endpoint '{}' in body.", fromBody.get());
 			return fromBody;
 		}
 
@@ -116,60 +108,28 @@ final class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) throws IOException {
-		return headerLinkParser.parse(httpResponse)
+	private Optional<URI> extractEndpoint(@NotNull LinkParser linkParser,
+										  @NotNull URI base,
+										  @NotNull ClassicHttpResponse httpResponse) throws IOException {
+		return linkParser.parse(base, httpResponse)
 			.stream()
 			.filter(link -> hasRelationType(link.getRel(), "webmention"))
+			.findFirst()
 			.map(Link::getUri)
-			.findFirst();
+			.map(endpoint -> postProcessEndpoint(base, endpoint));
+	}
+
+	private boolean hasRelationType(@NotNull String relValue, @NotNull String relationType) {
+		return Arrays.asList(relValue.split(" ")).contains(relationType);
 	}
 
 	@NotNull
-	private Optional<URI> extractEndpointFromHtml(@NotNull URI baseUri, @NotNull String body) throws IOException {
-		Document document = Jsoup.parse(body, baseUri.toString());
-		Element firstWebmentionElement = document.selectFirst(new Evaluator() {
-			@Override
-			public boolean matches(@NotNull Element root, @NotNull Element element) {
-				if (Set.of("link", "a").contains(element.normalName()) &&
-					element.hasAttr("href") // link/a tags without href must be ignored
-				) {
-					return hasRelationType(element.attr("rel"), "webmention");
-				}
-				return false;
-			}
-		});
-		if (firstWebmentionElement != null) {
-			URI endpoint = parseUri(firstWebmentionElement.attr("href"));
-			return Optional.of(endpoint);
-		}
-		return Optional.empty();
-	}
-
-	@NotNull
-	private URI postProcessEndpointUri(@NotNull URI base, @NotNull URI endpoint) {
+	private URI postProcessEndpoint(@NotNull URI base, @NotNull URI endpoint) {
 		/*
 		 * Spec:
 		 * 'The endpoint MAY be a relative URL,
 		 * in which case the sender MUST resolve it relative to the target URL'.
 		 */
 		return base.resolve(endpoint);
-	}
-
-	private boolean isHtml(@NotNull HttpResponse httpResponse) {
-		Header contentType = httpResponse.getFirstHeader("Content-Type");
-		return contentType != null && ContentType.parse(contentType.getValue()).isSameMimeType(ContentType.TEXT_HTML);
-	}
-
-	@NotNull
-	private URI parseUri(@NotNull String uriStr) throws IOException {
-		try {
-			return URI.create(uriStr);
-		} catch (IllegalArgumentException e) {
-			throw new IOException("Could not parse URI.", e);
-		}
-	}
-
-	private boolean hasRelationType(@NotNull String relValue, @NotNull String relationType) {
-		return Arrays.asList(relValue.split(" ")).contains(relationType);
 	}
 }

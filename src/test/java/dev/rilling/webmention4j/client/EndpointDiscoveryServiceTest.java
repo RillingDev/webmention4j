@@ -24,7 +24,8 @@ class EndpointDiscoveryServiceTest {
 		.build();
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault,
-		new HeaderLinkParser());
+		new HeaderLinkParser(),
+		new HtmlLinkParser());
 
 
 	@Test
