@@ -23,7 +23,8 @@ class EndpointDiscoveryServiceTest {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
+	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault,
+		new HeaderLinkParser());
 
 
 	@Test

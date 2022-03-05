@@ -1,8 +1,6 @@
 package dev.rilling.webmention4j.client;
 
 import jakarta.ws.rs.core.Link;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -30,6 +28,7 @@ final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
+	private final @NotNull LinkParser headerLinkParser;
 
 	/**
 	 * Constructor.
@@ -37,6 +36,7 @@ final class EndpointDiscoveryService {
 	 * @param httpClientFactory Factory to create {@link CloseableHttpClient}s from.
 	 *                          Must be configured to follow redirects.
 	 *                          May be configured to present an UA that references Webmention.
+	 * @param headerLinkParser
 	 */
 	/*
 	 * Spec:
@@ -44,8 +44,10 @@ final class EndpointDiscoveryService {
 	 * 'Senders MAY customize the HTTP User Agent used when fetching the target URL
 	 * in order to indicate to the recipient that this request is made as part of Webmention discovery.'
 	 */
-	EndpointDiscoveryService(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
+	EndpointDiscoveryService(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
+							 @NotNull LinkParser headerLinkParser) {
 		this.httpClientFactory = httpClientFactory;
+		this.headerLinkParser = headerLinkParser;
 	}
 
 	/**
@@ -115,22 +117,11 @@ final class EndpointDiscoveryService {
 
 	@NotNull
 	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) throws IOException {
-		return parseHeaderLinks(httpResponse).stream()
+		return headerLinkParser.parse(httpResponse)
+			.stream()
 			.filter(link -> hasRelationType(link.getRel(), "webmention"))
 			.map(Link::getUri)
 			.findFirst();
-	}
-
-	private @NotNull Set<Link> parseHeaderLinks(@NotNull HttpResponse httpResponse) throws IOException {
-		Response.ResponseBuilder responseBuilder = RuntimeDelegate.getInstance().createResponseBuilder();
-		for (Header header : httpResponse.getHeaders()) {
-			responseBuilder.header(header.getName(), header.getValue());
-		}
-		try (Response response = responseBuilder.build()) {
-			return response.getLinks();
-		} catch (Exception e) {
-			throw new IOException("Could not parse links.", e);
-		}
 	}
 
 	@NotNull

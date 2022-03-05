@@ -17,7 +17,8 @@ public final class WebmentionClient {
 	}
 
 	public WebmentionClient(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
-		this(new EndpointService(httpClientFactory), new EndpointDiscoveryService(httpClientFactory));
+		this(new EndpointService(httpClientFactory),
+			new EndpointDiscoveryService(httpClientFactory, new HeaderLinkParser()));
 	}
 
 	WebmentionClient(EndpointService endpointService, EndpointDiscoveryService endpointDiscoveryService) {

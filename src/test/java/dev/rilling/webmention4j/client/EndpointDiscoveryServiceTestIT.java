@@ -12,7 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 // Verify against https://webmention.rocks/
 class EndpointDiscoveryServiceTestIT {
 
-	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault);
+	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault,
+		new HeaderLinkParser());
 
 	@ParameterizedTest
 	@CsvSource({"https://webmention.rocks/test/1, https://webmention.rocks/test/1/webmention",
