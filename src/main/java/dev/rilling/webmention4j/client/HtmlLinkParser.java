@@ -20,7 +20,8 @@ class HtmlLinkParser implements LinkParser {
 
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
-	public @NotNull List<Link> parse(@NotNull URI uri, @NotNull ClassicHttpResponse httpResponse) throws IOException {
+	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
+		throws LinkParsingException {
 		if (!isHtml(httpResponse)) {
 			return List.of();
 		}
@@ -28,20 +29,24 @@ class HtmlLinkParser implements LinkParser {
 		String body;
 		try {
 			body = EntityUtils.toString(httpResponse.getEntity());
-		} catch (ParseException e) {
-			throw new IOException("Could not parse body.", e);
+		} catch (ParseException | IOException e) {
+			throw new LinkParsingException("Could not parse body.", e);
 		}
 
-		Document document = Jsoup.parse(body, uri.toString());
+		Document document = Jsoup.parse(body, location.toString());
 		Elements elements = document.select(LINK_ELEMENT_EVALUATOR);
 		RuntimeDelegate runtimeDelegate = RuntimeDelegate.getInstance();
-		return elements.stream()
-			.map(element -> runtimeDelegate.createLinkBuilder()
-				.baseUri(uri)
-				.uri(element.attr("href"))
-				.rel(element.attr("rel"))
-				.build())
-			.toList();
+		try {
+			return elements.stream()
+				.map(element -> runtimeDelegate.createLinkBuilder()
+					.baseUri(location)
+					.uri(element.attr("href"))
+					.rel(element.attr("rel"))
+					.build())
+				.toList();
+		} catch (Exception e) {
+			throw new LinkParsingException("Could not parse HTML link.", e);
+		}
 	}
 
 	private boolean isHtml(@NotNull HttpResponse httpResponse) {
