@@ -36,8 +36,12 @@ class EndpointDiscoveryServiceTestIT {
 		"https://webmention.rocks/test/19, https://webmention.rocks/test/19/webmention",
 		"https://webmention.rocks/test/20, https://webmention.rocks/test/20/webmention",
 		"https://webmention.rocks/test/21, https://webmention.rocks/test/21/webmention?query=yes",
-		"https://webmention.rocks/test/22, https://webmention.rocks/test/22/webmention",
-		"https://webmention.rocks/test/23, https://webmention.rocks/test/23/page/webmention-endpoint/V2POoo8odnb11d1S0OPD",})
+		"https://webmention.rocks/test/22, https://webmention.rocks/test/22/webmention"
+		/*
+		 * "https://webmention.rocks/test/23,
+		 *  https://webmention.rocks/test/23/page/webmention-endpoint/V2POoo8odnb11d1S0OPD"
+		 * handled via actual endpoint notification later on
+		 */})
 	void test1(String targetStr, String actualEndpointStr) throws IOException {
 		assertThat(endpointDiscoveryService.discoverEndpoint(URI.create(targetStr))).contains(URI.create(
 			actualEndpointStr));

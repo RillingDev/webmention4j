@@ -1,5 +1,8 @@
 package dev.rilling.webmention4j.client;
 
+import jakarta.ws.rs.core.Link;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -15,12 +18,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Service handling Webmention endpoint detection.
@@ -28,11 +28,6 @@ import java.util.regex.Pattern;
 // Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
 final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
-
-	// Very primitive parser for checking that 'rel="webmention"' is present.
-	// Spec: https://datatracker.ietf.org/doc/html/rfc5988#section-5
-	private static final Pattern HEADER_LINK_WEBMENTION = Pattern.compile(
-		"^<(?<url>.*)>.*;\\s*rel\\s*=\\s*\"?webmention\"?.*$");
 
 	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 
@@ -120,16 +115,22 @@ final class EndpointDiscoveryService {
 
 	@NotNull
 	private Optional<URI> extractEndpointFromHeader(@NotNull HttpResponse httpResponse) throws IOException {
-		for (Header link : httpResponse.getHeaders("Link")) {
-			// FIXME: Regex seems counterproductive (e.g. https://webmention.rocks/test/19), implement something else.
-			Matcher matcher = HEADER_LINK_WEBMENTION.matcher(link.getValue());
-			if (matcher.matches()) {
-				URI endpoint = parseUri(matcher.group("url"));
-				// Spec: 'The first HTTP Link header takes precedence'
-				return Optional.of(endpoint);
-			}
+		return parseHeaderLinks(httpResponse).stream()
+			.filter(link -> hasRelationType(link.getRel(), "webmention"))
+			.map(Link::getUri)
+			.findFirst();
+	}
+
+	private @NotNull Set<Link> parseHeaderLinks(@NotNull HttpResponse httpResponse) throws IOException {
+		Response.ResponseBuilder responseBuilder = RuntimeDelegate.getInstance().createResponseBuilder();
+		for (Header header : httpResponse.getHeaders()) {
+			responseBuilder.header(header.getName(), header.getValue());
 		}
-		return Optional.empty();
+		try (Response response = responseBuilder.build()) {
+			return response.getLinks();
+		} catch (Exception e) {
+			throw new IOException("Could not parse links.", e);
+		}
 	}
 
 	@NotNull
@@ -141,9 +142,7 @@ final class EndpointDiscoveryService {
 				if (Set.of("link", "a").contains(element.normalName()) &&
 					element.hasAttr("href") // link/a tags without href must be ignored
 				) {
-					// `rel` may contain more than one item.
-					List<String> relValues = Arrays.asList(element.attr("rel").split(" "));
-					return relValues.contains("webmention");
+					return hasRelationType(element.attr("rel"), "webmention");
 				}
 				return false;
 			}
@@ -177,5 +176,9 @@ final class EndpointDiscoveryService {
 		} catch (IllegalArgumentException e) {
 			throw new IOException("Could not parse URI.", e);
 		}
+	}
+
+	private boolean hasRelationType(@NotNull String relValue, @NotNull String relationType) {
+		return Arrays.asList(relValue.split(" ")).contains(relationType);
 	}
 }
