@@ -10,7 +10,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Verify against https://webmention.rocks/
-class EndpointDiscoveryServiceTestIT {
+class EndpointDiscoveryServiceIT {
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(HttpClients::createDefault,
 		new HeaderLinkParser(),
