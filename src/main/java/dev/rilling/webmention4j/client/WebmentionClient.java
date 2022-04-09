@@ -1,5 +1,7 @@
 package dev.rilling.webmention4j.client;
 
+import dev.rilling.webmention4j.client.link.HeaderLinkParser;
+import dev.rilling.webmention4j.client.link.HtmlLinkParser;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.jetbrains.annotations.NotNull;

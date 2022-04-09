@@ -1,6 +1,5 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.link;
 
-import jakarta.ws.rs.core.Link;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -16,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-class HtmlLinkParser implements LinkParser {
+public class HtmlLinkParser implements LinkParser {
 
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
@@ -43,6 +42,7 @@ class HtmlLinkParser implements LinkParser {
 					.uri(element.attr("href"))
 					.rel(element.attr("rel"))
 					.build())
+				.map(Link::create)
 				.toList();
 		} catch (Exception e) {
 			throw new LinkParsingException("Could not parse HTML link.", e);

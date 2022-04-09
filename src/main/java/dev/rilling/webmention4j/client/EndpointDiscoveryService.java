@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.client;
 
-import jakarta.ws.rs.core.Link;
+import dev.rilling.webmention4j.client.link.Link;
+import dev.rilling.webmention4j.client.link.LinkParser;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -113,14 +113,10 @@ final class EndpointDiscoveryService {
 										  @NotNull ClassicHttpResponse httpResponse) throws IOException {
 		return linkParser.parse(base, httpResponse)
 			.stream()
-			.filter(link -> hasRelationType(link.getRel(), "webmention"))
+			.filter(link -> link.rel().contains("webmention"))
 			.findFirst()
-			.map(Link::getUri)
+			.map(Link::uri)
 			.map(endpoint -> postProcessEndpoint(base, endpoint));
-	}
-
-	private boolean hasRelationType(@NotNull String relValue, @NotNull String relationType) {
-		return Arrays.asList(relValue.split(" ")).contains(relationType);
 	}
 
 	@NotNull

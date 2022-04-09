@@ -1,6 +1,5 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.link;
 
-import jakarta.ws.rs.core.Link;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +11,7 @@ import java.util.List;
 /**
  * Handles extraction of {@link Link} elements from a HTTP response.
  */
-interface LinkParser {
+public interface LinkParser {
 	/**
 	 * Parses Link elements from the HTTP response.
 	 *
