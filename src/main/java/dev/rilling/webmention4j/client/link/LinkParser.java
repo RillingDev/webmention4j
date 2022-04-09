@@ -10,14 +10,17 @@ import java.util.List;
 
 /**
  * Handles extraction of {@link Link} elements from a HTTP response.
+ *
+ * @see Link
  */
 public interface LinkParser {
 	/**
-	 * Parses Link elements from the HTTP response.
+	 * Parses link elements from the HTTP response.
+	 * All links will have any relative URIs resolved against the location.
 	 *
-	 * @param location     Location of the response.
+	 * @param location     The location of the response.
 	 * @param httpResponse The response.
-	 * @return A ordered list of Link elements.
+	 * @return A ordered list of link elements.
 	 * @throws LinkParsingException if parsing fails.
 	 */
 	@NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)

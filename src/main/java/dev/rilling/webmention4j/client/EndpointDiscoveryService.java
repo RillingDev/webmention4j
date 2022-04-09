@@ -91,13 +91,13 @@ final class EndpointDiscoveryService {
 		 *
 		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'
 		 */
-		Optional<URI> fromHeader = extractEndpoint(headerLinkParser, target, response);
+		Optional<URI> fromHeader = findWebmentionEndpoint(headerLinkParser, target, response);
 		if (fromHeader.isPresent()) {
 			LOGGER.debug("Found endpoint '{}' in header.", fromHeader.get());
 			return fromHeader;
 		}
 
-		Optional<URI> fromBody = extractEndpoint(htmlLinkParser, target, response);
+		Optional<URI> fromBody = findWebmentionEndpoint(htmlLinkParser, target, response);
 		if (fromBody.isPresent()) {
 			LOGGER.debug("Found endpoint '{}' in body.", fromBody.get());
 			return fromBody;
@@ -108,24 +108,13 @@ final class EndpointDiscoveryService {
 	}
 
 	@NotNull
-	private Optional<URI> extractEndpoint(@NotNull LinkParser linkParser,
-										  @NotNull URI base,
-										  @NotNull ClassicHttpResponse httpResponse) throws IOException {
-		return linkParser.parse(base, httpResponse)
+	private Optional<URI> findWebmentionEndpoint(@NotNull LinkParser linkParser,
+												 @NotNull URI location,
+												 @NotNull ClassicHttpResponse httpResponse) throws IOException {
+		return linkParser.parse(location, httpResponse)
 			.stream()
 			.filter(link -> link.rel().contains("webmention"))
 			.findFirst()
-			.map(Link::uri)
-			.map(endpoint -> postProcessEndpoint(base, endpoint));
-	}
-
-	@NotNull
-	private URI postProcessEndpoint(@NotNull URI base, @NotNull URI endpoint) {
-		/*
-		 * Spec:
-		 * 'The endpoint MAY be a relative URL,
-		 * in which case the sender MUST resolve it relative to the target URL'.
-		 */
-		return base.resolve(endpoint);
+			.map(Link::uri);
 	}
 }

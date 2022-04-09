@@ -6,7 +6,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * Naive implementation of a `Link`: https://datatracker.ietf.org/doc/html/rfc8288
+ * Simplified implementation of a `Link`: https://datatracker.ietf.org/doc/html/rfc8288
  */
 public record Link(@NotNull URI uri, @NotNull Set<String> rel) {
 

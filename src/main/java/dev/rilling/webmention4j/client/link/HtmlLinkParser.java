@@ -34,10 +34,11 @@ public class HtmlLinkParser implements LinkParser {
 
 		Document document = Jsoup.parse(body, location.toString());
 		Elements elements = document.select(LINK_ELEMENT_EVALUATOR);
-		RuntimeDelegate runtimeDelegate = RuntimeDelegate.getInstance();
+
 		try {
 			return elements.stream()
-				.map(element -> runtimeDelegate.createLinkBuilder()
+				.map(element -> RuntimeDelegate.getInstance()
+					.createLinkBuilder()
 					.baseUri(location)
 					.uri(element.attr("href"))
 					.rel(element.attr("rel"))
@@ -45,7 +46,7 @@ public class HtmlLinkParser implements LinkParser {
 				.map(Link::create)
 				.toList();
 		} catch (Exception e) {
-			throw new LinkParsingException("Could not parse HTML link.", e);
+			throw new LinkParsingException("Could not parse link(s) in HTML.", e);
 		}
 	}
 
