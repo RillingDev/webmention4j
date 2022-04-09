@@ -6,9 +6,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 
-class WebmentionClientExample {
+final class WebmentionClientExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionClientExample.class);
 
+	private WebmentionClientExample() {
+	}
+
+	/**
+	 * Sends webmention.
+	 * <p>
+	 * Argument 1: Source URL.
+	 * Argument 2: Target URL.
+	 */
 	public static void main(String[] args) {
 		if (args.length != 2) {
 			throw new IllegalArgumentException("Expecting 2 arguments.");
@@ -19,7 +28,12 @@ class WebmentionClientExample {
 
 		WebmentionClient webmentionClient = new WebmentionClient();
 		try {
-			webmentionClient.notify(source, target);
+			if (!webmentionClient.supportsWebmention(target)) {
+				LOGGER.info("No endpoint found for target URL.");
+				return;
+			}
+
+			webmentionClient.sendWebmention(source, target);
 			LOGGER.info("Success!");
 		} catch (IOException e) {
 			LOGGER.error("Unhandled error.", e);

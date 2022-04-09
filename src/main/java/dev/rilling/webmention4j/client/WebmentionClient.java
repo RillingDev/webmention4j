@@ -29,13 +29,23 @@ public final class WebmentionClient {
 	}
 
 	/**
+	 * Checks if a webmention endpoint exists for this target URL.
+	 *
+	 * @param target Page to check endpoint of.
+	 * @throws IOException if IO fails.
+	 */
+	public boolean supportsWebmention(@NotNull URI target) throws IOException {
+		return endpointDiscoveryService.discoverEndpoint(target).isPresent();
+	}
+
+	/**
 	 * Notifies the target page that it was mention by the source page.
 	 *
 	 * @param source Source page that is mentioning the target.
-	 * @param target Page being mention.
+	 * @param target Page being mentioned.
 	 * @throws IOException if IO fails.
 	 */
-	public void notify(@NotNull URI source, @NotNull URI target) throws IOException {
+	public void sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
 		URI endpoint = endpointDiscoveryService.discoverEndpoint(target)
 			.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
 
