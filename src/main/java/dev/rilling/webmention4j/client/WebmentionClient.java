@@ -28,7 +28,14 @@ public final class WebmentionClient {
 		this.endpointService = endpointService;
 	}
 
-	public void send(URI source, URI target) throws IOException {
+	/**
+	 * Notifies the target page that it was mention by the source page.
+	 *
+	 * @param source Source page that is mentioning the target.
+	 * @param target Page being mention.
+	 * @throws IOException if IO fails.
+	 */
+	public void notify(@NotNull URI source, @NotNull URI target) throws IOException {
 		// TODO: set fitting UA
 		URI endpoint = endpointDiscoveryService.discoverEndpoint(target)
 			.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
