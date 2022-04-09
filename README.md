@@ -1,3 +1,5 @@
 # webmention4j
 
-[WebMention](https://www.w3.org/TR/webmention/) implementation in Java.
+[Webmention](https://www.w3.org/TR/webmention/) implementation in Java.
+
+Work in progress, do not use in production yet!
