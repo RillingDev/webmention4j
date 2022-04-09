@@ -74,6 +74,8 @@ final class EndpointDiscoveryService {
 		throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
+		// TODO make HEAD request.
+
 		if (!HttpStatusUtils.isSuccessful(response.getCode())) {
 			EntityUtils.consume(response.getEntity());
 			throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
@@ -109,9 +111,14 @@ final class EndpointDiscoveryService {
 
 	@NotNull
 	private Optional<URI> findWebmentionEndpoint(@NotNull LinkParser linkParser,
-												 @NotNull URI location,
+												 @NotNull URI target,
 												 @NotNull ClassicHttpResponse httpResponse) throws IOException {
-		return linkParser.parse(location, httpResponse)
+		/*
+		 * Spec:
+		 * 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target
+		 * URL according to [URL].'
+		 */
+		return linkParser.parse(target, httpResponse)
 			.stream()
 			.filter(link -> link.rel().contains("webmention"))
 			.findFirst()

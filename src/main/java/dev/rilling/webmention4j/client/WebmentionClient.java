@@ -29,7 +29,6 @@ public final class WebmentionClient {
 	}
 
 	public void send(URI source, URI target) throws IOException {
-		// 3.1.2: Follow all redirects.
 		// TODO: set fitting UA
 		URI endpoint = endpointDiscoveryService.discoverEndpoint(target)
 			.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
