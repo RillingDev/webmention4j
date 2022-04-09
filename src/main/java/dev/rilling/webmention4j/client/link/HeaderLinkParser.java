@@ -9,7 +9,10 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-public class HeaderLinkParser implements LinkParser {
+/**
+ * {@link LinkParser} checking HTTP headers for {@link Link}s.
+ */
+public final class HeaderLinkParser implements LinkParser {
 
 	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
 		throws LinkParsingException {
@@ -20,7 +23,7 @@ public class HeaderLinkParser implements LinkParser {
 					.baseUri(location)
 					.link(header.getValue())
 					.build())
-				.map(Link::create)
+				.map(Link::convert)
 				.toList();
 		} catch (Exception e) {
 			throw new LinkParsingException("Could not parse link(s) in header.", e);

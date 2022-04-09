@@ -38,7 +38,7 @@ class EndpointDiscoveryServiceIT {
 		"https://webmention.rocks/test/17, https://webmention.rocks/test/17/webmention",
 		"https://webmention.rocks/test/18, https://webmention.rocks/test/18/webmention",
 		/*
-		 * "https://webmention.rocks/test/19, https://webmention.rocks/test/19/webmention",
+		 "https://webmention.rocks/test/19, https://webmention.rocks/test/19/webmention",
 		 * Disabled as Jerseys parser seems to not support this.
 		 */
 		"https://webmention.rocks/test/20, https://webmention.rocks/test/20/webmention",
@@ -49,8 +49,7 @@ class EndpointDiscoveryServiceIT {
 		 *  https://webmention.rocks/test/23/page/webmention-endpoint/V2POoo8odnb11d1S0OPD"
 		 * handled via actual endpoint notification later on
 		 */})
-	void test1(String targetStr, String actualEndpointStr) throws IOException {
-		assertThat(endpointDiscoveryService.discoverEndpoint(URI.create(targetStr))).contains(URI.create(
-			actualEndpointStr));
+	void test(String targetStr, String expectedStr) throws IOException {
+		assertThat(endpointDiscoveryService.discoverEndpoint(URI.create(targetStr))).contains(URI.create(expectedStr));
 	}
 }

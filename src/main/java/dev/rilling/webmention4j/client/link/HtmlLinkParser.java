@@ -15,7 +15,11 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-public class HtmlLinkParser implements LinkParser {
+/**
+ * {@link LinkParser} checking HTML body for {@link Link}s.
+ * If response is not HTML, an empty collection is returned.
+ */
+public final class HtmlLinkParser implements LinkParser {
 
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
@@ -43,7 +47,7 @@ public class HtmlLinkParser implements LinkParser {
 					.uri(element.attr("href"))
 					.rel(element.attr("rel"))
 					.build())
-				.map(Link::create)
+				.map(Link::convert)
 				.toList();
 		} catch (Exception e) {
 			throw new LinkParsingException("Could not parse link(s) in HTML.", e);
