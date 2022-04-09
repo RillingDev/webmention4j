@@ -15,10 +15,10 @@ public final class WebmentionClient {
 	private final EndpointService endpointService;
 
 	public WebmentionClient() {
-		this(HttpClients::createDefault);
+		this(WebmentionClient::createDefaultHttpClient);
 	}
 
-	public WebmentionClient(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
+	private WebmentionClient(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
 		this(new EndpointService(httpClientFactory),
 			new EndpointDiscoveryService(httpClientFactory, new HeaderLinkParser(), new HtmlLinkParser()));
 	}
@@ -36,11 +36,20 @@ public final class WebmentionClient {
 	 * @throws IOException if IO fails.
 	 */
 	public void notify(@NotNull URI source, @NotNull URI target) throws IOException {
-		// TODO: set fitting UA
 		URI endpoint = endpointDiscoveryService.discoverEndpoint(target)
 			.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
 
 		endpointService.notifyEndpoint(endpoint, source, target);
+	}
+
+
+	private static CloseableHttpClient createDefaultHttpClient() {
+		return HttpClients.custom().setUserAgent("webmention4j/%s".formatted(getVersionString())).build();
+	}
+
+	private static String getVersionString() {
+		String implementationVersion = WebmentionClient.class.getPackage().getImplementationVersion();
+		return implementationVersion != null ? implementationVersion : "0.0.0-development";
 	}
 
 }
