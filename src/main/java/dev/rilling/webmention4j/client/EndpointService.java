@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 
 /**
  * Service handling endpoint contact.
@@ -21,27 +20,22 @@ import java.util.function.Supplier;
 final class EndpointService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointService.class);
 
-	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param httpClientFactory Factory to create {@link CloseableHttpClient}s from.
-	 */
-	EndpointService(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
-		this.httpClientFactory = httpClientFactory;
-	}
-
 	/**
 	 * Sends a Webmention request to the given endpoint.
 	 *
-	 * @param endpoint Endpoint. See {@link EndpointDiscoveryService}.
-	 * @param source   Source that is mentioning the target.
-	 * @param target   Target that is being mentioned.
+	 * @param httpClient HTTP client.
+	 *                   Must be configured to follow redirects.
+	 *                   Should be configured to use a fitting UA string.
+	 * @param endpoint   Endpoint. See {@link EndpointDiscoveryService}.
+	 * @param source     Source that is mentioning the target.
+	 * @param target     Target that is being mentioned.
 	 * @throws IOException If IO fails.
 	 */
 	// Spec: https://www.w3.org/TR/webmention/#h-sender-notifies-receiver
-	public void notifyEndpoint(@NotNull URI endpoint, @NotNull URI source, @NotNull URI target) throws IOException {
+	public void notifyEndpoint(@NotNull CloseableHttpClient httpClient,
+							   @NotNull URI endpoint,
+							   @NotNull URI source,
+							   @NotNull URI target) throws IOException {
 		/*
 		 * Spec:
 		 * 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention endpoint,
@@ -59,8 +53,7 @@ final class EndpointService {
 			.build();
 
 		LOGGER.debug("Sending request '{}'.", request);
-		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
-			request)) {
+		try (ClassicHttpResponse response = httpClient.execute(request)) {
 			LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
 			/*

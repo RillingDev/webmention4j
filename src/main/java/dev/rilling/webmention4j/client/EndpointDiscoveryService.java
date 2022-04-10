@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Service handling Webmention endpoint detection.
@@ -23,29 +22,16 @@ import java.util.function.Supplier;
 final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
-	private final @NotNull Supplier<CloseableHttpClient> httpClientFactory;
 	private final @NotNull LinkParser headerLinkParser;
 	private final @NotNull LinkParser htmlLinkParser;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param httpClientFactory Factory to create {@link CloseableHttpClient}s from.
-	 *                          Must be configured to follow redirects.
-	 *                          May be configured to present an UA that references Webmention.
-	 * @param headerLinkParser  A {@link LinkParser} capable of header parsing.
-	 * @param htmlLinkParser    A {@link LinkParser} capable of HTML parsing.
+	 * @param headerLinkParser A {@link LinkParser} capable of header parsing.
+	 * @param htmlLinkParser   A {@link LinkParser} capable of HTML parsing.
 	 */
-	/*
-	 * Spec:
-	 * 'follow redirects'
-	 * 'Senders MAY customize the HTTP User Agent used when fetching the target URL
-	 * in order to indicate to the recipient that this request is made as part of Webmention discovery.'
-	 */
-	EndpointDiscoveryService(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
-							 @NotNull LinkParser headerLinkParser,
-							 @NotNull LinkParser htmlLinkParser) {
-		this.httpClientFactory = httpClientFactory;
+	EndpointDiscoveryService(@NotNull LinkParser headerLinkParser, @NotNull LinkParser htmlLinkParser) {
 		this.headerLinkParser = headerLinkParser;
 		this.htmlLinkParser = htmlLinkParser;
 	}
@@ -53,18 +39,21 @@ final class EndpointDiscoveryService {
 	/**
 	 * Attempts to discover the Webmention endpoint that is used for this target URL.
 	 *
-	 * @param target Target URL (e.g. the referenced website).
+	 * @param httpClient HTTP client.
+	 *                   Must be configured to follow redirects.
+	 *                   Should be configured to use a fitting UA string.
+	 * @param target     Target URL (e.g. the referenced website).
 	 * @return The Webmention endpoint URI if one is found, or empty.
 	 * @throws IOException If IO fails.
 	 */
 	@NotNull
-	public Optional<URI> discoverEndpoint(@NotNull URI target) throws IOException {
+	public Optional<URI> discoverEndpoint(@NotNull CloseableHttpClient httpClient, @NotNull URI target)
+		throws IOException {
 		// Spec: 'The sender MUST fetch the target URL'
 		ClassicHttpRequest request = ClassicRequestBuilder.get(target).build();
 
 		LOGGER.debug("Requesting endpoint information from '{}'.", target);
-		try (CloseableHttpClient httpClient = httpClientFactory.get(); ClassicHttpResponse response = httpClient.execute(
-			request)) {
+		try (ClassicHttpResponse response = httpClient.execute(request)) {
 			return discoverEndpoint(target, response);
 		}
 	}
