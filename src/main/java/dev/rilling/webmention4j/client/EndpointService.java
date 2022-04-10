@@ -73,7 +73,7 @@ final class EndpointService {
 			 *
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
-			// TODO: consume Location header
+			// TODO: consume Location header if code is 201
 			if (!HttpStatusUtils.isSuccessful(response.getCode())) {
 				EntityUtils.consume(response.getEntity());
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),

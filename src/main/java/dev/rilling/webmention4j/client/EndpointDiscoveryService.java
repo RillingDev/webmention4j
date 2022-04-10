@@ -74,7 +74,7 @@ final class EndpointDiscoveryService {
 		throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
-		// TODO make HEAD request.
+		// TODO: make HEAD request.
 
 		if (!HttpStatusUtils.isSuccessful(response.getCode())) {
 			EntityUtils.consume(response.getEntity());

@@ -28,6 +28,8 @@ public final class WebmentionClient {
 		this.endpointService = endpointService;
 	}
 
+	// TODO: support async requests
+
 	/**
 	 * Checks if a webmention endpoint exists for this target URL.
 	 *
