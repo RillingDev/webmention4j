@@ -44,6 +44,12 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		}
 		URI source = extractParameterAsUri(req, "source");
 		URI target = extractParameterAsUri(req, "target");
+
+		// Spec: 'The receiver MUST reject the request if the source URL is the same as the target URL.'
+		if (source.equals(target)) {
+			throw new BadRequestException("Source and target URL may not be identical.");
+		}
+
 		LOGGER.debug("Received webmention request with source='{}' and target='{}'.", source, target);
 
 		validationService.validateSubmission(source, target);
@@ -51,6 +57,11 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
 		throws BadRequestException {
+		/*
+		 * Spec:
+		 * 'The receiver MUST check that source and target are valid URLs
+		 * and are of schemes that are supported by the receiver.'
+		 */
 		String parameter = req.getParameter(parameterName);
 		if (parameter == null) {
 			throw new BadRequestException("Required parameter '%s' is missing.".formatted(parameterName));
@@ -62,8 +73,8 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		} catch (URISyntaxException e) {
 			throw new BadRequestException("Invalid URL syntax.", e);
 		}
-		if (!ValidationService.SUPPORTED_SCHEMES.contains(uri.getScheme())) {
-			throw new BadRequestException("Unsupported URL scheme '%s'.".formatted(uri.getScheme()));
+		if (uri.getScheme() == null || !ValidationService.SUPPORTED_SCHEMES.contains(uri.getScheme())) {
+			throw new BadRequestException("Unsupported URL scheme.");
 		}
 		return uri;
 	}

@@ -26,39 +26,42 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class WebmentionEndpointServletIT {
 
-	private static final Server SERVER = new Server(0);
-	private static URI SERVLET_URI;
-	private static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
+	private static Server server;
+	private static URI servletUri;
+	private static CloseableHttpClient httpClient;
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		SERVER.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
+		server = new Server(0);
+		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServletHandler servletHandler = new ServletHandler();
 		servletHandler.addServletWithMapping(WebmentionEndpointServlet.class, "/");
-		SERVER.setHandler(servletHandler);
+		server.setHandler(servletHandler);
 
-		SERVER.start();
+		server.start();
 
-		int port = ((NetworkConnector) SERVER.getConnectors()[0]).getLocalPort();
-		SERVLET_URI = URIBuilder.localhost().setScheme("http").setPort(port).setPath("/").build();
+		int port = ((NetworkConnector) server.getConnectors()[0]).getLocalPort();
+		servletUri = URIBuilder.localhost().setScheme("http").setPort(port).setPath("/").build();
+
+		httpClient = HttpClients.createDefault();
 	}
 
 	@AfterAll
 	static void afterAll() throws Exception {
-		SERVER.stop();
+		server.stop();
 
-		HTTP_CLIENT.close();
+		httpClient.close();
 	}
 
 	@Test
 	@DisplayName("Misc: 'Validates Content-Type'")
 	void validatesContentType() throws Exception {
-		ClassicHttpRequest request = ClassicRequestBuilder.post(SERVLET_URI)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
 			.addHeader("Content-Type", "text/plain")
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT.execute(request)) {
+		try (CloseableHttpResponse response = httpClient.execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Content type must be &apos;application/x-www-form-urlencoded&apos;.");
@@ -66,46 +69,94 @@ class WebmentionEndpointServletIT {
 	}
 
 	@Test
-	@DisplayName("Misc: 'Validates presence of parameters'")
-	void validatesParameters() throws Exception {
-		ClassicHttpRequest request1 = ClassicRequestBuilder.post(SERVLET_URI)
+	@DisplayName("Spec: 'The receiver MUST check that source and target are valid URLs' (presence)")
+	void validatesParameterPresence() throws Exception {
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(servletUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT.execute(request1)) {
+		try (CloseableHttpResponse response = httpClient.execute(request1)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Required parameter &apos;source&apos; is missing.");
 		}
 
-		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(SERVLET_URI)
+		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(servletUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
-			.addParameter(sourcePair)
+			.addParameter(sourcePair2)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT.execute(request2)) {
+		try (CloseableHttpResponse response = httpClient.execute(request2)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Required parameter &apos;target&apos; is missing.");
 		}
 	}
 
-
 	@Test
-	@DisplayName("Misc: 'Validates scheme of parameters'")
-	void validatesParameterScheme() throws Exception {
+	@DisplayName("Spec: 'The receiver MUST check that source and target are valid URLs' (format)")
+	void validatesParameterFormat() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
-		BasicNameValuePair targetPair = new BasicNameValuePair("target", "ftp://example.org");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(SERVLET_URI)
+		BasicNameValuePair targetPair = new BasicNameValuePair("target", "http:/\\//\\");
+		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT.execute(request2)) {
+		try (CloseableHttpResponse response = httpClient.execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
-			assertThat(message).contains("Unsupported URL scheme &apos;ftp&apos;.");
+			assertThat(message).contains("Invalid URL syntax.");
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'The receiver MUST check that source and target [...] are of schemes that are supported by the receiver'")
+	void validatesParameterScheme() throws Exception {
+		BasicNameValuePair sourcePair1 = new BasicNameValuePair("source", "https://example.com");
+		BasicNameValuePair targetPair1 = new BasicNameValuePair("target", "ftp://example.org");
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(servletUri)
+			.addHeader("Content-Type", "application/x-www-form-urlencoded")
+			.addParameters(sourcePair1, targetPair1)
+			.build();
+
+		try (CloseableHttpResponse response = httpClient.execute(request1)) {
+			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
+			String message = EntityUtils.toString(response.getEntity());
+			assertThat(message).contains("Unsupported URL scheme.");
+		}
+
+
+		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
+		BasicNameValuePair targetPair2 = new BasicNameValuePair("target", "is-this-even-legal");
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(servletUri)
+			.addHeader("Content-Type", "application/x-www-form-urlencoded")
+			.addParameters(sourcePair2, targetPair2)
+			.build();
+
+		try (CloseableHttpResponse response = httpClient.execute(request2)) {
+			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
+			String message = EntityUtils.toString(response.getEntity());
+			assertThat(message).contains("Unsupported URL scheme.");
+		}
+	}
+
+
+	@Test
+	@DisplayName("Spec: 'The receiver MUST reject the request if the source URL is the same as the target URL'")
+	void validatesParametersIdentical() throws Exception {
+		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
+		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.com");
+		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
+			.addHeader("Content-Type", "application/x-www-form-urlencoded")
+			.addParameters(sourcePair, targetPair)
+			.build();
+
+		try (CloseableHttpResponse response = httpClient.execute(request)) {
+			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
+			String message = EntityUtils.toString(response.getEntity());
+			assertThat(message).contains("Source and target URL may not be identical.");
 		}
 	}
 
@@ -114,12 +165,12 @@ class WebmentionEndpointServletIT {
 	void returnsOk() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.org");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(SERVLET_URI)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT.execute(request2)) {
+		try (CloseableHttpResponse response = httpClient.execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_OK);
 		}
 	}
