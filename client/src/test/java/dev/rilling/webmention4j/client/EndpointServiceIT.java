@@ -30,7 +30,7 @@ class EndpointServiceIT {
 
 	@Test
 	@DisplayName("Spec: 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention " +
-		"endpoint, where source is the URL of the sender's page containing a link, and target is the URL of the page being linked to.'")
+		"endpoint, where source is the URL of the sender's page containing a link, and target is the URL of the page being linked to'")
 	void sendsEncodedData() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint").willReturn(ok()));
 
@@ -52,7 +52,7 @@ class EndpointServiceIT {
 	}
 
 	@Test
-	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success.'")
+	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success'")
 	void allows2XXStatus() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint-ok").willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		WIREMOCK.stubFor(post("/webmention-endpoint-created").willReturn(aResponse().withStatus(HttpStatus.SC_CREATED)));
@@ -78,7 +78,7 @@ class EndpointServiceIT {
 	}
 
 	@Test
-	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success.'")
+	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success'")
 	void throwsForNon2XXStatus() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint-client").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
 		WIREMOCK.stubFor(post("/webmention-endpoint-unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
@@ -110,7 +110,7 @@ class EndpointServiceIT {
 
 	@Test
 	@DisplayName("Spec: 'Note that if the Webmention endpoint URL contains query string parameters," +
-		"the query string parameters MUST be preserved, and MUST NOT be sent in the POST body.'")
+		"the query string parameters MUST be preserved, and MUST NOT be sent in the POST body'")
 	void keepsQueryParams() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint?version=1").willReturn(ok()));
 

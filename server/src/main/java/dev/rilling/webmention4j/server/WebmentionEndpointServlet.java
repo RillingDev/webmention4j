@@ -40,7 +40,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	void processRequest(@NotNull ValidationService validationService, @NotNull HttpServletRequest req)
 		throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
-			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE));
+			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
 		}
 		URI source = extractParameterAsUri(req, "source");
 		URI target = extractParameterAsUri(req, "target");
