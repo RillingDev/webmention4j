@@ -50,6 +50,8 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 			throw new BadRequestException("Source and target URL may not be identical.");
 		}
 
+		// TODO: allow configuration of allowed target URI hosts.
+
 		LOGGER.debug("Received webmention request with source='{}' and target='{}'.", source, target);
 
 		validationService.validateSubmission(source, target);
