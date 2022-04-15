@@ -1,59 +1,242 @@
 package dev.rilling.webmention4j.client;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.client.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.link.HtmlLinkParser;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-// Verify against https://webmention.rocks/
 class EndpointDiscoveryServiceIT {
+
+	@RegisterExtension
+	static final WireMockExtension WIREMOCK = WireMockExtension.newInstance()
+		.options(wireMockConfig().dynamicPort())
+		.build();
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(new HeaderLinkParser(),
 		new HtmlLinkParser());
 
-	@ParameterizedTest
-	@CsvSource({"https://webmention.rocks/test/1, https://webmention.rocks/test/1/webmention",
-		"https://webmention.rocks/test/2, https://webmention.rocks/test/2/webmention",
-		"https://webmention.rocks/test/3, https://webmention.rocks/test/3/webmention",
-		"https://webmention.rocks/test/4, https://webmention.rocks/test/4/webmention",
-		"https://webmention.rocks/test/5, https://webmention.rocks/test/5/webmention",
-		"https://webmention.rocks/test/6, https://webmention.rocks/test/6/webmention",
-		"https://webmention.rocks/test/7, https://webmention.rocks/test/7/webmention",
-		"https://webmention.rocks/test/8, https://webmention.rocks/test/8/webmention",
-		"https://webmention.rocks/test/9, https://webmention.rocks/test/9/webmention",
-		"https://webmention.rocks/test/10, https://webmention.rocks/test/10/webmention",
-		"https://webmention.rocks/test/11, https://webmention.rocks/test/11/webmention",
-		"https://webmention.rocks/test/12, https://webmention.rocks/test/12/webmention",
-		"https://webmention.rocks/test/13, https://webmention.rocks/test/13/webmention",
-		"https://webmention.rocks/test/14, https://webmention.rocks/test/14/webmention",
-		"https://webmention.rocks/test/15, https://webmention.rocks/test/15",
-		"https://webmention.rocks/test/16, https://webmention.rocks/test/16/webmention",
-		"https://webmention.rocks/test/17, https://webmention.rocks/test/17/webmention",
-		"https://webmention.rocks/test/18, https://webmention.rocks/test/18/webmention",
-		/*
-		 "https://webmention.rocks/test/19, https://webmention.rocks/test/19/webmention",
-		 * Disabled as Jerseys parser seems to not support this.
-		 */
-		"https://webmention.rocks/test/20, https://webmention.rocks/test/20/webmention",
-		"https://webmention.rocks/test/21, https://webmention.rocks/test/21/webmention?query=yes",
-		"https://webmention.rocks/test/22, https://webmention.rocks/test/22/webmention"
-		/*
-		 * "https://webmention.rocks/test/23,
-		 *  https://webmention.rocks/test/23/page/webmention-endpoint/V2POoo8odnb11d1S0OPD"
-		 * handled via actual endpoint notification later on
-		 */})
-	void test(String targetStr, String expectedStr) throws IOException {
+
+	@Test
+	@DisplayName("Misc: 'Throws on IO error'")
+	void throwsOnError() throws IOException {
+		WIREMOCK.stubFor(get("/client-error").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
+		WIREMOCK.stubFor(get("/not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		WIREMOCK.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
+		WIREMOCK.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
+
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> actual = endpointDiscoveryService.discoverEndpoint(httpClient, URI.create(targetStr));
-			assertThat(actual).contains(URI.create(expectedStr));
+			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
+				URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(IOException.class);
+			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
+				URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(IOException.class);
+			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
+				URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(IOException.class);
+			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
+				URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(IOException.class);
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'Follow redirects'")
+	void followsRedirects() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron-redirect").willReturn(permanentRedirect("/post-by-aaron")));
+
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron-redirect"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'Check for an HTTP Link header with a rel value of webmention'")
+	void usesLinkHeader() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML <link> " +
+		"[...] element with a rel value of webmention'")
+	void usesLinkHtmlElement() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+				<link href="http://aaronpk.example/webmention-endpoint" rel="webmention" />
+			</head>
+			<body>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+		}
+	}
+
+	@Test
+	@DisplayName(
+		"Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML [...] <a> " +
+			"element with a rel value of webmention'")
+	void usesAnchorHtmlElement() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="http://aaronpk.example/webmention-endpoint" rel="webmention">webmention</a>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+		}
+	}
+
+
+	@Test
+	@DisplayName("Spec: 'If more than one of these is present, the first HTTP Link header takes precedence'")
+	void prioritizesHeader() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+				"<http://aaronpk.example/webmention-endpoint1>; rel=\"webmention\"")
+			.withHeader("Content-Type", "text/html")
+			.withBody("""
+				<html lang="en">
+				<head>
+					<title>Foo</title>
+					<link href="http://aaronpk.example/webmention-endpoint2" rel="webmention" />
+					<link href="http://aaronpk.example/webmention-endpoint2b" rel="webmention" />
+				</head>
+				<body>
+					<a href="http://aaronpk.example/webmention-endpoint3" rel="webmention">webmention</a>
+					<a href="http://aaronpk.example/webmention-endpoint3b" rel="webmention">webmention</a>
+				</body>
+				</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'If more than one of these is present, [...] takes precedence, followed by the first <link> " +
+		"or <a> element in document order'")
+	void prioritizesFirstElement() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+				<link href="http://aaronpk.example/webmention-endpoint1" rel="webmention" />
+				<link href="http://aaronpk.example/webmention-endpoint1b" rel="webmention" />
+			</head>
+			<body>
+				<a href="http://aaronpk.example/webmention-endpoint2" rel="webmention">webmention</a>
+				<a href="http://aaronpk.example/webmention-endpoint2b" rel="webmention">webmention</a>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
+	void adaptsRelativeUriForHeader() throws IOException {
+		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<../webmention-endpoint>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
+
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
+	void adaptsRelativeUriForElement() throws IOException {
+		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="../webmention-endpoint" rel="webmention">webmention</a>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
+	void preservesQueryParamsForHeader() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
+		}
+	}
+
+	@Test
+	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
+	void preservesQueryParamsForElement() throws IOException {
+		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="http://aaronpk.example/webmention-endpoint?version=1" rel="webmention">webmention</a>
+			</body>
+			</html>""")));
+
+		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
+			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 		}
 	}
 }

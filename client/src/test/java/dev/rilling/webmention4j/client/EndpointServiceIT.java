@@ -19,7 +19,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class EndpointServiceTest {
+class EndpointServiceIT {
 
 	@RegisterExtension
 	static final WireMockExtension WIREMOCK = WireMockExtension.newInstance()
