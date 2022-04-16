@@ -3,6 +3,8 @@ package dev.rilling.webmention4j.server;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -26,7 +28,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			processRequest(new ValidationService(), req);
+			processRequest(new VerificationService(), req);
 		} catch (BadRequestException e) {
 			LOGGER.warn("Bad request.", e);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -37,7 +39,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	}
 
 	@VisibleForTesting
-	void processRequest(@NotNull ValidationService validationService, @NotNull HttpServletRequest req)
+	void processRequest(@NotNull VerificationService verificationService, @NotNull HttpServletRequest req)
 		throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
 			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
@@ -54,7 +56,13 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 		LOGGER.debug("Received webmention request with source='{}' and target='{}'.", source, target);
 
-		validationService.validateSubmission(source, target);
+		// TODO: perform check async
+		// TODO: re-use client
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			verificationService.verifySubmission(httpClient, source, target);
+		} catch (IOException | VerificationService.VerificationException e) {
+			throw new BadRequestException("Verification of source URI failed.", e);
+		}
 	}
 
 	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
@@ -75,7 +83,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		} catch (URISyntaxException e) {
 			throw new BadRequestException("Invalid URL syntax.", e);
 		}
-		if (uri.getScheme() == null || !ValidationService.SUPPORTED_SCHEMES.contains(uri.getScheme())) {
+		if (uri.getScheme() == null || !VerificationService.SUPPORTED_SCHEMES.contains(uri.getScheme())) {
 			throw new BadRequestException("Unsupported URL scheme.");
 		}
 		return uri;

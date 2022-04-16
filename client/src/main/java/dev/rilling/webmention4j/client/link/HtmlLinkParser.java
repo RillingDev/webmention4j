@@ -55,8 +55,9 @@ public final class HtmlLinkParser implements LinkParser {
 	}
 
 	private boolean isHtml(@NotNull HttpResponse httpResponse) {
-		Header contentType = httpResponse.getFirstHeader("Content-Type");
-		return contentType != null && ContentType.parse(contentType.getValue()).isSameMimeType(ContentType.TEXT_HTML);
+		Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+		return contentTypeHeader != null &&
+			ContentType.parse(contentTypeHeader.getValue()).isSameMimeType(ContentType.TEXT_HTML);
 	}
 
 	private static class LinkElementEvaluator extends Evaluator {
