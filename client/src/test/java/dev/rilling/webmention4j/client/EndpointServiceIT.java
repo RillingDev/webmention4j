@@ -3,7 +3,6 @@ package dev.rilling.webmention4j.client;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -17,6 +16,7 @@ import java.net.URI;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.github.tomakehurst.wiremock.matching.RequestPatternBuilder.newRequestPattern;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EndpointServiceIT {
@@ -46,13 +46,12 @@ class EndpointServiceIT {
 		EqualToPattern contentTypePattern = new EqualToPattern("application/x-www-form-urlencoded; charset=UTF-8");
 		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +
 			"&target=https%3A%2F%2Faaronpk.example%2Fpost-by-aaron");
-		WIREMOCK.verify(RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlPattern)
-			.withHeader("Content-Type", contentTypePattern)
+		WIREMOCK.verify(newRequestPattern(RequestMethod.POST, urlPattern).withHeader("Content-Type", contentTypePattern)
 			.withRequestBody(bodyPattern));
 	}
 
 	@Test
-	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success'")
+	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success' (success)")
 	void allows2XXStatus() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint-ok").willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		WIREMOCK.stubFor(post("/webmention-endpoint-created").willReturn(aResponse().withStatus(HttpStatus.SC_CREATED)));
@@ -78,7 +77,7 @@ class EndpointServiceIT {
 	}
 
 	@Test
-	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success'")
+	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success' (error)")
 	void throwsForNon2XXStatus() throws IOException {
 		WIREMOCK.stubFor(post("/webmention-endpoint-client").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
 		WIREMOCK.stubFor(post("/webmention-endpoint-unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
@@ -125,8 +124,7 @@ class EndpointServiceIT {
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint?version=1", false), false);
 		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +
 			"&target=https%3A%2F%2Faaronpk.example%2Fpost-by-aaron");
-		WIREMOCK.verify(RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlPattern)
-			.withRequestBody(bodyPattern));
+		WIREMOCK.verify(newRequestPattern(RequestMethod.POST, urlPattern).withRequestBody(bodyPattern));
 	}
 
 }
