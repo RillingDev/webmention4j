@@ -23,30 +23,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class WebmentionEndpointServletIT {
 
-	private static Server server;
-	private static URI servletUri;
+	private static Server endpointServer;
+	private static URI endpointUri;
 	private static CloseableHttpClient httpClient;
 
 	@BeforeAll
 	static void beforeAll() throws Exception {
-		server = new Server(0);
-		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
+		endpointServer = new Server(0);
+		endpointServer.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(),
+			CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
+		final String pathSpec = "/endpoint";
 		ServletHandler servletHandler = new ServletHandler();
-		servletHandler.addServletWithMapping(WebmentionEndpointServlet.class, "/");
-		server.setHandler(servletHandler);
+		servletHandler.addServletWithMapping(WebmentionEndpointServlet.class, pathSpec);
+		endpointServer.setHandler(servletHandler);
 
-		server.start();
+		endpointServer.start();
 
-		int port = ((NetworkConnector) server.getConnectors()[0]).getLocalPort();
-		servletUri = URIBuilder.localhost().setScheme("http").setPort(port).setPath("/").build();
+		int port = ((NetworkConnector) endpointServer.getConnectors()[0]).getLocalPort();
+		endpointUri = URIBuilder.localhost().setScheme("http").setPort(port).setPath(pathSpec).build();
 
 		httpClient = HttpClients.createDefault();
 	}
 
 	@AfterAll
 	static void afterAll() throws Exception {
-		server.stop();
+		endpointServer.stop();
 
 		httpClient.close();
 	}
@@ -54,7 +56,7 @@ class WebmentionEndpointServletIT {
 	@Test
 	@DisplayName("Misc: 'Validates Content-Type'")
 	void validatesContentType() throws Exception {
-		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "text/plain")
 			.build();
 
@@ -68,7 +70,7 @@ class WebmentionEndpointServletIT {
 	@Test
 	@DisplayName("Spec: 'The receiver MUST check that source and target are valid URLs' (presence)")
 	void validatesParameterPresence() throws Exception {
-		ClassicHttpRequest request1 = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 
@@ -79,7 +81,7 @@ class WebmentionEndpointServletIT {
 		}
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameter(sourcePair2)
 			.build();
@@ -96,7 +98,7 @@ class WebmentionEndpointServletIT {
 	void validatesParameterFormat() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "http:/\\//\\");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
@@ -113,7 +115,7 @@ class WebmentionEndpointServletIT {
 	void validatesParameterScheme() throws Exception {
 		BasicNameValuePair sourcePair1 = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair1 = new BasicNameValuePair("target", "ftp://example.org");
-		ClassicHttpRequest request1 = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair1, targetPair1)
 			.build();
@@ -127,7 +129,7 @@ class WebmentionEndpointServletIT {
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair2 = new BasicNameValuePair("target", "is-this-even-legal");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair2, targetPair2)
 			.build();
@@ -145,7 +147,7 @@ class WebmentionEndpointServletIT {
 	void validatesParametersIdentical() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.com");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
@@ -164,7 +166,7 @@ class WebmentionEndpointServletIT {
 	void returnsOk() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.org");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(servletUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
