@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -8,55 +9,45 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.apache.hc.core5.net.URIBuilder;
-import org.eclipse.jetty.server.CustomRequestLog;
-import org.eclipse.jetty.server.NetworkConnector;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.net.URI;
-
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 class WebmentionEndpointServletIT {
 
-	private static Server endpointServer;
-	private static URI endpointUri;
+	@RegisterExtension
+	static final WireMockExtension SOURCE_SERVER = WireMockExtension.newInstance()
+		.options(wireMockConfig().dynamicPort())
+		.build();
+
+	@RegisterExtension
+	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint", WebmentionEndpointServlet.class);
+
 	private static CloseableHttpClient httpClient;
 
+
 	@BeforeAll
-	static void beforeAll() throws Exception {
-		endpointServer = new Server(0);
-		endpointServer.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(),
-			CustomRequestLog.EXTENDED_NCSA_FORMAT));
-
-		final String pathSpec = "/endpoint";
-		ServletHandler servletHandler = new ServletHandler();
-		servletHandler.addServletWithMapping(WebmentionEndpointServlet.class, pathSpec);
-		endpointServer.setHandler(servletHandler);
-
-		endpointServer.start();
-
-		int port = ((NetworkConnector) endpointServer.getConnectors()[0]).getLocalPort();
-		endpointUri = URIBuilder.localhost().setScheme("http").setPort(port).setPath(pathSpec).build();
-
+	static void beforeAll() {
 		httpClient = HttpClients.createDefault();
 	}
 
 	@AfterAll
 	static void afterAll() throws Exception {
-		endpointServer.stop();
-
 		httpClient.close();
 	}
 
 	@Test
 	@DisplayName("Misc: 'Validates Content-Type'")
 	void validatesContentType() throws Exception {
-		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "text/plain")
 			.build();
 
@@ -70,7 +61,7 @@ class WebmentionEndpointServletIT {
 	@Test
 	@DisplayName("Spec: 'The receiver MUST check that source and target are valid URLs' (presence)")
 	void validatesParameterPresence() throws Exception {
-		ClassicHttpRequest request1 = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 
@@ -81,7 +72,7 @@ class WebmentionEndpointServletIT {
 		}
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameter(sourcePair2)
 			.build();
@@ -98,7 +89,7 @@ class WebmentionEndpointServletIT {
 	void validatesParameterFormat() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "http:/\\//\\");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
@@ -115,7 +106,7 @@ class WebmentionEndpointServletIT {
 	void validatesParameterScheme() throws Exception {
 		BasicNameValuePair sourcePair1 = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair1 = new BasicNameValuePair("target", "ftp://example.org");
-		ClassicHttpRequest request1 = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request1 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair1, targetPair1)
 			.build();
@@ -129,7 +120,7 @@ class WebmentionEndpointServletIT {
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair2 = new BasicNameValuePair("target", "is-this-even-legal");
-		ClassicHttpRequest request2 = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request2 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair2, targetPair2)
 			.build();
@@ -147,7 +138,7 @@ class WebmentionEndpointServletIT {
 	void validatesParametersIdentical() throws Exception {
 		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
 		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.com");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
+		ClassicHttpRequest request = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
@@ -161,12 +152,20 @@ class WebmentionEndpointServletIT {
 
 	@Test
 	@DisplayName("Spec: 'MUST respond with a 200 OK status on success'")
-	@Disabled("requires mocking of remote")
-		// FIXME
 	void returnsOk() throws Exception {
-		BasicNameValuePair sourcePair = new BasicNameValuePair("source", "https://example.com");
-		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.org");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(endpointUri)
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="https://example.com">cool site</a>
+			</body>
+			</html>""")));
+
+		BasicNameValuePair sourcePair = new BasicNameValuePair("source", SOURCE_SERVER.url("/blog/post"));
+		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.com");
+		ClassicHttpRequest request = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameters(sourcePair, targetPair)
 			.build();
