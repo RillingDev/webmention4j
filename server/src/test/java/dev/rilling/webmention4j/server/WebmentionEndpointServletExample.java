@@ -1,4 +1,5 @@
-import dev.rilling.webmention4j.server.WebmentionEndpointServlet;
+package dev.rilling.webmention4j.server;
+
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
