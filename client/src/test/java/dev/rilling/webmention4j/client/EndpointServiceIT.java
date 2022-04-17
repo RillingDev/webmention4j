@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
+import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
@@ -26,6 +27,10 @@ class EndpointServiceIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
+	@RegisterExtension
+	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
+		HttpClients::createDefault);
+
 	final EndpointService endpointService = new EndpointService();
 
 	@Test
@@ -38,9 +43,7 @@ class EndpointServiceIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			endpointService.notifyEndpoint(httpClient, endpoint, source, target);
-		}
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint", false), false);
 		EqualToPattern contentTypePattern = new EqualToPattern("application/x-www-form-urlencoded; charset=UTF-8");
@@ -60,20 +63,18 @@ class EndpointServiceIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-ok")),
-				source,
-				target);
-			endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-created")),
-				source,
-				target);
-			endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-accepted")),
-				source,
-				target);
-		}
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-ok")),
+			source,
+			target);
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-created")),
+			source,
+			target);
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-accepted")),
+			source,
+			target);
 	}
 
 	@Test
@@ -87,24 +88,22 @@ class EndpointServiceIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			assertThatThrownBy(() -> endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-client")),
-				source,
-				target)).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-unauthorized")),
-				source,
-				target)).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-not-found")),
-				source,
-				target)).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointService.notifyEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/webmention-endpoint-server-error")),
-				source,
-				target)).isInstanceOf(IOException.class);
-		}
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-client")),
+			source,
+			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-unauthorized")),
+			source,
+			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-not-found")),
+			source,
+			target)).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/webmention-endpoint-server-error")),
+			source,
+			target)).isInstanceOf(IOException.class);
 	}
 
 	@Test
@@ -117,9 +116,7 @@ class EndpointServiceIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			endpointService.notifyEndpoint(httpClient, endpoint, source, target);
-		}
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint?version=1", false), false);
 		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +

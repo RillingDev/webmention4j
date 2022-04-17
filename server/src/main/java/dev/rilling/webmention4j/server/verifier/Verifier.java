@@ -9,6 +9,7 @@ import java.net.URI;
 /**
  * Interface for classes which can verify that a resource mentions another.
  */
+// TODO: add plain-text and JSON impl
 public interface Verifier {
 	/**
 	 * Returns the MIME type that is supported by this verifier.

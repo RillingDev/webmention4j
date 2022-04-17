@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>webmention4j-client</artifactId>
-	<description>Internal, shared functionality.</description>
+	<description>Support for sending Webmentions.</description>
 
 	<dependencies>
 		<dependency>
@@ -47,6 +47,12 @@
 			<version>3.0.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>dev.rilling</groupId>
+			<artifactId>webmention4j-common-test</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>

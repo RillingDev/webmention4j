@@ -3,6 +3,7 @@ package dev.rilling.webmention4j.client;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.client.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.link.HtmlLinkParser;
+import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
@@ -26,28 +27,31 @@ class EndpointDiscoveryServiceIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
+	@RegisterExtension
+	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
+		HttpClients::createDefault);
+
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(new HeaderLinkParser(),
 		new HtmlLinkParser());
 
 
 	@Test
 	@DisplayName("Misc: 'Throws on IO error'")
-	void throwsOnError() throws IOException {
+	void throwsOnError() {
 		WIREMOCK.stubFor(get("/client-error").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
 		WIREMOCK.stubFor(get("/not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		WIREMOCK.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
 		WIREMOCK.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(IOException.class);
-			assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(httpClient,
-				URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(IOException.class);
-		}
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(IOException.class);
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(IOException.class);
+
 	}
 
 	@Test
@@ -59,10 +63,9 @@ class EndpointDiscoveryServiceIT {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron-redirect"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+
 	}
 
 	@Test
@@ -72,11 +75,9 @@ class EndpointDiscoveryServiceIT {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
-		}
 	}
 
 	@Test
@@ -94,10 +95,9 @@ class EndpointDiscoveryServiceIT {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+
 	}
 
 	@Test
@@ -116,10 +116,9 @@ class EndpointDiscoveryServiceIT {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
+
 	}
 
 
@@ -143,10 +142,9 @@ class EndpointDiscoveryServiceIT {
 				</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
+
 	}
 
 	@Test
@@ -167,10 +165,9 @@ class EndpointDiscoveryServiceIT {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
+
 	}
 
 	@Test
@@ -181,10 +178,9 @@ class EndpointDiscoveryServiceIT {
 
 		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+
 	}
 
 	@Test
@@ -201,10 +197,9 @@ class EndpointDiscoveryServiceIT {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+
 	}
 
 	@Test
@@ -214,10 +209,9 @@ class EndpointDiscoveryServiceIT {
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
+
 	}
 
 	@Test
@@ -234,9 +228,8 @@ class EndpointDiscoveryServiceIT {
 			</html>""")));
 
 		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, targetUri);
-			assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
-		}
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
+
 	}
 }

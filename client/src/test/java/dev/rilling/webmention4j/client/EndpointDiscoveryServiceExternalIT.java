@@ -2,8 +2,10 @@ package dev.rilling.webmention4j.client;
 
 import dev.rilling.webmention4j.client.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.link.HtmlLinkParser;
+import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -15,6 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // Verify against https://webmention.rocks/
 class EndpointDiscoveryServiceExternalIT {
+
+	@RegisterExtension
+	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
+		HttpClients::createDefault);
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(new HeaderLinkParser(),
 		new HtmlLinkParser());
@@ -51,9 +57,8 @@ class EndpointDiscoveryServiceExternalIT {
 		 * handled via actual endpoint notification later on
 		 */})
 	void test(String targetStr, String expectedStr) throws IOException {
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			Optional<URI> actual = endpointDiscoveryService.discoverEndpoint(httpClient, URI.create(targetStr));
-			assertThat(actual).contains(URI.create(expectedStr));
-		}
+		Optional<URI> actual = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(targetStr));
+		assertThat(actual).contains(URI.create(expectedStr));
 	}
 }

@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -9,8 +10,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -31,18 +30,9 @@ class WebmentionEndpointServletIT {
 	@RegisterExtension
 	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint", WebmentionEndpointServlet.class);
 
-	private static CloseableHttpClient httpClient;
-
-
-	@BeforeAll
-	static void beforeAll() {
-		httpClient = HttpClients.createDefault();
-	}
-
-	@AfterAll
-	static void afterAll() throws Exception {
-		httpClient.close();
-	}
+	@RegisterExtension
+	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
+		HttpClients::createDefault);
 
 	@Test
 	@DisplayName("Misc: 'Validates Content-Type'")
@@ -51,7 +41,7 @@ class WebmentionEndpointServletIT {
 			.addHeader("Content-Type", "text/plain")
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Content type must be &apos;application/x-www-form-urlencoded&apos;.");
@@ -65,7 +55,7 @@ class WebmentionEndpointServletIT {
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request1)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request1)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Required parameter &apos;source&apos; is missing.");
@@ -77,7 +67,7 @@ class WebmentionEndpointServletIT {
 			.addParameter(sourcePair2)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request2)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request2)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Required parameter &apos;target&apos; is missing.");
@@ -94,7 +84,7 @@ class WebmentionEndpointServletIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Invalid URL syntax.");
@@ -111,7 +101,7 @@ class WebmentionEndpointServletIT {
 			.addParameters(sourcePair1, targetPair1)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request1)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request1)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Unsupported URL scheme.");
@@ -125,7 +115,7 @@ class WebmentionEndpointServletIT {
 			.addParameters(sourcePair2, targetPair2)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request2)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request2)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Unsupported URL scheme.");
@@ -143,7 +133,7 @@ class WebmentionEndpointServletIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
 			assertThat(message).contains("Source and target URL may not be identical.");
@@ -170,7 +160,7 @@ class WebmentionEndpointServletIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = httpClient.execute(request)) {
+		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_OK);
 		}
 	}

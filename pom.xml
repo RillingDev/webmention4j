@@ -9,9 +9,10 @@
 	<packaging>pom</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 	<modules>
+		<module>common</module>
+		<module>common-test</module>
 		<module>client</module>
 		<module>server</module>
-		<module>common</module>
 	</modules>
 
 	<properties>
@@ -48,37 +49,31 @@
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-api</artifactId>
 				<version>5.8.2</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-params</artifactId>
 				<version>5.8.2</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-engine</artifactId>
 				<version>5.8.2</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
 				<version>3.22.0</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.github.tomakehurst</groupId>
 				<artifactId>wiremock-jre8-standalone</artifactId>
 				<version>2.33.1</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
 				<version>1.2.11</version>
-				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

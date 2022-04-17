@@ -44,6 +44,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>dev.rilling</groupId>
+			<artifactId>webmention4j-common-test</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<scope>test</scope>
