@@ -10,6 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>webmention4j-client</artifactId>
+	<description>Internal, shared functionality.</description>
 
 	<dependencies>
 		<dependency>

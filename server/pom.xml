@@ -10,6 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>webmention4j-server</artifactId>
+	<description>Server support for receiving Webmentions.</description>
 
 	<dependencies>
 		<dependency>
