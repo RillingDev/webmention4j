@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class WebmentionClientIT {
 
 	@RegisterExtension
-	static final WireMockExtension WIREMOCK = WireMockExtension.newInstance()
+	static final WireMockExtension TARGET_SERVER = WireMockExtension.newInstance()
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
@@ -33,46 +33,47 @@ class WebmentionClientIT {
 	@Test
 	@DisplayName("#supportsWebmention returns false if no endpoint is found")
 	void supportsWebmentionFalse() throws IOException {
-		WIREMOCK.stubFor(get("/no-content").willReturn(ok()));
+		TARGET_SERVER.stubFor(get("/no-content").willReturn(ok()));
 
-		URI target = URI.create(WIREMOCK.url("/no-content"));
+		URI target = URI.create(TARGET_SERVER.url("/no-content"));
 		assertThat(webmentionClient.supportsWebmention(target)).isFalse();
 	}
 
 	@Test
 	@DisplayName("#supportsWebmention returns true if an endpoint is found")
 	void supportsWebmentionTrue() throws IOException {
-		WIREMOCK.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
+		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
-		URI target = URI.create(WIREMOCK.url("/post"));
+		URI target = URI.create(TARGET_SERVER.url("/post"));
 		assertThat(webmentionClient.supportsWebmention(target)).isTrue();
 	}
 
 	@Test
 	@DisplayName("#sendWebmention throws IOException if no endpoint exists")
 	void sendWebmentionNoEndpoint() {
-		WIREMOCK.stubFor(get("/no-content").willReturn(ok()));
+		TARGET_SERVER.stubFor(get("/no-content").willReturn(ok()));
 
-		URI target = URI.create(WIREMOCK.url("/no-content"));
-		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("http://example.com"), target)).isNotNull()
+		URI target = URI.create(TARGET_SERVER.url("/no-content"));
+		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
 			.isInstanceOf(IOException.class);
 	}
 
 	@Test
 	@DisplayName("#sendWebmention sends webmention")
 	void sendWebmentionSends() throws IOException {
-		WIREMOCK.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK, "</endpoint>; rel=\"webmention\"")));
-		StubMapping stubMapping = WIREMOCK.stubFor(post("/endpoint").willReturn(ok()));
+		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
+			"</endpoint>; rel=\"webmention\"")));
+		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/endpoint").willReturn(ok()));
 
-		URI target = URI.create(WIREMOCK.url("/post"));
-		URI source = URI.create("http://example.com");
+		URI target = URI.create(TARGET_SERVER.url("/post"));
+		URI source = URI.create("https://example.com");
 		webmentionClient.sendWebmention(source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/endpoint", false), false);
 		String encodedTarget = URLEncoder.encode(target.toString(), StandardCharsets.UTF_8);
 		String encodedSource = URLEncoder.encode(source.toString(), StandardCharsets.UTF_8);
 		EqualToPattern bodyPattern = new EqualToPattern("source=%s&target=%s".formatted(encodedSource, encodedTarget));
-		WIREMOCK.verify(newRequestPattern(RequestMethod.POST, urlPattern).withRequestBody(bodyPattern));
+		TARGET_SERVER.verify(newRequestPattern(RequestMethod.POST, urlPattern).withRequestBody(bodyPattern));
 	}
 }

@@ -43,7 +43,8 @@ class VerificationService {
 	 *                   Should be configured to use a fitting UA string.
 	 * @param source     Source URI to check.
 	 * @param target     Target URI to look for.
-	 * @throws IOException if IO fails.
+	 * @throws IOException           if IO fails.
+	 * @throws VerificationException if verification fails.
 	 */
 	public void verifySubmission(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
@@ -82,7 +83,7 @@ class VerificationService {
 			}
 		} else {
 			LOGGER.debug("No verifier supports response content type, rejecting. {}", response);
-			throw new IOException("Content type of source is not supported.");
+			throw new VerificationException("Content type of source is not supported.");
 		}
 	}
 

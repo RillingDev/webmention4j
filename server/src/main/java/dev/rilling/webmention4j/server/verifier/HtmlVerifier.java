@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server.verifier;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public class HtmlVerifier implements Verifier {
 	@NotNull
 	@Override
 	public String getSupportedMimeType() {
-		return "text/html";
+		return ContentType.TEXT_HTML.getMimeType();
 	}
 
 	@Override

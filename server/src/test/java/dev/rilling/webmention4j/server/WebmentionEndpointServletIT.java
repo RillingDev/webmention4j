@@ -6,6 +6,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
@@ -143,7 +145,8 @@ class WebmentionEndpointServletIT {
 	@Test
 	@DisplayName("Spec: 'MUST respond with a 200 OK status on success'")
 	void returnsOk() throws Exception {
-		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>

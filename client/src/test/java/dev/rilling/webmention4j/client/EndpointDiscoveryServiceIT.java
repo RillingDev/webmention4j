@@ -6,6 +6,8 @@ import dev.rilling.webmention4j.client.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class EndpointDiscoveryServiceIT {
 
 	@RegisterExtension
-	static final WireMockExtension WIREMOCK = WireMockExtension.newInstance()
+	static final WireMockExtension TARGET_SERVER = WireMockExtension.newInstance()
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
@@ -38,31 +40,31 @@ class EndpointDiscoveryServiceIT {
 	@Test
 	@DisplayName("Misc: 'Throws on IO error'")
 	void throwsOnError() {
-		WIREMOCK.stubFor(get("/client-error").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
-		WIREMOCK.stubFor(get("/not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
-		WIREMOCK.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
-		WIREMOCK.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
+		TARGET_SERVER.stubFor(get("/client-error").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
+		TARGET_SERVER.stubFor(get("/not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		TARGET_SERVER.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
+		TARGET_SERVER.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
 
 		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
-			URI.create(WIREMOCK.url("/client-error")))).isInstanceOf(IOException.class);
+			URI.create(TARGET_SERVER.url("/client-error")))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
-			URI.create(WIREMOCK.url("/not-found")))).isInstanceOf(IOException.class);
+			URI.create(TARGET_SERVER.url("/not-found")))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
-			URI.create(WIREMOCK.url("/unauthorized")))).isInstanceOf(IOException.class);
+			URI.create(TARGET_SERVER.url("/unauthorized")))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
-			URI.create(WIREMOCK.url("/server-error")))).isInstanceOf(IOException.class);
+			URI.create(TARGET_SERVER.url("/server-error")))).isInstanceOf(IOException.class);
 
 	}
 
 	@Test
 	@DisplayName("Spec: 'Follow redirects'")
 	void followsRedirects() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron-redirect").willReturn(permanentRedirect("/post-by-aaron")));
+		TARGET_SERVER.stubFor(get("/post-by-aaron-redirect").willReturn(permanentRedirect("/post-by-aaron")));
 
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron-redirect"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron-redirect"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
@@ -71,10 +73,10 @@ class EndpointDiscoveryServiceIT {
 	@Test
 	@DisplayName("Spec: 'Check for an HTTP Link header with a rel value of webmention'")
 	void usesLinkHeader() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
@@ -84,7 +86,8 @@ class EndpointDiscoveryServiceIT {
 	@DisplayName("Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML <link> " +
 		"[...] element with a rel value of webmention'")
 	void usesLinkHtmlElement() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -94,7 +97,7 @@ class EndpointDiscoveryServiceIT {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
@@ -105,7 +108,8 @@ class EndpointDiscoveryServiceIT {
 		"Spec: 'If the content type of the document is HTML, then the sender MUST look for an HTML [...] <a> " +
 			"element with a rel value of webmention'")
 	void usesAnchorHtmlElement() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -115,7 +119,7 @@ class EndpointDiscoveryServiceIT {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
@@ -125,9 +129,9 @@ class EndpointDiscoveryServiceIT {
 	@Test
 	@DisplayName("Spec: 'If more than one of these is present, the first HTTP Link header takes precedence'")
 	void prioritizesHeader() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 				"<http://aaronpk.example/webmention-endpoint1>; rel=\"webmention\"")
-			.withHeader("Content-Type", "text/html")
+			.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString())
 			.withBody("""
 				<html lang="en">
 				<head>
@@ -141,7 +145,7 @@ class EndpointDiscoveryServiceIT {
 				</body>
 				</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 
@@ -151,7 +155,8 @@ class EndpointDiscoveryServiceIT {
 	@DisplayName("Spec: 'If more than one of these is present, [...] takes precedence, followed by the first <link> " +
 		"or <a> element in document order'")
 	void prioritizesFirstElement() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -164,7 +169,7 @@ class EndpointDiscoveryServiceIT {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 
@@ -173,20 +178,21 @@ class EndpointDiscoveryServiceIT {
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
 	void adaptsRelativeUriForHeader() throws IOException {
-		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Link",
+		TARGET_SERVER.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<../webmention-endpoint>; rel=\"webmention\"")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/blog/post-by-aaron"));
 
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
-		assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+		assertThat(endpoint).contains(URI.create(TARGET_SERVER.url("/webmention-endpoint")));
 
 	}
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target URL'")
 	void adaptsRelativeUriForElement() throws IOException {
-		WIREMOCK.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		TARGET_SERVER.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -196,19 +202,19 @@ class EndpointDiscoveryServiceIT {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/blog/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/blog/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
-		assertThat(endpoint).contains(URI.create(WIREMOCK.url("/webmention-endpoint")));
+		assertThat(endpoint).contains(URI.create(TARGET_SERVER.url("/webmention-endpoint")));
 
 	}
 
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
 	void preservesQueryParamsForHeader() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Link",
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 
@@ -217,7 +223,8 @@ class EndpointDiscoveryServiceIT {
 	@Test
 	@DisplayName("Spec: 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'")
 	void preservesQueryParamsForElement() throws IOException {
-		WIREMOCK.stubFor(get("/post-by-aaron").willReturn(ok().withHeader("Content-Type", "text/html").withBody("""
+		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
 			<head>
 				<title>Foo</title>
@@ -227,9 +234,8 @@ class EndpointDiscoveryServiceIT {
 			</body>
 			</html>""")));
 
-		URI targetUri = URI.create(WIREMOCK.url("/post-by-aaron"));
+		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
 		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
-
 	}
 }
