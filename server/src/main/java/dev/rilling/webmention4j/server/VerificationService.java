@@ -24,8 +24,16 @@ class VerificationService {
 
 	public static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
 
-	private static final List<Verifier> VERIFIERS = List.of(new HtmlVerifier());
+	@NotNull
+	private final List<Verifier> verifiers;
 
+	VerificationService() {
+		this(List.of(new HtmlVerifier()));
+	}
+
+	VerificationService(@NotNull List<Verifier> verifiers) {
+		this.verifiers = List.copyOf(verifiers);
+	}
 
 	/**
 	 * Verifies if the source URI mentions the target URI.
@@ -79,12 +87,12 @@ class VerificationService {
 	}
 
 	private @NotNull Header createAcceptHeader() {
-		String acceptValue = VERIFIERS.stream().map(Verifier::getSupportedMimeType).collect(Collectors.joining(", "));
+		String acceptValue = verifiers.stream().map(Verifier::getSupportedMimeType).collect(Collectors.joining(", "));
 		return new BasicHeader(HttpHeaders.ACCEPT, acceptValue);
 	}
 
 	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ContentType contentType) {
-		return VERIFIERS.stream()
+		return verifiers.stream()
 			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType()))
 			.findFirst();
 	}
