@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import dev.rilling.webmention4j.client.link.Link;
 import dev.rilling.webmention4j.client.link.LinkParser;
+import dev.rilling.webmention4j.common.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -65,7 +66,7 @@ final class EndpointDiscoveryService {
 
 		// TODO: make HEAD request.
 
-		if (!HttpStatusUtils.isSuccessful(response.getCode())) {
+		if (!HttpUtils.isSuccessful(response.getCode())) {
 			EntityUtils.consume(response.getEntity());
 			throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 				response.getReasonPhrase()));

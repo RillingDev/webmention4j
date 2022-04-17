@@ -11,12 +11,13 @@
 
 	<artifactId>webmention4j-client</artifactId>
 
-	<properties>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
-	</properties>
-
 	<dependencies>
+		<dependency>
+			<groupId>dev.rilling</groupId>
+			<artifactId>webmention4j-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server;
 
+import dev.rilling.webmention4j.common.HttpUtils;
 import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -24,6 +25,7 @@ class VerificationService {
 	public static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
 
 	private static final List<Verifier> VERIFIERS = List.of(new HtmlVerifier());
+
 
 	/**
 	 * Verifies if the source URI mentions the target URI.
@@ -50,13 +52,18 @@ class VerificationService {
 
 		LOGGER.debug("Verifying source '{}'.", source);
 		try (ClassicHttpResponse response = httpClient.execute(request)) {
+			if (!HttpUtils.isSuccessful(response.getCode())) {
+				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
+					response.getReasonPhrase()));
+			}
 			verifySubmissionResponse(response, source, target);
 		}
 	}
 
 	private void verifySubmissionResponse(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
-		Optional<Verifier> verifierOptional = findMatchingVerifier(response);
+		Optional<Verifier> verifierOptional = HttpUtils.extractContentType(response)
+			.flatMap(this::findMatchingVerifier);
 		if (verifierOptional.isPresent()) {
 			Verifier verifier = verifierOptional.get();
 			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);
@@ -76,15 +83,7 @@ class VerificationService {
 		return new BasicHeader(HttpHeaders.ACCEPT, acceptValue);
 	}
 
-	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ClassicHttpResponse httpResponse) {
-		Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-		if (contentTypeHeader == null) {
-			return Optional.empty();
-		}
-		ContentType contentType = ContentType.parse(contentTypeHeader.getValue());
-		if (contentType == null) {
-			return Optional.empty();
-		}
+	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ContentType contentType) {
 		return VERIFIERS.stream()
 			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType()))
 			.findFirst();

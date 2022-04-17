@@ -1,7 +1,11 @@
 package dev.rilling.webmention4j.client.link;
 
+import dev.rilling.webmention4j.common.HttpUtils;
 import jakarta.ws.rs.ext.RuntimeDelegate;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
@@ -55,9 +59,9 @@ public final class HtmlLinkParser implements LinkParser {
 	}
 
 	private boolean isHtml(@NotNull HttpResponse httpResponse) {
-		Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-		return contentTypeHeader != null &&
-			ContentType.parse(contentTypeHeader.getValue()).isSameMimeType(ContentType.TEXT_HTML);
+		return HttpUtils.extractContentType(httpResponse)
+			.map(contentType -> contentType.isSameMimeType(ContentType.TEXT_HTML))
+			.orElse(false);
 	}
 
 	private static class LinkElementEvaluator extends Evaluator {

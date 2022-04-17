@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.client;
 
+import dev.rilling.webmention4j.common.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -67,7 +68,7 @@ final class EndpointService {
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
 			// TODO: consume Location header if code is 201
-			if (!HttpStatusUtils.isSuccessful(response.getCode())) {
+			if (!HttpUtils.isSuccessful(response.getCode())) {
 				EntityUtils.consume(response.getEntity());
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 					response.getReasonPhrase()));
