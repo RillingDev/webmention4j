@@ -41,10 +41,10 @@ public final class HtmlLinkParser implements LinkParser {
 		}
 
 		Document document = Jsoup.parse(body, location.toString());
-		Elements elements = document.select(LINK_ELEMENT_EVALUATOR);
+		Elements linkElements = document.select(LINK_ELEMENT_EVALUATOR);
 
 		try {
-			return elements.stream()
+			return linkElements.stream()
 				.map(element -> RuntimeDelegate.getInstance()
 					.createLinkBuilder()
 					.baseUri(location)

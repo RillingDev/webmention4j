@@ -1,5 +1,7 @@
 package dev.rilling.webmention4j.client;
 
+import dev.rilling.webmention4j.client.link.HeaderLinkParser;
+import dev.rilling.webmention4j.client.link.HtmlLinkParser;
 import dev.rilling.webmention4j.client.link.Link;
 import dev.rilling.webmention4j.client.link.LinkParser;
 import dev.rilling.webmention4j.common.HttpUtils;
@@ -23,16 +25,16 @@ import java.util.Optional;
 final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
-	private final @NotNull LinkParser headerLinkParser;
-	private final @NotNull LinkParser htmlLinkParser;
+	private final @NotNull HeaderLinkParser headerLinkParser;
+	private final @NotNull HtmlLinkParser htmlLinkParser;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param headerLinkParser A {@link LinkParser} capable of header parsing.
-	 * @param htmlLinkParser   A {@link LinkParser} capable of HTML parsing.
+	 * @param headerLinkParser A {@link HeaderLinkParser}.
+	 * @param htmlLinkParser   A {@link HtmlLinkParser}.
 	 */
-	EndpointDiscoveryService(@NotNull LinkParser headerLinkParser, @NotNull LinkParser htmlLinkParser) {
+	EndpointDiscoveryService(@NotNull HeaderLinkParser headerLinkParser, @NotNull HtmlLinkParser htmlLinkParser) {
 		this.headerLinkParser = headerLinkParser;
 		this.htmlLinkParser = htmlLinkParser;
 	}
@@ -80,8 +82,6 @@ final class EndpointDiscoveryService {
 		 * If more than one of these is present, the first HTTP Link header takes precedence,
 		 * followed by the first <link> or <a> element in document order.
 		 * Senders MUST support all three options and fall back in this order.'
-		 *
-		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters'
 		 */
 		Optional<URI> fromHeader = findWebmentionEndpoint(headerLinkParser, target, response);
 		if (fromHeader.isPresent()) {
@@ -106,7 +106,10 @@ final class EndpointDiscoveryService {
 		/*
 		 * Spec:
 		 * 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target
-		 * URL according to [URL].'
+		 * URL.' (done via dev.rilling.webmention4j.client.link.Link.convert)
+		 *
+		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters
+		 *  and MUST NOT be sent as POST body parameters when sending the Webmention request.'
 		 */
 		return linkParser.parse(target, httpResponse)
 			.stream()

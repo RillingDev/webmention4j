@@ -19,7 +19,7 @@ public interface LinkParser {
 	 *
 	 * @param location     The location of the response.
 	 * @param httpResponse The response.
-	 * @return A ordered list of link elements.
+	 * @return A list of link elements, ordered by their position in the response.
 	 * @throws IOException if parsing fails.
 	 */
 	@NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse) throws IOException;
