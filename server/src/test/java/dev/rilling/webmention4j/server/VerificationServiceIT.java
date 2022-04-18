@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import dev.rilling.webmention4j.common.AutoClosableExtension;
 import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
+import dev.rilling.webmention4j.server.verifier.JsonVerifier;
 import dev.rilling.webmention4j.server.verifier.TextVerifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -38,7 +39,8 @@ class VerificationServiceIT {
 		HttpClients::createDefault);
 
 	final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
-		new TextVerifier()));
+		new TextVerifier(),
+		new JsonVerifier()));
 
 	@Test
 	@DisplayName("#isSubmissionValid throws on non-success response")
@@ -73,7 +75,7 @@ class VerificationServiceIT {
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
 		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,
-			new EqualToPattern("text/html, text/plain")));
+			new EqualToPattern("text/html, text/plain, application/json")));
 	}
 
 	@Test

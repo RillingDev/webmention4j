@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server;
 
 import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
+import dev.rilling.webmention4j.server.verifier.JsonVerifier;
 import dev.rilling.webmention4j.server.verifier.TextVerifier;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,11 @@ import java.util.List;
 
 public final class WebmentionEndpointServlet extends HttpServlet {
 
+	// Static due to not being serializable
+	private static final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
+		new TextVerifier(),
+		new JsonVerifier()));
+
 	@Serial
 	private static final long serialVersionUID = 3071031317934821620L;
 
@@ -30,8 +36,6 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
-			new TextVerifier()));
 		try {
 			processRequest(verificationService, req);
 		} catch (BadRequestException e) {

@@ -20,8 +20,8 @@ class TextVerifierTest {
 	final TextVerifier textVerifier = new TextVerifier();
 
 	@Test
-	@DisplayName("#isValid detects anchor tags")
-	void isValidDetectsAnchorTags() throws IOException {
+	@DisplayName("#isValid returns true if the substring is found")
+	void isValidTrueIfSubstring() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
 			response.setEntity(new StringEntity("""
@@ -29,6 +29,19 @@ class TextVerifierTest {
 				""", StandardCharsets.UTF_8));
 
 			assertThat(textVerifier.isValid(response, URI.create("https://example.com"))).isTrue();
+		}
+	}
+
+	@Test
+	@DisplayName("#isValid returns false if the substring is not found")
+	void isValidFalseIfNoSubstring() throws IOException {
+		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setEntity(new StringEntity("""
+				Cool thing: https://example.com
+				""", StandardCharsets.UTF_8));
+
+			assertThat(textVerifier.isValid(response, URI.create("https://foo.example.org"))).isFalse();
 		}
 	}
 }

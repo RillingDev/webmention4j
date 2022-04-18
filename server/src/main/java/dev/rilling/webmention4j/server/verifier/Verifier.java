@@ -9,7 +9,6 @@ import java.net.URI;
 /**
  * Interface for classes which can verify that a resource mentions another.
  */
-// TODO: add JSON impl
 public interface Verifier {
 	/**
 	 * Returns the MIME type that is supported by this verifier.
@@ -20,7 +19,7 @@ public interface Verifier {
 	 * Checks if the response mentions the target URI.
 	 *
 	 * @param httpResponse Response to check. Will be a successful response
-	 *                     with a content type compatible with {@link #getSupportedMimeType()}.
+	 *                     with a declared content type compatible with {@link #getSupportedMimeType()}.
 	 * @param target       Target URI to look for.
 	 * @return if the target URI is mentioned by the response.
 	 * @throws IOException if I/O fails.
