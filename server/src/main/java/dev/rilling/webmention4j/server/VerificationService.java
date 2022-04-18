@@ -21,13 +21,20 @@ import java.util.stream.Collectors;
 class VerificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VerificationService.class);
 
-	public static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
+	private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
 
 	@NotNull
 	private final List<Verifier> verifiers;
 
 	VerificationService(@NotNull List<Verifier> verifiers) {
 		this.verifiers = List.copyOf(verifiers);
+	}
+
+	/**
+	 * Checks if the URIs scheme allows for validation.
+	 */
+	public boolean isUriSchemeSupported(@NotNull URI uri) {
+		return uri.getScheme() != null && SUPPORTED_SCHEMES.contains(uri.getScheme());
 	}
 
 	/**

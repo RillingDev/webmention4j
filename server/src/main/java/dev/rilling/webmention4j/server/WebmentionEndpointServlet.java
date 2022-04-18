@@ -22,22 +22,22 @@ import java.util.List;
 
 public final class WebmentionEndpointServlet extends HttpServlet {
 
-	// Static due to not being serializable
-	private static final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
-		new TextVerifier(),
-		new JsonVerifier()));
-
 	@Serial
 	private static final long serialVersionUID = 3071031317934821620L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServlet.class);
+
+	// Static due to not being serializable
+	private static final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
+		new TextVerifier(),
+		new JsonVerifier()));
 
 	private static final ContentType EXPECTED_CONTENT_TYPE = ContentType.APPLICATION_FORM_URLENCODED;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			processRequest(verificationService, req);
+			processRequest(req);
 		} catch (BadRequestException e) {
 			LOGGER.warn("Bad request.", e);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -53,8 +53,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	}
 
 	@VisibleForTesting
-	void processRequest(@NotNull VerificationService verificationService, @NotNull HttpServletRequest req)
-		throws BadRequestException {
+	void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
 			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
 		}
@@ -97,7 +96,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		} catch (URISyntaxException e) {
 			throw new BadRequestException("Invalid URL syntax.", e);
 		}
-		if (uri.getScheme() == null || !VerificationService.SUPPORTED_SCHEMES.contains(uri.getScheme())) {
+		if (!verificationService.isUriSchemeSupported(uri)) {
 			throw new BadRequestException("Unsupported URL scheme.");
 		}
 		return uri;
