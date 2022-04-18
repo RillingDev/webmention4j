@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server;
 
 import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
+import dev.rilling.webmention4j.server.verifier.TextVerifier;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,8 +30,10 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
+			new TextVerifier()));
 		try {
-			processRequest(new VerificationService(List.of(new HtmlVerifier())), req);
+			processRequest(verificationService, req);
 		} catch (BadRequestException e) {
 			LOGGER.warn("Bad request.", e);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());

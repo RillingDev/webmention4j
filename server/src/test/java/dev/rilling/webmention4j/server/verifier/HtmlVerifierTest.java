@@ -23,7 +23,7 @@ class HtmlVerifierTest {
 	@DisplayName("#isValid detects anchor tags")
 	void isValidDetectsAnchorTags() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
@@ -42,7 +42,7 @@ class HtmlVerifierTest {
 	@DisplayName("#isValid detects media tags")
 	void isValidDetectsMediaTags() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
@@ -57,7 +57,7 @@ class HtmlVerifierTest {
 		}
 
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
@@ -72,7 +72,7 @@ class HtmlVerifierTest {
 		}
 
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
@@ -91,7 +91,7 @@ class HtmlVerifierTest {
 	@DisplayName("#isValid only detects identical links")
 	void isValidEnsuresLinkMustBeIdentical() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
