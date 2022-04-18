@@ -36,7 +36,7 @@ class HeaderLinkParserTest {
 			response.setHeader(HttpHeaders.LINK, "huh? this looks wrong.");
 
 			assertThatThrownBy(() -> headerLinkParser.parse(URI.create("https://example.com"), response)).isNotNull()
-				.isInstanceOf(LinkParser.LinkParsingException.class);
+				.isInstanceOf(IOException.class);
 		}
 	}
 }

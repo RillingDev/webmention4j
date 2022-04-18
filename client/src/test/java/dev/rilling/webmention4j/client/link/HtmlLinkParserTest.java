@@ -82,7 +82,7 @@ class HtmlLinkParserTest {
 				</html>""", StandardCharsets.UTF_8));
 
 			assertThatThrownBy(() -> htmlLinkParser.parse(URI.create("https://example.com"), response)).isNotNull()
-				.isInstanceOf(LinkParser.LinkParsingException.class);
+				.isInstanceOf(IOException.class);
 		}
 	}
 

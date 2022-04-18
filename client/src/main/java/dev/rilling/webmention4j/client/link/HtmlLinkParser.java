@@ -28,7 +28,7 @@ public final class HtmlLinkParser implements LinkParser {
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
 	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
-		throws LinkParsingException {
+		throws IOException {
 		if (!isHtml(httpResponse)) {
 			return List.of();
 		}
@@ -36,8 +36,8 @@ public final class HtmlLinkParser implements LinkParser {
 		String body;
 		try {
 			body = EntityUtils.toString(httpResponse.getEntity());
-		} catch (ParseException | IOException e) {
-			throw new LinkParsingException("Could not parse body.", e);
+		} catch (ParseException e) {
+			throw new IOException("Could not parse body.", e);
 		}
 
 		Document document = Jsoup.parse(body, location.toString());
@@ -54,7 +54,7 @@ public final class HtmlLinkParser implements LinkParser {
 				.map(Link::convert)
 				.toList();
 		} catch (Exception e) {
-			throw new LinkParsingException("Could not parse link(s) in HTML.", e);
+			throw new IOException("Could not parse link(s) in HTML.", e);
 		}
 	}
 

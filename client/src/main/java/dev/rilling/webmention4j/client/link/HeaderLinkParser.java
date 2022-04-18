@@ -5,6 +5,7 @@ import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 public final class HeaderLinkParser implements LinkParser {
 
 	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
-		throws LinkParsingException {
+		throws IOException {
 		try {
 			return Arrays.stream(httpResponse.getHeaders(HttpHeaders.LINK))
 				.map(header -> RuntimeDelegate.getInstance()
@@ -26,7 +27,7 @@ public final class HeaderLinkParser implements LinkParser {
 				.map(Link::convert)
 				.toList();
 		} catch (Exception e) {
-			throw new LinkParsingException("Could not parse link(s) in header.", e);
+			throw new IOException("Could not parse link(s) in header.", e);
 		}
 	}
 
