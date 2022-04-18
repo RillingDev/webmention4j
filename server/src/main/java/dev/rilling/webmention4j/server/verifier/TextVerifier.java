@@ -19,10 +19,12 @@ public class TextVerifier implements Verifier {
 
 	@Override
 	public boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException {
+		String body;
 		try {
-			return EntityUtils.toString(httpResponse.getEntity()).contains(target.toString());
-		} catch (ParseException | IOException e) {
+			body = EntityUtils.toString(httpResponse.getEntity());
+		} catch (ParseException e) {
 			throw new IOException("Could not parse body.", e);
 		}
+		return body.contains(target.toString());
 	}
 }
