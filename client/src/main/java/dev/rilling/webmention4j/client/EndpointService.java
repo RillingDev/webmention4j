@@ -30,7 +30,7 @@ final class EndpointService {
 	 * @param endpoint   Endpoint. See {@link EndpointDiscoveryService}.
 	 * @param source     Source that is mentioning the target.
 	 * @param target     Target that is being mentioned.
-	 * @throws IOException If IO fails.
+	 * @throws IOException if I/O fails.
 	 */
 	// Spec: https://www.w3.org/TR/webmention/#h-sender-notifies-receiver
 	public void notifyEndpoint(@NotNull CloseableHttpClient httpClient,

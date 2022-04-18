@@ -22,7 +22,7 @@ public interface Verifier {
 	 * @param httpResponse Response to check.
 	 * @param target       Target URI to look for.
 	 * @return if the target URI is mentioned by the response.
-	 * @throws IOException if IO fails.
+	 * @throws IOException if I/O fails.
 	 */
 	boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException;
 }

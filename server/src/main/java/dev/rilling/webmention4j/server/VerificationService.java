@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.server;
 
 import dev.rilling.webmention4j.common.HttpUtils;
-import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
@@ -27,10 +26,6 @@ class VerificationService {
 	@NotNull
 	private final List<Verifier> verifiers;
 
-	VerificationService() {
-		this(List.of(new HtmlVerifier()));
-	}
-
 	VerificationService(@NotNull List<Verifier> verifiers) {
 		this.verifiers = List.copyOf(verifiers);
 	}
@@ -43,10 +38,11 @@ class VerificationService {
 	 *                   Should be configured to use a fitting UA string.
 	 * @param source     Source URI to check.
 	 * @param target     Target URI to look for.
-	 * @throws IOException           if IO fails.
-	 * @throws VerificationException if verification fails.
+	 * @return if the verification of the submission passes,
+	 * @throws IOException           if I/O fails.
+	 * @throws VerificationException if verification cannot be performed due to an unsupported content type.
 	 */
-	public void verifySubmission(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
+	public boolean isSubmissionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
 		/*
 		 * Spec:
@@ -65,24 +61,20 @@ class VerificationService {
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 					response.getReasonPhrase()));
 			}
-			verifySubmissionResponse(response, source, target);
+			return isSubmissionResponseValid(response, source, target);
 		}
 	}
 
-	private void verifySubmissionResponse(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
+	private boolean isSubmissionResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
 		Optional<Verifier> verifierOptional = HttpUtils.extractContentType(response)
 			.flatMap(this::findMatchingVerifier);
 		if (verifierOptional.isPresent()) {
 			Verifier verifier = verifierOptional.get();
 			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);
-			if (!verifier.isValid(response, target)) {
-				throw new VerificationException("Verification of presence of '%s' in the content of '%s' failed.".formatted(
-					target,
-					source));
-			}
+			return verifier.isValid(response, target);
 		} else {
-			LOGGER.debug("No verifier supports response content type, rejecting. {}", response);
+			LOGGER.debug("No verifier supports response content type, rejecting it. {}", response);
 			throw new VerificationException("Content type of source is not supported.");
 		}
 	}

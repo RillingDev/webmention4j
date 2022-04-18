@@ -48,7 +48,7 @@ public final class WebmentionClient {
 	 * Checks if a webmention endpoint exists for this target URL.
 	 *
 	 * @param target Page to check endpoint of.
-	 * @throws IOException if IO fails.
+	 * @throws IOException if I/O fails.
 	 */
 	public boolean supportsWebmention(@NotNull URI target) throws IOException {
 		try (CloseableHttpClient httpClient = httpClientFactory.get()) {
@@ -61,7 +61,7 @@ public final class WebmentionClient {
 	 *
 	 * @param source Source page that is mentioning the target.
 	 * @param target Page being mentioned.
-	 * @throws IOException if IO fails.
+	 * @throws IOException if I/O fails.
 	 */
 	public void sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
 		try (CloseableHttpClient httpClient = httpClientFactory.get()) {

@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import dev.rilling.webmention4j.common.AutoClosableExtension;
+import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
@@ -15,10 +16,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.matching.RequestPatternBuilder.newRequestPattern;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class VerificationServiceIT {
@@ -32,11 +35,24 @@ class VerificationServiceIT {
 	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
 		HttpClients::createDefault);
 
-	final VerificationService verificationService = new VerificationService();
+	final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier()));
 
 	@Test
-	@DisplayName("#verifySubmission sets 'Accept' header based on supported formats")
-	void verifySubmissionSetsAccept() throws Exception {
+	@DisplayName("#isSubmissionValid throws on non-success response")
+	void isSubmissionValidThrowsOnError() {
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(notFound()));
+
+		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
+		URI target = URI.create("https://example.com");
+
+		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
+			source,
+			target)).isNotNull().isInstanceOf(IOException.class);
+	}
+
+	@Test
+	@DisplayName("#isSubmissionValid sets 'Accept' header based on supported formats")
+	void isSubmissionValidSetsAccept() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
@@ -50,7 +66,7 @@ class VerificationServiceIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
-		verificationService.verifySubmission(HTTP_CLIENT_EXTENSION.get(), source, target);
+		verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
 		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,
@@ -58,28 +74,53 @@ class VerificationServiceIT {
 	}
 
 	@Test
-	@DisplayName("#verifySubmission throws on non-success response")
-	void verifySubmissionThrowsOnError() {
-		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(notFound()));
-
-		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
-		URI target = URI.create("https://example.com");
-
-		assertThatThrownBy(() -> verificationService.verifySubmission(HTTP_CLIENT_EXTENSION.get(),
-			source,
-			target)).isNotNull().isInstanceOf(IOException.class);
-	}
-
-	@Test
-	@DisplayName("#verifySubmission throws on unspecified content type")
-	void verifySubmissionThrowsOnUnknownContentType() {
+	@DisplayName("#isSubmissionValid throws on unspecified content type")
+	void isSubmissionValidThrowsOnUnknownContentType() {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE, "text/weird")));
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
 
-		assertThatThrownBy(() -> verificationService.verifySubmission(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
 			target)).isNotNull().isInstanceOf(VerificationService.VerificationException.class);
+	}
+
+	@Test
+	@DisplayName("#isSubmissionValid returns true if response contains link")
+	void isSubmissionValidChecksContentTrue() throws Exception {
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="https://example.com">cool site</a>
+			</body>
+			</html>""")));
+
+		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
+		URI target = URI.create("https://example.com");
+		assertThat(verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isTrue();
+	}
+
+	@Test
+	@DisplayName("#isSubmissionValid returns false if response does not contain link")
+	void isSubmissionValidChecksContentFalse() throws Exception {
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
+			ContentType.TEXT_HTML.toString()).withBody("""
+			<html lang="en">
+			<head>
+				<title>Foo</title>
+			</head>
+			<body>
+				<a href="https://example.com">cool site</a>
+			</body>
+			</html>""")));
+
+		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
+		URI target = URI.create("https://foo.example.org");
+		assertThat(verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isFalse();
 	}
 }

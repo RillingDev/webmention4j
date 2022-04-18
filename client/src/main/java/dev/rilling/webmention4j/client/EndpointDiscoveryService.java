@@ -45,7 +45,7 @@ final class EndpointDiscoveryService {
 	 *                   Should be configured to use a fitting UA string.
 	 * @param target     Target URL (e.g. the referenced website).
 	 * @return The Webmention endpoint URI if one is found, or empty.
-	 * @throws IOException If IO fails.
+	 * @throws IOException if I/O fails.
 	 */
 	@NotNull
 	public Optional<URI> discoverEndpoint(@NotNull CloseableHttpClient httpClient, @NotNull URI target)

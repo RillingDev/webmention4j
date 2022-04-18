@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server;
 
+import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 public final class WebmentionEndpointServlet extends HttpServlet {
 
@@ -28,7 +30,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			processRequest(new VerificationService(), req);
+			processRequest(new VerificationService(List.of(new HtmlVerifier())), req);
 		} catch (BadRequestException e) {
 			LOGGER.warn("Bad request.", e);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -59,7 +61,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		// TODO: perform check async
 		// TODO: re-use client
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			verificationService.verifySubmission(httpClient, source, target);
+			verificationService.isSubmissionValid(httpClient, source, target);
 		} catch (IOException | VerificationService.VerificationException e) {
 			throw new BadRequestException("Verification of source URI failed.", e);
 		}
