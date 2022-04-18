@@ -19,7 +19,8 @@ public interface Verifier {
 	/**
 	 * Checks if the response mentions the target URI.
 	 *
-	 * @param httpResponse Response to check.
+	 * @param httpResponse Response to check. Will be a successful response
+	 *                     with a content type compatible with {@link #getSupportedMimeType()}.
 	 * @param target       Target URI to look for.
 	 * @return if the target URI is mentioned by the response.
 	 * @throws IOException if I/O fails.
