@@ -37,6 +37,11 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 			return;
 		}
 
+		/*
+		 * Spec:
+		 * 'If the receiver chooses to process the request and perform the verification step synchronously (not
+		 * recommended), it MUST respond with a 200 OK status on success.'
+		 * */
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 

@@ -42,15 +42,15 @@ class VerificationService {
 	 * @throws IOException           if I/O fails.
 	 * @throws VerificationException if verification cannot be performed due to an unsupported content type.
 	 */
+	//Spec: https://www.w3.org/TR/webmention/#webmention-verification
 	public boolean isSubmissionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
 		/*
 		 * Spec:
 		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,
 		 * incrementing a "like" counter, notifying the author of a post), then it MUST perform an HTTP GET request
-		 * on source'
-		 *
-		 * 'The receiver SHOULD include an HTTP Accept header indicating its preference of content types that are acceptable.'
+		 * on source [...]. The receiver SHOULD include an HTTP Accept header indicating its preference of content
+		 * types that are acceptable.'
 		 */
 
 		ClassicHttpRequest request = ClassicRequestBuilder.get(source).addHeader(createAcceptHeader()).build();
@@ -71,6 +71,17 @@ class VerificationService {
 
 	private boolean isSubmissionResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
 		throws IOException, VerificationException {
+		/*
+		 * Spec:
+		 * 'The receiver SHOULD use per-media-type rules to determine whether the source document mentions the target URL.
+		 *  For example, in an HTML5 document, the receiver should look for <a href="*">, <img href="*">,
+		 *  <video src="*"> and other similar links. In a JSON (RFC7159) document,
+		 *  the receiver should look for properties whose values are an exact match for the URL.
+		 *  If the document is plain text, the receiver should look for the URL by searching for the string.
+		 *  Other content types may be handled at the implementer's discretion.
+		 *  The source document MUST have an exact match of the target URL provided in order
+		 *  for it to be considered a valid Webmention.'
+		 */
 		Optional<Verifier> verifierOptional = HttpUtils.extractContentType(response)
 			.flatMap(this::findMatchingVerifier);
 		if (verifierOptional.isPresent()) {
