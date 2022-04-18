@@ -10,6 +10,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -71,6 +72,19 @@ class VerificationServiceIT {
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
 		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,
 			new EqualToPattern("text/html")));
+	}
+
+	@Test
+	@DisplayName("#isSubmissionValid throws on 'Not Acceptable' response")
+	void isSubmissionValidThrowsOnNotAcceptable() {
+		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_ACCEPTABLE)));
+
+		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
+		URI target = URI.create("https://example.com");
+
+		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
+			source,
+			target)).isNotNull().isInstanceOf(VerificationService.VerificationException.class);
 	}
 
 	@Test

@@ -57,6 +57,10 @@ class VerificationService {
 
 		LOGGER.debug("Verifying source '{}'.", source);
 		try (ClassicHttpResponse response = httpClient.execute(request)) {
+			if (response.getCode() == HttpStatus.SC_NOT_ACCEPTABLE) {
+				throw new VerificationException(
+					"Remote server does not support any of the content types supported for verification.");
+			}
 			if (!HttpUtils.isSuccessful(response.getCode())) {
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 					response.getReasonPhrase()));
@@ -74,8 +78,7 @@ class VerificationService {
 			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);
 			return verifier.isValid(response, target);
 		} else {
-			LOGGER.debug("No verifier supports response content type, rejecting it. {}", response);
-			throw new VerificationException("Content type of source is not supported.");
+			throw new VerificationException("Content type of remote server response is not supported.");
 		}
 	}
 
