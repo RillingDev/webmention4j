@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import dev.rilling.webmention4j.client.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.link.HtmlLinkParser;
+import dev.rilling.webmention4j.common.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.jetbrains.annotations.NotNull;
@@ -35,13 +36,11 @@ public final class WebmentionClient {
 
 	// TODO: support async requests
 
+	@NotNull
 	private static CloseableHttpClient createDefaultHttpClient() {
-		return HttpClients.custom().setUserAgent("webmention4j/%s".formatted(getVersionString())).build();
-	}
-
-	private static String getVersionString() {
-		String implementationVersion = WebmentionClient.class.getPackage().getImplementationVersion();
-		return implementationVersion != null ? implementationVersion : "0.0.0-development";
+		return HttpClients.custom()
+			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client", WebmentionClient.class.getPackage()))
+			.build();
 	}
 
 	/**

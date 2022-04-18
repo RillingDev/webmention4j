@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server;
 
+import dev.rilling.webmention4j.common.HttpUtils;
 import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.verifier.JsonVerifier;
 import dev.rilling.webmention4j.server.verifier.TextVerifier;
@@ -71,15 +72,14 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 		// TODO: perform check async
 		// TODO: re-use client
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+		try (CloseableHttpClient httpClient = createDefaultHttpClient()) {
 			verificationService.isSubmissionValid(httpClient, source, target);
 		} catch (IOException | VerificationService.VerificationException e) {
 			throw new BadRequestException("Verification of source URI failed.", e);
 		}
 	}
 
-	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
-		throws BadRequestException {
+	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName) throws BadRequestException {
 		/*
 		 * Spec:
 		 * 'The receiver MUST check that source and target are valid URLs
@@ -100,6 +100,14 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 			throw new BadRequestException("Unsupported URL scheme.");
 		}
 		return uri;
+	}
+
+	@NotNull
+	private static CloseableHttpClient createDefaultHttpClient() {
+		return HttpClients.custom()
+			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server",
+				WebmentionEndpointServlet.class.getPackage()))
+			.build();
 	}
 
 	private static final class BadRequestException extends Exception {
