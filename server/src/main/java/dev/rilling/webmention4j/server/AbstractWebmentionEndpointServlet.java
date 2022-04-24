@@ -11,7 +11,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +20,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-public final class WebmentionEndpointServlet extends HttpServlet {
+public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	@Serial
 	private static final long serialVersionUID = 3071031317934821620L;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServlet.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWebmentionEndpointServlet.class);
 
 	// Static due to not being serializable
 	private static final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
@@ -35,8 +34,9 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 
 	private static final ContentType EXPECTED_CONTENT_TYPE = ContentType.APPLICATION_FORM_URLENCODED;
 
+
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
 			processRequest(req);
 		} catch (BadRequestException e) {
@@ -53,8 +53,15 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 
-	@VisibleForTesting
-	void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
+	/**
+	 * Allows servlet consumer to react to a successful submission of a Webmention.
+	 *
+	 * @param source Source URI of the submission.
+	 * @param target Target URI of the submission.
+	 */
+	protected abstract void handleSubmission(@NotNull URI source, @NotNull URI target);
+
+	private void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
 			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
 		}
@@ -77,9 +84,11 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 		} catch (IOException | VerificationService.VerificationException e) {
 			throw new BadRequestException("Verification of source URI failed.", e);
 		}
+		handleSubmission(source, target);
 	}
 
-	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName) throws BadRequestException {
+	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
+		throws BadRequestException {
 		/*
 		 * Spec:
 		 * 'The receiver MUST check that source and target are valid URLs
@@ -106,7 +115,7 @@ public final class WebmentionEndpointServlet extends HttpServlet {
 	private static CloseableHttpClient createDefaultHttpClient() {
 		return HttpClients.custom()
 			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server",
-				WebmentionEndpointServlet.class.getPackage()))
+				AbstractWebmentionEndpointServlet.class.getPackage()))
 			.build();
 	}
 

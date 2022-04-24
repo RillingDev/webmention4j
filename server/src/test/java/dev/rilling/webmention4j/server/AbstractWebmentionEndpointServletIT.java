@@ -22,7 +22,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-class WebmentionEndpointServletIT {
+class AbstractWebmentionEndpointServletIT {
 
 	@RegisterExtension
 	static final WireMockExtension SOURCE_SERVER = WireMockExtension.newInstance()
@@ -30,7 +30,8 @@ class WebmentionEndpointServletIT {
 		.build();
 
 	@RegisterExtension
-	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint", WebmentionEndpointServlet.class);
+	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint",
+		LoggingWebmentionEndpointServlet.class);
 
 	@RegisterExtension
 	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(

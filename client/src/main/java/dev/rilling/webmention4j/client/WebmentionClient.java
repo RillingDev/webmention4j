@@ -36,12 +36,6 @@ public final class WebmentionClient {
 
 	// TODO: support async requests
 
-	@NotNull
-	private static CloseableHttpClient createDefaultHttpClient() {
-		return HttpClients.custom()
-			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client", WebmentionClient.class.getPackage()))
-			.build();
-	}
 
 	/**
 	 * Checks if a webmention endpoint exists for this target URL.
@@ -71,4 +65,17 @@ public final class WebmentionClient {
 		}
 	}
 
+	@NotNull
+	private static CloseableHttpClient createDefaultHttpClient() {
+		/*
+		 * Spec:
+		 * 'Senders MAY customize the HTTP User Agent used when fetching the target URL
+		 *  in order to indicate to the recipient that this request is made as part of Webmention discovery.
+		 *  In this case, it is recommended to include the string "Webmention" in the User Agent.
+		 *  This provides people with a pointer to find out why the discovery request was made.'
+		 */
+		return HttpClients.custom()
+			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client", WebmentionClient.class.getPackage()))
+			.build();
+	}
 }
