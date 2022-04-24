@@ -77,7 +77,6 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 		LOGGER.debug("Received webmention submission request with source='{}' and target='{}'.", source, target);
 
-		// TODO: make check optional
 		// TODO: perform check async
 		// TODO: re-use client across requests
 		/*
