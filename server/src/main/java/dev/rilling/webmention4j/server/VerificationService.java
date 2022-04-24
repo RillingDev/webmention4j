@@ -46,12 +46,12 @@ class VerificationService {
 	 * @param source     Source URI to check.
 	 * @param target     Target URI to look for.
 	 * @return if the verification of the submission passes,
-	 * @throws IOException           if I/O fails.
-	 * @throws VerificationException if verification cannot be performed due to an unsupported content type.
+	 * @throws IOException                     if I/O fails.
+	 * @throws UnsupportedContentTypeException if verification cannot be performed due to an unsupported content type.
 	 */
 	//Spec: https://www.w3.org/TR/webmention/#webmention-verification
 	public boolean isSubmissionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
-		throws IOException, VerificationException {
+		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
 		 * 'MUST perform an HTTP GET request on source [...].
@@ -65,7 +65,7 @@ class VerificationService {
 		LOGGER.debug("Verifying source '{}'.", source);
 		try (ClassicHttpResponse response = httpClient.execute(request)) {
 			if (response.getCode() == HttpStatus.SC_NOT_ACCEPTABLE) {
-				throw new VerificationException(
+				throw new UnsupportedContentTypeException(
 					"Remote server does not support any of the content types supported for verification.");
 			}
 			if (!HttpUtils.isSuccessful(response.getCode())) {
@@ -77,7 +77,7 @@ class VerificationService {
 	}
 
 	private boolean isSubmissionResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
-		throws IOException, VerificationException {
+		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
 		 * 'The receiver SHOULD use per-media-type rules to determine whether the source document mentions the target URL.
@@ -96,7 +96,7 @@ class VerificationService {
 			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);
 			return verifier.isValid(response, target);
 		} else {
-			throw new VerificationException("Content type of remote server response is not supported.");
+			throw new UnsupportedContentTypeException("Content type of remote server response is not supported.");
 		}
 	}
 
@@ -107,15 +107,14 @@ class VerificationService {
 
 	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ContentType contentType) {
 		return verifiers.stream()
-			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType()))
-			.findFirst();
+			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType())).findFirst();
 	}
 
-	static class VerificationException extends Exception {
+	static class UnsupportedContentTypeException extends Exception {
 		@Serial
 		private static final long serialVersionUID = 7007956002984142094L;
 
-		VerificationException(String message) {
+		UnsupportedContentTypeException(String message) {
 			super(message);
 		}
 	}

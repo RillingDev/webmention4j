@@ -84,7 +84,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 * Spec:
 		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,
 		 * incrementing a "like" counter, notifying the author of a post), then it MUST perform an HTTP GET request
-		 * on source [...].
+		 * on source [...] to confirm that it actually mentions the target.
 		 */
 		try (CloseableHttpClient httpClient = createDefaultHttpClient()) {
 			if (verificationService.isSubmissionValid(httpClient, source, target)) {
@@ -92,13 +92,13 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 					source,
 					target);
 			} else {
-				throw new BadRequestException("Source URL does not contain link to target URI.");
+				throw new BadRequestException("Source does not contain link to target URL.");
 			}
 		} catch (IOException e) {
 			// In theory I/O failures cold also be issues on our side (e.g. trusted CAs being wrong), but
 			// differentiating between those and issues on the source URIs side (e.g. 404s) seems hard.
 			throw new BadRequestException("Verification of source URL could not be performed.", e);
-		} catch (VerificationService.VerificationException e) {
+		} catch (VerificationService.UnsupportedContentTypeException e) {
 			throw new BadRequestException(
 				"Verification of source URL failed due to no supported content type being served.",
 				e);

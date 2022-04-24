@@ -88,7 +88,7 @@ class VerificationServiceIT {
 
 		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
-			target)).isNotNull().isInstanceOf(VerificationService.VerificationException.class);
+			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
@@ -101,7 +101,7 @@ class VerificationServiceIT {
 
 		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
-			target)).isNotNull().isInstanceOf(VerificationService.VerificationException.class);
+			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
