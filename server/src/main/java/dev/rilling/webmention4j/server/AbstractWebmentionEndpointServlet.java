@@ -70,20 +70,40 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 		// Spec: 'The receiver MUST reject the request if the source URL is the same as the target URL.'
 		if (source.equals(target)) {
-			throw new BadRequestException("Source and target URL may not be identical.");
+			throw new BadRequestException("Source and target URL must not be identical.");
 		}
 
 		// TODO: allow configuration of allowed target URI hosts.
 
-		LOGGER.debug("Received webmention request with source='{}' and target='{}'.", source, target);
+		LOGGER.debug("Received webmention submission request with source='{}' and target='{}'.", source, target);
 
+		// TODO: make check optional
 		// TODO: perform check async
-		// TODO: re-use client
+		// TODO: re-use client across requests
+		/*
+		 * Spec:
+		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,
+		 * incrementing a "like" counter, notifying the author of a post), then it MUST perform an HTTP GET request
+		 * on source [...].
+		 */
 		try (CloseableHttpClient httpClient = createDefaultHttpClient()) {
-			verificationService.isSubmissionValid(httpClient, source, target);
-		} catch (IOException | VerificationService.VerificationException e) {
-			throw new BadRequestException("Verification of source URI failed.", e);
+			if (verificationService.isSubmissionValid(httpClient, source, target)) {
+				LOGGER.debug("Webmention submission request with source='{}' and target='{}' passed verification.",
+					source,
+					target);
+			} else {
+				throw new BadRequestException("Source URL does not contain link to target URI.");
+			}
+		} catch (IOException e) {
+			// In theory I/O failures cold also be issues on our side (e.g. trusted CAs being wrong), but
+			// differentiating between those and issues on the source URIs side (e.g. 404s) seems hard.
+			throw new BadRequestException("Verification of source URL could not be performed.", e);
+		} catch (VerificationService.VerificationException e) {
+			throw new BadRequestException(
+				"Verification of source URL failed due to no supported content type being served.",
+				e);
 		}
+
 		handleSubmission(source, target);
 	}
 
@@ -103,10 +123,10 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		try {
 			uri = new URI(parameter);
 		} catch (URISyntaxException e) {
-			throw new BadRequestException("Invalid URL syntax.", e);
+			throw new BadRequestException("Invalid URL syntax: '%s'.".formatted(parameter), e);
 		}
 		if (!verificationService.isUriSchemeSupported(uri)) {
-			throw new BadRequestException("Unsupported URL scheme.");
+			throw new BadRequestException("URL scheme '%s' is not supported.".formatted(uri.getScheme()));
 		}
 		return uri;
 	}

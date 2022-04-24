@@ -90,7 +90,7 @@ class AbstractWebmentionEndpointServletIT {
 		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
-			assertThat(message).contains("Invalid URL syntax.");
+			assertThat(message).contains("Invalid URL syntax: &apos;http:/\\//\\&apos;.");
 		}
 	}
 
@@ -107,7 +107,7 @@ class AbstractWebmentionEndpointServletIT {
 		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request1)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
-			assertThat(message).contains("Unsupported URL scheme.");
+			assertThat(message).contains("URL scheme &apos;ftp&apos; is not supported.");
 		}
 
 
@@ -121,7 +121,7 @@ class AbstractWebmentionEndpointServletIT {
 		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request2)) {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String message = EntityUtils.toString(response.getEntity());
-			assertThat(message).contains("Unsupported URL scheme.");
+			assertThat(message).contains("URL scheme '&apos;null&apos;' is not supported.");
 		}
 	}
 

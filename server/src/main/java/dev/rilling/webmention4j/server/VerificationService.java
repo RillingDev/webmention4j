@@ -54,11 +54,11 @@ class VerificationService {
 		throws IOException, VerificationException {
 		/*
 		 * Spec:
-		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,
-		 * incrementing a "like" counter, notifying the author of a post), then it MUST perform an HTTP GET request
-		 * on source [...]. The receiver SHOULD include an HTTP Accept header indicating its preference of content
+		 * 'MUST perform an HTTP GET request on source [...].
+		 * The receiver SHOULD include an HTTP Accept header indicating its preference of content
 		 * types that are acceptable.'
 		 */
+		// TODO: limit redirects being followed
 
 		ClassicHttpRequest request = ClassicRequestBuilder.get(source).addHeader(createAcceptHeader()).build();
 
