@@ -1,11 +1,11 @@
 package dev.rilling.webmention4j.common;
 
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.MessageHeaders;
+import org.apache.hc.core5.http.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 public final class HttpUtils {
@@ -20,6 +20,20 @@ public final class HttpUtils {
 	public static Optional<ContentType> extractContentType(@NotNull MessageHeaders httpResponse) {
 		return Optional.ofNullable(httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE))
 			.map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
+	}
+
+	@NotNull
+	public static Optional<URI> extractLocation(@NotNull MessageHeaders httpResponse) throws IOException {
+		Header locationHeader = httpResponse.getFirstHeader(HttpHeaders.LOCATION);
+		if (locationHeader == null || locationHeader.getValue() == null) {
+			return Optional.empty();
+		}
+
+		try {
+			return Optional.of(new URI(locationHeader.getValue()));
+		} catch (URISyntaxException e) {
+			throw new IOException("Could not parse location header.", e);
+		}
 	}
 
 	/**

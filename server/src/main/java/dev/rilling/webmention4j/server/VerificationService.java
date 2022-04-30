@@ -31,20 +31,20 @@ class VerificationService {
 	}
 
 	/**
-	 * Checks if the URIs scheme allows for validation.
+	 * Checks if the URLs scheme allows for validation.
 	 */
 	public boolean isUriSchemeSupported(@NotNull URI uri) {
 		return uri.getScheme() != null && SUPPORTED_SCHEMES.contains(uri.getScheme());
 	}
 
 	/**
-	 * Verifies if the source URI mentions the target URI.
+	 * Verifies if the source URL mentions the target URL.
 	 *
 	 * @param httpClient HTTP client.
 	 *                   Must be configured to follow redirects.
 	 *                   Should be configured to use a fitting UA string.
-	 * @param source     Source URI to check.
-	 * @param target     Target URI to look for.
+	 * @param source     Source URL to check.
+	 * @param target     Target URL to look for.
 	 * @return if the verification of the submission passes,
 	 * @throws IOException                     if I/O fails.
 	 * @throws UnsupportedContentTypeException if verification cannot be performed due to an unsupported content type.

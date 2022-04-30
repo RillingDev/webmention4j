@@ -56,8 +56,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	/**
 	 * Allows servlet consumer to react to a successful submission of a Webmention.
 	 *
-	 * @param source Source URI of the submission.
-	 * @param target Target URI of the submission.
+	 * @param source Source URL of the submission.
+	 * @param target Target URL of the submission.
 	 */
 	protected abstract void handleSubmission(@NotNull URI source, @NotNull URI target);
 

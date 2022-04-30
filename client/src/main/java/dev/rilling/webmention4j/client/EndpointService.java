@@ -4,6 +4,7 @@ import dev.rilling.webmention4j.common.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /**
  * Service handling endpoint contact.
@@ -30,13 +32,15 @@ final class EndpointService {
 	 * @param endpoint   Endpoint. See {@link EndpointDiscoveryService}.
 	 * @param source     Source that is mentioning the target.
 	 * @param target     Target that is being mentioned.
+	 * @return URL to use to monitor request status (if supported by the endpoint server).
 	 * @throws IOException if I/O fails.
 	 */
 	// Spec: https://www.w3.org/TR/webmention/#h-sender-notifies-receiver
-	public void notifyEndpoint(@NotNull CloseableHttpClient httpClient,
-							   @NotNull URI endpoint,
-							   @NotNull URI source,
-							   @NotNull URI target) throws IOException {
+	@NotNull
+	public Optional<URI> notifyEndpoint(@NotNull CloseableHttpClient httpClient,
+										@NotNull URI endpoint,
+										@NotNull URI source,
+										@NotNull URI target) throws IOException {
 		// TODO: exit early if endpoint is localhost/loopback IP address
 
 		/*
@@ -69,13 +73,24 @@ final class EndpointService {
 			 *
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
-			// TODO: consume Location header if code is 201
+
 			if (!HttpUtils.isSuccessful(response.getCode())) {
 				EntityUtils.consume(response.getEntity());
 				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
 					response.getReasonPhrase()));
 			}
+
+			/*
+			 * Spec:
+			 * 'If the response code is 201,
+			 * the Location header will include a URL that can be used to monitor the status of the request.'
+			 */
+			if (response.getCode() == HttpStatus.SC_CREATED) {
+				return HttpUtils.extractLocation(response);
+			}
+			return Optional.empty();
 		}
 	}
+
 
 }

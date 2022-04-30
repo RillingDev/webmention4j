@@ -46,7 +46,7 @@ final class EndpointDiscoveryService {
 	 *                   Must be configured to follow redirects.
 	 *                   Should be configured to use a fitting UA string.
 	 * @param target     Target URL (e.g. the referenced website).
-	 * @return The Webmention endpoint URI if one is found, or empty.
+	 * @return The Webmention endpoint URL if one is found, or empty.
 	 * @throws IOException if I/O fails.
 	 */
 	@NotNull

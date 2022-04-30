@@ -5,6 +5,7 @@ import dev.rilling.webmention4j.client.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Verify against https://webmention.rocks/
+@Tag("manual")
 class EndpointDiscoveryServiceExternalIT {
 
 	@RegisterExtension

@@ -19,6 +19,7 @@ import java.net.URI;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.matching.RequestPatternBuilder.newRequestPattern;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EndpointServiceIT {
@@ -80,7 +81,7 @@ class EndpointServiceIT {
 
 	@Test
 	@DisplayName("Spec: 'Any 2xx response code MUST be considered a success' (error)")
-	void throwsForNon2XXStatus() throws IOException {
+	void throwsForNon2XXStatus() {
 		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint-client").willReturn(aResponse().withStatus(HttpStatus.SC_CLIENT_ERROR)));
 		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint-unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
 		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint-not-found").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
@@ -106,6 +107,54 @@ class EndpointServiceIT {
 			source,
 			target)).isInstanceOf(IOException.class);
 	}
+
+	@Test
+	@DisplayName("Spec: 'If the response code is 201, the Location header will include a URL that can be used to " +
+		"monitor the status of the request.' (201)")
+	void returnsMonitoringUrlFor201() throws IOException {
+		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint").willReturn(aResponse().withStatus(HttpStatus.SC_CREATED)
+			.withHeader(HttpHeaders.LOCATION, "https://example.com/monitoring")));
+
+		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
+		URI target = URI.create("https://aaronpk.example/post-by-aaron");
+
+		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
+			source,
+			target)).contains(URI.create("https://example.com/monitoring"));
+	}
+
+	@Test
+	@DisplayName("Spec: 'If the response code is 201, the Location header will include a URL that can be used to " +
+		"monitor the status of the request.' (non-201)")
+	void returnsNoMonitoringUrlForOthers() throws IOException {
+		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint").willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+			.withHeader(HttpHeaders.LOCATION, "https://example.com/monitoring")));
+
+		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
+		URI target = URI.create("https://aaronpk.example/post-by-aaron");
+
+		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
+			source,
+			target)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("Misc: 'throw upon invalid location header'")
+	void throwsForInvalidLocationHeader() {
+		ENDPOINT_SERVER.stubFor(post("/webmention-endpoint").willReturn(aResponse().withStatus(HttpStatus.SC_CREATED)
+			.withHeader(HttpHeaders.LOCATION, "http:/\\//\\")));
+
+		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
+		URI target = URI.create("https://aaronpk.example/post-by-aaron");
+
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
+			source,
+			target)).isInstanceOf(IOException.class);
+	}
+
 
 	@Test
 	@DisplayName("Spec: 'Note that if the Webmention endpoint URL contains query string parameters," +

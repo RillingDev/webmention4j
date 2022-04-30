@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public final class WebmentionClient {
@@ -54,14 +55,17 @@ public final class WebmentionClient {
 	 *
 	 * @param source Source page that is mentioning the target.
 	 * @param target Page being mentioned.
+	 * @return URL to use to monitor request status (if supported by the endpoint server).
 	 * @throws IOException if I/O fails.
 	 */
-	public void sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
+	@NotNull
+	public Optional<URI> sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
 		try (CloseableHttpClient httpClient = httpClientFactory.get()) {
 			URI endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, target)
-				.orElseThrow(() -> new IOException("Could not find any webmention endpoint URI in the target resource."));
+				.orElseThrow(() -> new IOException(
+					"Could not find any webmention endpoint URL in the target resource" + "."));
 
-			endpointService.notifyEndpoint(httpClient, endpoint, source, target);
+			return endpointService.notifyEndpoint(httpClient, endpoint, source, target);
 		}
 	}
 

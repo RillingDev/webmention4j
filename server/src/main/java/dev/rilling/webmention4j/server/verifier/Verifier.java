@@ -16,12 +16,12 @@ public interface Verifier {
 	@NotNull String getSupportedMimeType();
 
 	/**
-	 * Checks if the response mentions the target URI.
+	 * Checks if the response mentions the target URL.
 	 *
 	 * @param httpResponse Response to check. Will be a successful response
 	 *                     with a declared content type compatible with {@link #getSupportedMimeType()}.
-	 * @param target       Target URI to look for.
-	 * @return if the target URI is mentioned by the response.
+	 * @param target       Target URL to look for.
+	 * @return if the target URL is mentioned by the response.
 	 * @throws IOException if I/O fails.
 	 */
 	boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException;

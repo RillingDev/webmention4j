@@ -15,7 +15,7 @@ import java.util.List;
 public interface LinkParser {
 	/**
 	 * Parses link elements from the HTTP response.
-	 * All links will have any relative URIs resolved against the location.
+	 * All links will have any relative URLs resolved against the location.
 	 *
 	 * @param location     The location of the response.
 	 * @param httpResponse The response.
