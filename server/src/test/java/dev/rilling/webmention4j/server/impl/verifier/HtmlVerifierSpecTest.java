@@ -7,6 +7,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,12 +16,14 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class HtmlVerifierTest {
+@Tag("spec")
+class HtmlVerifierSpecTest {
 
 	final HtmlVerifier htmlVerifier = new HtmlVerifier();
 
 	@Test
-	@DisplayName("#isValid detects anchor tags")
+	@DisplayName("'For example, in an HTML5 document, the receiver should look for <a href=\"*\">, <img " +
+		"href=\"*\">, <video src=\"*\"> and other similar links' (anchor)")
 	void isValidDetectsAnchorTags() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
@@ -39,7 +42,8 @@ class HtmlVerifierTest {
 	}
 
 	@Test
-	@DisplayName("#isValid detects media tags")
+	@DisplayName("'For example, in an HTML5 document, the receiver should look for <a href=\"*\">, <img " +
+		"href=\"*\">, <video src=\"*\"> and other similar links' (media)")
 	void isValidDetectsMediaTags() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
@@ -88,7 +92,7 @@ class HtmlVerifierTest {
 	}
 
 	@Test
-	@DisplayName("#isValid only detects identical links")
+	@DisplayName("'The source document MUST have an exact match of the target URL provided in order for it to be considered a valid Webmention'")
 	void isValidEnsuresLinkMustBeIdentical() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());

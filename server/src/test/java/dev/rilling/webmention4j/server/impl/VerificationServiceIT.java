@@ -1,9 +1,6 @@
 package dev.rilling.webmention4j.server.impl;
 
-import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
@@ -23,7 +20,6 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static com.github.tomakehurst.wiremock.matching.RequestPatternBuilder.newRequestPattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,29 +49,6 @@ class VerificationServiceIT {
 		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
 			target)).isNotNull().isInstanceOf(IOException.class);
-	}
-
-	@Test
-	@DisplayName("#isSubmissionValid sets 'Accept' header based on supported formats")
-	void isSubmissionValidSetsAccept() throws Exception {
-		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
-			ContentType.TEXT_HTML.toString()).withBody("""
-			<html lang="en">
-			<head>
-				<title>Foo</title>
-			</head>
-			<body>
-				<a href="https://example.com">cool site</a>
-			</body>
-			</html>""")));
-
-		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
-		URI target = URI.create("https://example.com");
-		verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target);
-
-		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
-		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,
-			new EqualToPattern("text/html, text/plain, application/json")));
 	}
 
 	@Test

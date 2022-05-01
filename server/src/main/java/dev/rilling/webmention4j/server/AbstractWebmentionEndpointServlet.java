@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+// Spec: '3.2 Receiving Webmentions'
 public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	@Serial
@@ -107,8 +108,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		handleSubmission(source, target);
 	}
 
-	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
-		throws BadRequestException {
+	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName) throws BadRequestException {
 		/*
 		 * Spec:
 		 * 'The receiver MUST check that source and target are valid URLs
@@ -134,8 +134,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	@NotNull
 	private static CloseableHttpClient createDefaultHttpClient() {
 		return HttpClients.custom()
-			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server",
-				AbstractWebmentionEndpointServlet.class.getPackage()))
+			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server", AbstractWebmentionEndpointServlet.class.getPackage()))
 			.build();
 	}
 

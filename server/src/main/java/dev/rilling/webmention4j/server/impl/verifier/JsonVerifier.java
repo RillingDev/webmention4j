@@ -46,6 +46,7 @@ public class JsonVerifier implements Verifier {
 				return true;
 			}
 			if (node.isObject()) {
+				// TODO: limit depth
 				return containsUri(node, target);
 			}
 		}

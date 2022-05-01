@@ -7,6 +7,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,12 +16,14 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TextVerifierTest {
+@Tag("spec")
+class TextVerifierSpecTest {
 
 	final TextVerifier textVerifier = new TextVerifier();
 
 	@Test
-	@DisplayName("#isValid returns true if the substring is found")
+	@DisplayName("'If the document is plain text, the receiver should look for the URL by searching for the string' " +
+		"(found)")
 	void isValidTrueIfSubstring() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
@@ -33,7 +36,8 @@ class TextVerifierTest {
 	}
 
 	@Test
-	@DisplayName("#isValid returns false if the substring is not found")
+	@DisplayName("'If the document is plain text, the receiver should look for the URL by searching for the string' " +
+		"(not found)")
 	void isValidFalseIfNoSubstring() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());

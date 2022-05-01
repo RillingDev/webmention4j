@@ -21,7 +21,6 @@ import java.util.Optional;
 /**
  * Service handling Webmention endpoint detection.
  */
-// Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
 public final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
@@ -50,6 +49,7 @@ public final class EndpointDiscoveryService {
 	 * @return The Webmention endpoint URL if one is found, or empty.
 	 * @throws IOException if I/O fails.
 	 */
+	// Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
 	@NotNull
 	public Optional<URI> discoverEndpoint(@NotNull CloseableHttpClient httpClient, @NotNull URI target)
 		throws IOException {

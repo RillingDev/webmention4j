@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+// Spec: '3.1 Sending Webmentions'
 public final class WebmentionClient {
 	private final EndpointDiscoveryService endpointDiscoveryService;
 	private final EndpointService endpointService;
@@ -24,9 +25,7 @@ public final class WebmentionClient {
 	}
 
 	private WebmentionClient(@NotNull Supplier<CloseableHttpClient> httpClientFactory) {
-		this(httpClientFactory,
-			new EndpointService(),
-			new EndpointDiscoveryService(new HeaderLinkParser(), new HtmlLinkParser()));
+		this(httpClientFactory, new EndpointService(), new EndpointDiscoveryService(new HeaderLinkParser(), new HtmlLinkParser()));
 	}
 
 	WebmentionClient(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
@@ -63,10 +62,12 @@ public final class WebmentionClient {
 	@NotNull
 	public Optional<URI> sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
 		try (CloseableHttpClient httpClient = httpClientFactory.get()) {
+			// Spec: '3.1.2 Sender discovers receiver Webmention endpoint'
 			URI endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, target)
 				.orElseThrow(() -> new IOException(
 					"Could not find any webmention endpoint URL in the target resource" + "."));
 
+			// Spec: '3.1.3 Sender notifies receiver'
 			return endpointService.notifyEndpoint(httpClient, endpoint, source, target);
 		}
 	}
