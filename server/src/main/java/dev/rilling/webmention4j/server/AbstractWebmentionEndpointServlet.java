@@ -5,6 +5,8 @@ import dev.rilling.webmention4j.server.impl.VerificationService;
 import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
 import dev.rilling.webmention4j.server.impl.verifier.TextVerifier;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,10 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Servlet handling Webmention submissions.
@@ -34,14 +36,38 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	private static final ContentType EXPECTED_CONTENT_TYPE = ContentType.APPLICATION_FORM_URLENCODED;
 
+	private final Supplier<CloseableHttpClient> httpClientFactory;
 	private final VerificationService verificationService;
 
+	private CloseableHttpClient httpClient;
+
 	protected AbstractWebmentionEndpointServlet() {
-		this(new VerificationService(List.of(new HtmlVerifier(), new TextVerifier(), new JsonVerifier())));
+		this(AbstractWebmentionEndpointServlet::createDefaultHttpClient,
+			new VerificationService(List.of(new HtmlVerifier(), new TextVerifier(), new JsonVerifier())));
 	}
 
-	private AbstractWebmentionEndpointServlet(VerificationService verificationService) {
+	private AbstractWebmentionEndpointServlet(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
+											  @NotNull VerificationService verificationService) {
+		this.httpClientFactory = httpClientFactory;
 		this.verificationService = verificationService;
+	}
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+
+		httpClient = httpClientFactory.get();
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+
+		try {
+			httpClient.close();
+		} catch (IOException e) {
+			LOGGER.warn("Could not close HTTP client.", e);
+		}
 	}
 
 	@Override
@@ -87,14 +113,13 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		LOGGER.debug("Received webmention submission request with source='{}' and target='{}'.", source, target);
 
 		// TODO: perform check async
-		// TODO: re-use client across requests
 		/*
 		 * Spec:
 		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,
 		 * incrementing a "like" counter, notifying the author of a post), then it MUST perform an HTTP GET request
 		 * on source [...] to confirm that it actually mentions the target.
 		 */
-		try (CloseableHttpClient httpClient = createDefaultHttpClient()) {
+		try {
 			if (verificationService.isSubmissionValid(httpClient, source, target)) {
 				LOGGER.debug("Webmention submission request with source='{}' and target='{}' passed verification.",
 					source,
@@ -147,24 +172,4 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 			.build();
 	}
 
-	private static final class BadRequestException extends Exception {
-
-		@Serial
-		private static final long serialVersionUID = -8108083179786850494L;
-
-		/**
-		 * @param message User-facing error message.
-		 */
-		BadRequestException(String message) {
-			super(message);
-		}
-
-		/**
-		 * @param message User-facing error message.
-		 * @param cause   Exception cause.
-		 */
-		BadRequestException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
 }
