@@ -13,6 +13,10 @@ public final class LoggingWebmentionEndpointServlet extends AbstractWebmentionEn
 	@Serial
 	private static final long serialVersionUID = -3936170599783265569L;
 
+	public LoggingWebmentionEndpointServlet() {
+		super(verificationService);
+	}
+
 	@Override
 	protected void handleSubmission(@NotNull URI source, @NotNull URI target) {
 		LOGGER.info("Received submission from source '{}'  with target '{}'.", source, target);

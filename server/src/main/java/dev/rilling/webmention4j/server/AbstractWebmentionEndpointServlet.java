@@ -21,21 +21,28 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/**
+ * Servlet handling Webmention submissions.
+ * <p>
+ * Serialization of this servlet is NOT supported.
+ */
 // Spec: '3.2 Receiving Webmentions'
+@SuppressWarnings("serial") // Inspired by springs DispatcherServlet. Servlet serialization seems extremely uncommon.
 public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
-
-	@Serial
-	private static final long serialVersionUID = 3071031317934821620L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWebmentionEndpointServlet.class);
 
-	// Static due to not being serializable
-	private static final VerificationService verificationService = new VerificationService(List.of(new HtmlVerifier(),
-		new TextVerifier(),
-		new JsonVerifier()));
-
 	private static final ContentType EXPECTED_CONTENT_TYPE = ContentType.APPLICATION_FORM_URLENCODED;
 
+	private final VerificationService verificationService;
+
+	protected AbstractWebmentionEndpointServlet() {
+		this(new VerificationService(List.of(new HtmlVerifier(), new TextVerifier(), new JsonVerifier())));
+	}
+
+	private AbstractWebmentionEndpointServlet(VerificationService verificationService) {
+		this.verificationService = verificationService;
+	}
 
 	@Override
 	protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -108,7 +115,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		handleSubmission(source, target);
 	}
 
-	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName) throws BadRequestException {
+	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
+		throws BadRequestException {
 		/*
 		 * Spec:
 		 * 'The receiver MUST check that source and target are valid URLs
@@ -134,7 +142,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	@NotNull
 	private static CloseableHttpClient createDefaultHttpClient() {
 		return HttpClients.custom()
-			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server", AbstractWebmentionEndpointServlet.class.getPackage()))
+			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server",
+				AbstractWebmentionEndpointServlet.class.getPackage()))
 			.build();
 	}
 
