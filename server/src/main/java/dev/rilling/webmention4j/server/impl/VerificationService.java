@@ -58,8 +58,6 @@ public class VerificationService {
 		 * The receiver SHOULD include an HTTP Accept header indicating its preference of content
 		 * types that are acceptable.'
 		 */
-		// TODO: limit redirects being followed
-
 		ClassicHttpRequest request = ClassicRequestBuilder.get(source).addHeader(createAcceptHeader()).build();
 
 		LOGGER.debug("Verifying source '{}'.", source);
