@@ -1,6 +1,6 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.impl;
 
-import dev.rilling.webmention4j.common.HttpUtils;
+import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -20,7 +20,7 @@ import java.util.Optional;
 /**
  * Service handling endpoint contact.
  */
-final class EndpointService {
+public final class EndpointService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointService.class);
 
 	/**

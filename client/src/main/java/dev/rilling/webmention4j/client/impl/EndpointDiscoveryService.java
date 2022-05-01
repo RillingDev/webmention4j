@@ -1,10 +1,10 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.impl;
 
-import dev.rilling.webmention4j.client.link.HeaderLinkParser;
-import dev.rilling.webmention4j.client.link.HtmlLinkParser;
-import dev.rilling.webmention4j.client.link.Link;
-import dev.rilling.webmention4j.client.link.LinkParser;
-import dev.rilling.webmention4j.common.HttpUtils;
+import dev.rilling.webmention4j.client.impl.link.HeaderLinkParser;
+import dev.rilling.webmention4j.client.impl.link.HtmlLinkParser;
+import dev.rilling.webmention4j.client.impl.link.Link;
+import dev.rilling.webmention4j.client.impl.link.LinkParser;
+import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * Service handling Webmention endpoint detection.
  */
 // Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
-final class EndpointDiscoveryService {
+public final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
 	private final @NotNull HeaderLinkParser headerLinkParser;
@@ -34,7 +34,8 @@ final class EndpointDiscoveryService {
 	 * @param headerLinkParser A {@link HeaderLinkParser}.
 	 * @param htmlLinkParser   A {@link HtmlLinkParser}.
 	 */
-	EndpointDiscoveryService(@NotNull HeaderLinkParser headerLinkParser, @NotNull HtmlLinkParser htmlLinkParser) {
+	public EndpointDiscoveryService(@NotNull HeaderLinkParser headerLinkParser,
+									@NotNull HtmlLinkParser htmlLinkParser) {
 		this.headerLinkParser = headerLinkParser;
 		this.htmlLinkParser = htmlLinkParser;
 	}

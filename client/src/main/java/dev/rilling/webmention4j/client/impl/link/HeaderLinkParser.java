@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.client.link;
+package dev.rilling.webmention4j.client.impl.link;
 
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.ext.RuntimeDelegate;

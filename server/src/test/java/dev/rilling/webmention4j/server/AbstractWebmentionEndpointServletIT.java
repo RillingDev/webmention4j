@@ -1,7 +1,7 @@
 package dev.rilling.webmention4j.server;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import dev.rilling.webmention4j.common.AutoClosableExtension;
+import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;

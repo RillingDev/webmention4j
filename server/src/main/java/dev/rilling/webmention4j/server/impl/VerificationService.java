@@ -1,7 +1,7 @@
-package dev.rilling.webmention4j.server;
+package dev.rilling.webmention4j.server.impl;
 
-import dev.rilling.webmention4j.common.HttpUtils;
-import dev.rilling.webmention4j.server.verifier.Verifier;
+import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.server.impl.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class VerificationService {
+public class VerificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VerificationService.class);
 
 	private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
@@ -26,7 +26,7 @@ class VerificationService {
 	@NotNull
 	private final List<Verifier> verifiers;
 
-	VerificationService(@NotNull List<Verifier> verifiers) {
+	public VerificationService(@NotNull List<Verifier> verifiers) {
 		this.verifiers = List.copyOf(verifiers);
 	}
 
@@ -110,7 +110,7 @@ class VerificationService {
 			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType())).findFirst();
 	}
 
-	static class UnsupportedContentTypeException extends Exception {
+	public static class UnsupportedContentTypeException extends Exception {
 		@Serial
 		private static final long serialVersionUID = 7007956002984142094L;
 

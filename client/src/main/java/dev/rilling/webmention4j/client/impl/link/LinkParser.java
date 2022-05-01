@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.client.link;
+package dev.rilling.webmention4j.client.impl.link;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jetbrains.annotations.NotNull;

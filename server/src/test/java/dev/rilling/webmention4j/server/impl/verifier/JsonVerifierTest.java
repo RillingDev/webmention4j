@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.server.verifier;
+package dev.rilling.webmention4j.server.impl.verifier;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;

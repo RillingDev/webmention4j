@@ -1,6 +1,6 @@
-package dev.rilling.webmention4j.client.link;
+package dev.rilling.webmention4j.client.impl.link;
 
-import dev.rilling.webmention4j.common.HttpUtils;
+import dev.rilling.webmention4j.common.util.HttpUtils;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;

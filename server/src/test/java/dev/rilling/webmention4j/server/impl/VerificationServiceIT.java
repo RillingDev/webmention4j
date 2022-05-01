@@ -1,13 +1,13 @@
-package dev.rilling.webmention4j.server;
+package dev.rilling.webmention4j.server.impl;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
-import dev.rilling.webmention4j.common.AutoClosableExtension;
-import dev.rilling.webmention4j.server.verifier.HtmlVerifier;
-import dev.rilling.webmention4j.server.verifier.JsonVerifier;
-import dev.rilling.webmention4j.server.verifier.TextVerifier;
+import dev.rilling.webmention4j.common.test.AutoClosableExtension;
+import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
+import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
+import dev.rilling.webmention4j.server.impl.verifier.TextVerifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;

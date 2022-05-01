@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.server.verifier;
+package dev.rilling.webmention4j.server.impl.verifier;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

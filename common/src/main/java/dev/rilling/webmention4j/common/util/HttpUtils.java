@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.common;
+package dev.rilling.webmention4j.common.util;
 
 import org.apache.hc.core5.http.*;
 import org.jetbrains.annotations.NotNull;
