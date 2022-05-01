@@ -43,6 +43,11 @@ public class HtmlVerifier implements Verifier {
 
 		@Override
 		public boolean matches(@NotNull Element root, @NotNull Element element) {
+			/*
+			 * Spec:
+			 * '[...] in an HTML5 document, the receiver should look for <a href="*">, <img href="*">,
+			 *  <video src="*"> and other similar links.'
+			 */
 			return switch (element.normalName()) {
 				case "a" -> sourceUriString.equals(element.attr("href"));
 				case "img", "video", "audio" -> sourceUriString.equals(element.attr("src"));

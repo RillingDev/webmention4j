@@ -81,11 +81,7 @@ public class VerificationService {
 		/*
 		 * Spec:
 		 * 'The receiver SHOULD use per-media-type rules to determine whether the source document mentions the target URL.
-		 *  For example, in an HTML5 document, the receiver should look for <a href="*">, <img href="*">,
-		 *  <video src="*"> and other similar links. In a JSON (RFC7159) document,
-		 *  the receiver should look for properties whose values are an exact match for the URL.
-		 *  If the document is plain text, the receiver should look for the URL by searching for the string.
-		 *  Other content types may be handled at the implementer's discretion.
+		 * [...]
 		 *  The source document MUST have an exact match of the target URL provided in order
 		 *  for it to be considered a valid Webmention.'
 		 */

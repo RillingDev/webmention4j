@@ -25,6 +25,7 @@ public class TextVerifier implements Verifier {
 		} catch (ParseException e) {
 			throw new IOException("Could not parse body.", e);
 		}
+		// Spec: 'If the document is plain text, the receiver should look for the URL by searching for the string.'
 		return body.contains(target.toString());
 	}
 }

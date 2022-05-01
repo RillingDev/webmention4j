@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server.impl.verifier;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -10,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Iterator;
 
 public class JsonVerifier implements Verifier {
 
@@ -24,30 +24,29 @@ public class JsonVerifier implements Verifier {
 
 	@Override
 	public boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException {
-		JsonNode rootNode;
+		String body;
 		try {
-			String body = EntityUtils.toString(httpResponse.getEntity());
-			rootNode = OBJECT_MAPPER.readTree(body);
+			body = EntityUtils.toString(httpResponse.getEntity());
 		} catch (ParseException e) {
 			throw new IOException("Could not parse body.", e);
 		}
-		if (rootNode == null) {
-			throw new IOException("No JSON content found.");
-		}
-
-		return containsUri(rootNode, target);
+		return containsUri(body, target);
 	}
 
-	private boolean containsUri(@NotNull JsonNode rootNode, @NotNull URI target) {
-		Iterator<JsonNode> elements = rootNode.elements();
-		while (elements.hasNext()) {
-			JsonNode node = elements.next();
-			if (node.isTextual() && node.textValue().equals(target.toString())) {
-				return true;
+	private boolean containsUri(String rootNode, @NotNull URI target) throws IOException {
+		/*
+		 * Spec:
+		 * 'In a JSON (RFC7159) document,
+		 *  the receiver should look for properties whose values are an exact match for the URL.'
+		 */
+		try (JsonParser jp = OBJECT_MAPPER.createParser(rootNode)) {
+			if (jp.nextToken() != JsonToken.START_OBJECT) {
+				throw new IOException("Expected data to start with an object.");
 			}
-			if (node.isObject()) {
-				// TODO: limit depth
-				return containsUri(node, target);
+			while (jp.nextToken() != JsonToken.END_OBJECT) {
+				if (jp.currentToken() == JsonToken.VALUE_STRING && target.toString().equals(jp.getText())) {
+					return true;
+				}
 			}
 		}
 		return false;
