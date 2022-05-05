@@ -40,10 +40,7 @@ public class JsonVerifier implements Verifier {
 		 *  the receiver should look for properties whose values are an exact match for the URL.'
 		 */
 		try (JsonParser jp = OBJECT_MAPPER.createParser(rootNode)) {
-			if (jp.nextToken() != JsonToken.START_OBJECT) {
-				throw new IOException("Expected data to start with an object.");
-			}
-			while (jp.nextToken() != JsonToken.END_OBJECT) {
+			while (jp.nextToken() != null) {
 				if (jp.currentToken() == JsonToken.VALUE_STRING && target.toString().equals(jp.getText())) {
 					return true;
 				}

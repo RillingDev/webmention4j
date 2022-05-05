@@ -74,5 +74,26 @@ class JsonVerifierSpecTest {
 
 			assertThat(jsonVerifier.isValid(response, URI.create("https://example.com"))).isTrue();
 		}
+
+		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+			response.setEntity(new StringEntity("""
+				{
+					"name": "foo",
+					"dates": [],
+					"author": {
+						"name": "foo"
+					},
+					"meta": {
+						"references": {
+							"type": "site",
+							"url": "https://example.com",
+							"enabled": true
+						}
+					}
+				}""", StandardCharsets.UTF_8));
+
+			assertThat(jsonVerifier.isValid(response, URI.create("https://example.com"))).isTrue();
+		}
 	}
 }
