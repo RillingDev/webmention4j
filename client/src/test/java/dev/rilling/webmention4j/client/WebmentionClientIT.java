@@ -5,7 +5,9 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import dev.rilling.webmention4j.client.WebmentionClient.Config;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -28,7 +30,14 @@ class WebmentionClientIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	final WebmentionClient webmentionClient = new WebmentionClient();
+	WebmentionClient webmentionClient;
+
+	@BeforeEach
+	void setUp() {
+		Config config = new Config();
+		config.setAllowLocalhostEndpoint(true);
+		webmentionClient = new WebmentionClient(config);
+	}
 
 	@Test
 	@DisplayName("#supportsWebmention returns false if no endpoint is found")
@@ -56,7 +65,8 @@ class WebmentionClientIT {
 
 		URI target = URI.create(TARGET_SERVER.url("/no-content"));
 		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
-			.isInstanceOf(IOException.class);
+			.isInstanceOf(IOException.class)
+			.hasMessage("Could not find any webmention endpoint URL in the target resource.");
 	}
 
 	@Test

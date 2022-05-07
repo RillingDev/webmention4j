@@ -60,6 +60,7 @@ public final class HttpUtils {
 	 * @return if the given URL is localhost or a loopback IP address.
 	 */
 	public static boolean isLocalhost(@NotNull URL url) throws UnknownHostException {
+		// TODO: check URI vs URL in rest of project
 		// Handles 'localhost' check internally.
 		return InetAddress.getByName(url.getHost()).isLoopbackAddress();
 	}

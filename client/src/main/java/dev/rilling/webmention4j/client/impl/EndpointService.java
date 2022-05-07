@@ -41,8 +41,6 @@ public final class EndpointService {
 										@NotNull URI endpoint,
 										@NotNull URI source,
 										@NotNull URI target) throws IOException {
-		// TODO: exit early if endpoint is localhost/loopback IP address
-
 		/*
 		 * Spec:
 		 * 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention endpoint,
