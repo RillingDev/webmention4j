@@ -4,8 +4,7 @@ import org.apache.hc.core5.http.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.Optional;
 
 public final class HttpUtils {
@@ -50,10 +49,19 @@ public final class HttpUtils {
 	}
 
 	@NotNull
-	private static String getVersionString(@NotNull Package aPackage) {
-		if (aPackage.getImplementationVersion() == null) {
+	private static String getVersionString(@NotNull Package implementationPackage) {
+		if (implementationPackage.getImplementationVersion() == null) {
 			return "0.0.0-development";
 		}
-		return aPackage.getImplementationVersion();
+		return implementationPackage.getImplementationVersion();
 	}
+
+	/**
+	 * @return if the given URL is localhost or a loopback IP address.
+	 */
+	public static boolean isLocalhost(@NotNull URL url) throws UnknownHostException {
+		// Handles 'localhost' check internally.
+		return InetAddress.getByName(url.getHost()).isLoopbackAddress();
+	}
+
 }
