@@ -1,26 +1,51 @@
 package dev.rilling.webmention4j.common.util;
 
 import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Optional;
 
 public final class HttpUtils {
 	private HttpUtils() {
 	}
 
-	public static boolean isSuccessful(int statusCode) {
-		return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_REDIRECTION;
+	private static boolean isSuccessful(int statusCode) {
+		return statusCode >= 200 && statusCode <= 299;
 	}
 
+	/**
+	 * Validates that the response has a 2xx status code.
+	 *
+	 * @param response Response to check.
+	 * @throws IOException if the response has a non-2xx status code.
+	 */
+	public static void validateResponse(@NotNull ClassicHttpResponse response) throws IOException {
+		if (!isSuccessful(response.getCode())) {
+			EntityUtils.consume(response.getEntity());
+			throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
+				response.getReasonPhrase()));
+		}
+	}
+
+	/**
+	 * @return The 'Content-Type' header value of the response, if one is defined.
+	 */
 	@NotNull
 	public static Optional<ContentType> extractContentType(@NotNull MessageHeaders httpResponse) {
 		return Optional.ofNullable(httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE))
 			.map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
 	}
 
+	/**
+	 * @return The 'Location' header value of the response, if one is defined.
+	 * @throws IOException if location URL cannot be parsed.
+	 */
 	@NotNull
 	public static Optional<URI> extractLocation(@NotNull MessageHeaders httpResponse) throws IOException {
 		Header locationHeader = httpResponse.getFirstHeader(HttpHeaders.LOCATION);
@@ -59,10 +84,9 @@ public final class HttpUtils {
 	/**
 	 * @return if the given URL is localhost or a loopback IP address.
 	 */
-	public static boolean isLocalhost(@NotNull URL url) throws UnknownHostException {
-		// TODO: check URI vs URL in rest of project
+	public static boolean isLocalhost(@NotNull URI uri) throws UnknownHostException {
 		// Handles 'localhost' check internally.
-		return InetAddress.getByName(url.getHost()).isLoopbackAddress();
+		return InetAddress.getByName(uri.getHost()).isLoopbackAddress();
 	}
 
 }

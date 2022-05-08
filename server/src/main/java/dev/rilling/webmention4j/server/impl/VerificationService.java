@@ -66,10 +66,7 @@ public class VerificationService {
 				throw new UnsupportedContentTypeException(
 					"Remote server does not support any of the content types supported for verification.");
 			}
-			if (!HttpUtils.isSuccessful(response.getCode())) {
-				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
-					response.getReasonPhrase()));
-			}
+			HttpUtils.validateResponse(response);
 			return isSubmissionResponseValid(response, source, target);
 		}
 	}
@@ -101,7 +98,8 @@ public class VerificationService {
 
 	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ContentType contentType) {
 		return verifiers.stream()
-			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType())).findFirst();
+			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType()))
+			.findFirst();
 	}
 
 	public static class UnsupportedContentTypeException extends Exception {

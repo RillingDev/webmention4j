@@ -88,7 +88,7 @@ public final class WebmentionClient {
 			 *  it SHOULD NOT send the Webmention to that endpoint.'
 			 */
 			// TODO: also perform this check when following redirects during notification.
-			if (!config.isAllowLocalhostEndpoint() && HttpUtils.isLocalhost(endpoint.toURL())) {
+			if (!config.isAllowLocalhostEndpoint() && HttpUtils.isLocalhost(endpoint)) {
 				throw new IOException(("Endpoint '%s' is localhost or a loopback IP address, refusing to notify.").formatted(
 					endpoint));
 			}

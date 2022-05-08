@@ -5,7 +5,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jetbrains.annotations.NotNull;
@@ -72,11 +71,7 @@ public final class EndpointService {
 			 * 'Any 2xx response code MUST be considered a success.'
 			 */
 
-			if (!HttpUtils.isSuccessful(response.getCode())) {
-				EntityUtils.consume(response.getEntity());
-				throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
-					response.getReasonPhrase()));
-			}
+			HttpUtils.validateResponse(response);
 
 			/*
 			 * Spec:

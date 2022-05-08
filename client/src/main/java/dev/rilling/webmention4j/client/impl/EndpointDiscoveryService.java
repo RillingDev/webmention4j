@@ -8,7 +8,6 @@ import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -69,11 +68,7 @@ public final class EndpointDiscoveryService {
 
 		// TODO: make HEAD request.
 
-		if (!HttpUtils.isSuccessful(response.getCode())) {
-			EntityUtils.consume(response.getEntity());
-			throw new IOException("Request failed: %d - '%s'.".formatted(response.getCode(),
-				response.getReasonPhrase()));
-		}
+		HttpUtils.validateResponse(response);
 
 		/*
 		 * Spec:
