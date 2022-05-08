@@ -24,7 +24,6 @@ class HtmlLinkParserTest {
 	@Test
 	@DisplayName("#parse gets links")
 	void parseGetsLinks() throws IOException {
-
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
 			response.setEntity(new StringEntity("""

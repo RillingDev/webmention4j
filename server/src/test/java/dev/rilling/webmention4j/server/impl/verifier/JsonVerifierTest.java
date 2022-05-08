@@ -24,19 +24,19 @@ class JsonVerifierTest {
 	@Test
 	@DisplayName("#isValid throws on invalid JSON")
 	void isValidThrowsIfInvalid() throws IOException {
-		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-			response.setEntity(new StringEntity("huh?", StandardCharsets.UTF_8));
+		try (ClassicHttpResponse response1 = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			response1.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+			response1.setEntity(new StringEntity("huh?", StandardCharsets.UTF_8));
 
-			assertThatThrownBy(() -> jsonVerifier.isValid(response, URI.create("https://example.com"))).isInstanceOf(
+			assertThatThrownBy(() -> jsonVerifier.isValid(response1, URI.create("https://example.com"))).isInstanceOf(
 				IOException.class);
 		}
 
-		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-			response.setEntity(new StringEntity("{{{{{{{{{{{", StandardCharsets.UTF_8));
+		try (ClassicHttpResponse response2 = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			response2.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+			response2.setEntity(new StringEntity("{{{{{{{{{{{", StandardCharsets.UTF_8));
 
-			assertThatThrownBy(() -> jsonVerifier.isValid(response, URI.create("https://example.com"))).isInstanceOf(
+			assertThatThrownBy(() -> jsonVerifier.isValid(response2, URI.create("https://example.com"))).isInstanceOf(
 				IOException.class);
 		}
 	}

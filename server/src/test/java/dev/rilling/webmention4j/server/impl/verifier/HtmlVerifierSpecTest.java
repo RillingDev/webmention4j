@@ -45,9 +45,9 @@ class HtmlVerifierSpecTest {
 	@DisplayName("'For example, in an HTML5 document, the receiver should look for <a href=\"*\">, <img " +
 		"href=\"*\">, <video src=\"*\"> and other similar links' (media)")
 	void isValidDetectsMediaTags() throws IOException {
-		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
-			response.setEntity(new StringEntity("""
+		try (ClassicHttpResponse imgResponse = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			imgResponse.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
+			imgResponse.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
 					<title>Foo</title>
@@ -57,12 +57,12 @@ class HtmlVerifierSpecTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThat(htmlVerifier.isValid(response, URI.create("https://example.com/foo.png"))).isTrue();
+			assertThat(htmlVerifier.isValid(imgResponse, URI.create("https://example.com/foo.png"))).isTrue();
 		}
 
-		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
-			response.setEntity(new StringEntity("""
+		try (ClassicHttpResponse audioResponse = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			audioResponse.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
+			audioResponse.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
 					<title>Foo</title>
@@ -72,12 +72,12 @@ class HtmlVerifierSpecTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThat(htmlVerifier.isValid(response, URI.create("https://example.com/foo.mp3"))).isTrue();
+			assertThat(htmlVerifier.isValid(audioResponse, URI.create("https://example.com/foo.mp3"))).isTrue();
 		}
 
-		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
-			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
-			response.setEntity(new StringEntity("""
+		try (ClassicHttpResponse videoResponse = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
+			videoResponse.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
+			videoResponse.setEntity(new StringEntity("""
 				<html lang="en">
 				<head>
 					<title>Foo</title>
@@ -87,7 +87,7 @@ class HtmlVerifierSpecTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThat(htmlVerifier.isValid(response, URI.create("https://example.com/foo.mpg"))).isTrue();
+			assertThat(htmlVerifier.isValid(videoResponse, URI.create("https://example.com/foo.mpg"))).isTrue();
 		}
 	}
 
