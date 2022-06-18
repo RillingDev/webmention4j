@@ -57,7 +57,7 @@ public final class WebmentionClient {
 	// TODO: support async requests
 
 	/**
-	 * Checks if a webmention endpoint exists for this target URL.
+	 * Checks if a Webmention endpoint exists for this target URL.
 	 *
 	 * @param target Page to check endpoint of.
 	 * @throws IOException if I/O fails.
