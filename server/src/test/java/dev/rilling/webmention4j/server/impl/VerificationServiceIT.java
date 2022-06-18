@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.server.impl;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
@@ -47,8 +48,7 @@ class VerificationServiceIT {
 		URI target = URI.create("https://example.com");
 
 		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
-			source,
-			target)).isNotNull().isInstanceOf(IOException.class);
+			new Webmention(source, target))).isNotNull().isInstanceOf(IOException.class);
 	}
 
 	@Test
@@ -60,8 +60,8 @@ class VerificationServiceIT {
 		URI target = URI.create("https://example.com");
 
 		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
-			source,
-			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
+			new Webmention(source, target))).isNotNull()
+			.isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
@@ -73,8 +73,8 @@ class VerificationServiceIT {
 		URI target = URI.create("https://example.com");
 
 		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
-			source,
-			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
+			new Webmention(source, target))).isNotNull()
+			.isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
@@ -93,7 +93,8 @@ class VerificationServiceIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
-		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isTrue();
+		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
+			new Webmention(source, target))).isTrue();
 	}
 
 	@Test
@@ -112,6 +113,7 @@ class VerificationServiceIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://foo.example.org");
-		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isFalse();
+		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
+			new Webmention(source, target))).isFalse();
 	}
 }

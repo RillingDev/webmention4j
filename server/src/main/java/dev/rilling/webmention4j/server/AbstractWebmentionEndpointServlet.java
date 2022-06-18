@@ -116,7 +116,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 * on source [...] to confirm that it actually mentions the target.
 		 */
 		try {
-			if (verificationService.isWebmentionValid(httpClient, webmention.source(), webmention.target())) {
+			if (verificationService.isWebmentionValid(httpClient, webmention)) {
 				LOGGER.debug("Webmention request '{}' passed verification.", webmention);
 			} else {
 				throw new BadRequestException("Source does not contain link to target URL.");
