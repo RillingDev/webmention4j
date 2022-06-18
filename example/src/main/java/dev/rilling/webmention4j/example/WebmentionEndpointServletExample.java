@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.example;
 
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
@@ -8,8 +9,6 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 public final class WebmentionEndpointServletExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
@@ -39,8 +38,10 @@ public final class WebmentionEndpointServletExample {
 	private static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
 
 		@Override
-		protected void handleWebmention(@NotNull URI source, @NotNull URI target) {
-			LOGGER.info("Received Webmention from source '{}' with target '{}'.", source, target);
+		protected void handleWebmention(@NotNull Webmention webmention) {
+			LOGGER.info("Received Webmention from source '{}' with target '{}'.",
+				webmention.source(),
+				webmention.target());
 		}
 	}
 

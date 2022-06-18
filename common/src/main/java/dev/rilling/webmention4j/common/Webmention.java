@@ -16,7 +16,7 @@ import java.net.URI;
  * and Alice's software can show that reply as a comment on the original post."
  *
  * @param source Source page that is mentioning the target.
- * @param target Page being mentioned.
+ * @param target Page being mentioned. May not be the same as source.
  */
 public record Webmention(@NotNull URI source, @NotNull URI target) {
 }
