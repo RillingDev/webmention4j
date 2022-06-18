@@ -95,7 +95,7 @@ public final class WebmentionClient {
 		}
 		try (CloseableHttpClient httpClient = httpClientFactory.create(config.isAllowLocalhostEndpoint())) {
 			// Spec: '3.1.3 Sender notifies receiver'
-			return endpointService.notifyEndpoint(httpClient, endpoint, webmention.source(), webmention.target());
+			return endpointService.notifyEndpoint(httpClient, endpoint, webmention);
 		}
 	}
 

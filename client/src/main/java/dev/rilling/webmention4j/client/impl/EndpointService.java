@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.client.impl;
 
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
@@ -29,8 +30,7 @@ public final class EndpointService {
 	 *                   Must be configured to follow redirects.
 	 *                   Should be configured to use a fitting UA string.
 	 * @param endpoint   Endpoint. See {@link EndpointDiscoveryService}.
-	 * @param source     Source that is mentioning the target.
-	 * @param target     Target that is being mentioned.
+	 * @param webmention Webmention to send.
 	 * @return URL to use to monitor request status (if supported by the endpoint server).
 	 * @throws IOException if I/O fails.
 	 */
@@ -38,8 +38,7 @@ public final class EndpointService {
 	@NotNull
 	public Optional<URI> notifyEndpoint(@NotNull CloseableHttpClient httpClient,
 										@NotNull URI endpoint,
-										@NotNull URI source,
-										@NotNull URI target) throws IOException {
+										@NotNull Webmention webmention) throws IOException {
 		/*
 		 * Spec:
 		 * 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention endpoint,
@@ -49,8 +48,8 @@ public final class EndpointService {
 		 * 'Note that if the Webmention endpoint URL contains query string parameters,
 		 * the query string parameters MUST be preserved, and MUST NOT be sent in the POST body.'
 		 */
-		BasicNameValuePair sourcePair = new BasicNameValuePair("source", source.toString());
-		BasicNameValuePair targetPair = new BasicNameValuePair("target", target.toString());
+		BasicNameValuePair sourcePair = new BasicNameValuePair("source", webmention.source().toString());
+		BasicNameValuePair targetPair = new BasicNameValuePair("target", webmention.target().toString());
 		ClassicHttpRequest request = ClassicRequestBuilder.post(endpoint)
 			.addParameters(sourcePair, targetPair)
 			.setCharset(StandardCharsets.UTF_8) // Not part of spec, but probably better than ISO
@@ -58,7 +57,7 @@ public final class EndpointService {
 
 		LOGGER.debug("Sending request '{}'.", request);
 		try (ClassicHttpResponse response = httpClient.execute(request)) {
-			LOGGER.trace("Received response '{}' from '{}'.", response, target);
+			LOGGER.trace("Received response '{}' from '{}'.", response, endpoint);
 
 			/*
 			 * Spec:

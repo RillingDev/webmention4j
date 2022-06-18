@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.client.impl;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -42,8 +43,7 @@ class EndpointServiceIT {
 
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
-			source,
-			target)).isInstanceOf(IOException.class);
+			new Webmention(source, target))).isInstanceOf(IOException.class);
 	}
 
 }
