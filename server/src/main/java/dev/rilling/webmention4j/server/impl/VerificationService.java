@@ -45,12 +45,12 @@ public class VerificationService {
 	 *                   Should be configured to use a fitting UA string.
 	 * @param source     Source URL to check.
 	 * @param target     Target URL to look for.
-	 * @return if the verification of the submission passes,
+	 * @return if the verification of the Webmention passes,
 	 * @throws IOException                     if I/O fails.
 	 * @throws UnsupportedContentTypeException if verification cannot be performed due to an unsupported content type.
 	 */
 	//Spec: https://www.w3.org/TR/webmention/#webmention-verification
-	public boolean isSubmissionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
+	public boolean isWebmentionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
 		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
@@ -67,11 +67,11 @@ public class VerificationService {
 					"Remote server does not support any of the content types supported for verification.");
 			}
 			HttpUtils.validateResponse(response);
-			return isSubmissionResponseValid(response, source, target);
+			return isResponseValid(response, source, target);
 		}
 	}
 
-	private boolean isSubmissionResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
+	private boolean isResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
 		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
@@ -80,8 +80,7 @@ public class VerificationService {
 		 *  The source document MUST have an exact match of the target URL provided in order
 		 *  for it to be considered a valid Webmention.'
 		 */
-		Optional<Verifier> verifierOptional = HttpUtils.extractContentType(response)
-			.flatMap(this::findMatchingVerifier);
+		Optional<Verifier> verifierOptional = HttpUtils.extractContentType(response).flatMap(this::findMatchingVerifier);
 		if (verifierOptional.isPresent()) {
 			Verifier verifier = verifierOptional.get();
 			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);

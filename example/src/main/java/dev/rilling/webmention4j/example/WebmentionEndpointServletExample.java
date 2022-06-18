@@ -39,8 +39,8 @@ public final class WebmentionEndpointServletExample {
 	private static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
 
 		@Override
-		protected void handleSubmission(@NotNull URI source, @NotNull URI target) {
-			LOGGER.info("Received submission from source '{}'  with target '{}'.", source, target);
+		protected void handleWebmention(@NotNull URI source, @NotNull URI target) {
+			LOGGER.info("Received Webmention from source '{}' with target '{}'.", source, target);
 		}
 	}
 

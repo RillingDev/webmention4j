@@ -43,7 +43,7 @@ class VerificationServiceSpecIT {
 
 	@Test
 	@DisplayName("'The receiver SHOULD include an HTTP Accept header indicating its preference of content types that are acceptable'")
-	void isSubmissionValidSetsAccept() throws Exception {
+	void isWebmentionValidSetsAccept() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
@@ -57,7 +57,7 @@ class VerificationServiceSpecIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
-		verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target);
+		verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), source, target);
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
 		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,

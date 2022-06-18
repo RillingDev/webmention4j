@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Servlet handling Webmention submissions.
+ * Servlet handling receiving Webmentions.
  * <p>
  * Serialization of this servlet is NOT supported.
  */
@@ -90,12 +90,12 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	}
 
 	/**
-	 * Allows servlet consumer to react to a successful submission of a Webmention.
+	 * Allows servlet consumer to react to a successfully accepted Webmention.
 	 *
-	 * @param source Source URL of the submission.
-	 * @param target Target URL of the submission.
+	 * @param source Source URL of the Webmention.
+	 * @param target Target URL of the Webmention.
 	 */
-	protected abstract void handleSubmission(@NotNull URI source, @NotNull URI target);
+	protected abstract void handleWebmention(@NotNull URI source, @NotNull URI target);
 
 	private void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
@@ -111,7 +111,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 		// TODO: allow configuration of allowed target URI hosts.
 
-		LOGGER.debug("Received webmention submission request with source='{}' and target='{}'.", source, target);
+		LOGGER.debug("Received Webmention request with source='{}' and target='{}'.", source, target);
 
 		// TODO: perform check async
 		/*
@@ -121,8 +121,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 * on source [...] to confirm that it actually mentions the target.
 		 */
 		try {
-			if (verificationService.isSubmissionValid(httpClient, source, target)) {
-				LOGGER.debug("Webmention submission request with source='{}' and target='{}' passed verification.",
+			if (verificationService.isWebmentionValid(httpClient, source, target)) {
+				LOGGER.debug("Webmention request with source='{}' and target='{}' passed verification.",
 					source,
 					target);
 			} else {
@@ -134,11 +134,10 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 			throw new BadRequestException("Verification of source URL could not be performed.", e);
 		} catch (VerificationService.UnsupportedContentTypeException e) {
 			throw new BadRequestException(
-				"Verification of source URL failed due to no supported content type being served.",
-				e);
+				"Verification of source URL failed due to no supported content type being served.", e);
 		}
 
-		handleSubmission(source, target);
+		handleWebmention(source, target);
 	}
 
 	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)

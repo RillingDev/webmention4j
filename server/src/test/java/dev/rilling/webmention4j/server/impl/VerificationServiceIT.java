@@ -39,47 +39,47 @@ class VerificationServiceIT {
 		new JsonVerifier()));
 
 	@Test
-	@DisplayName("#isSubmissionValid throws on non-success response")
-	void isSubmissionValidThrowsOnError() {
+	@DisplayName("#isWebmentionValid throws on non-success response")
+	void isWebmentionValidThrowsOnError() {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(notFound()));
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
 
-		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
 			target)).isNotNull().isInstanceOf(IOException.class);
 	}
 
 	@Test
-	@DisplayName("#isSubmissionValid throws on 'Not Acceptable' response")
-	void isSubmissionValidThrowsOnNotAcceptable() {
+	@DisplayName("#isWebmentionValid throws on 'Not Acceptable' response")
+	void isWebmentionValidThrowsOnNotAcceptable() {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(aResponse().withStatus(HttpStatus.SC_NOT_ACCEPTABLE)));
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
 
-		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
 			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
-	@DisplayName("#isSubmissionValid throws on unspecified content type")
-	void isSubmissionValidThrowsOnUnknownContentType() {
+	@DisplayName("#isWebmentionValid throws on unspecified content type")
+	void isWebmentionValidThrowsOnUnknownContentType() {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE, "text/weird")));
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
 
-		assertThatThrownBy(() -> verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(),
 			source,
 			target)).isNotNull().isInstanceOf(VerificationService.UnsupportedContentTypeException.class);
 	}
 
 	@Test
-	@DisplayName("#isSubmissionValid returns true if response contains link")
-	void isSubmissionValidChecksContentTrue() throws Exception {
+	@DisplayName("#isWebmentionValid returns true if response contains link")
+	void isWebmentionValidChecksContentTrue() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
@@ -93,12 +93,12 @@ class VerificationServiceIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
-		assertThat(verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isTrue();
+		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isTrue();
 	}
 
 	@Test
-	@DisplayName("#isSubmissionValid returns false if response does not contain link")
-	void isSubmissionValidChecksContentFalse() throws Exception {
+	@DisplayName("#isWebmentionValid returns false if response does not contain link")
+	void isWebmentionValidChecksContentFalse() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
@@ -112,6 +112,6 @@ class VerificationServiceIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://foo.example.org");
-		assertThat(verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isFalse();
+		assertThat(verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), source, target)).isFalse();
 	}
 }
