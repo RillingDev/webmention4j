@@ -7,12 +7,12 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class AbstractWebmentionEndpointServletExample {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWebmentionEndpointServletExample.class);
+public final class WebmentionEndpointServletExample {
+	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
 
 	private static final int PORT = 8080;
 
-	private AbstractWebmentionEndpointServletExample() {
+	private WebmentionEndpointServletExample() {
 	}
 
 	public static void main(String[] args) {

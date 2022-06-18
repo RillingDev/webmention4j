@@ -30,7 +30,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 
 	@RegisterExtension
 	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint",
-		LoggingWebmentionEndpointServlet.class);
+		NoopWebmentionEndpointServlet.class);
 
 	@RegisterExtension
 	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(

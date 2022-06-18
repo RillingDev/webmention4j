@@ -4,14 +4,11 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serial;
 import java.net.URI;
 
-public final class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
+@SuppressWarnings("serial")
+class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoggingWebmentionEndpointServlet.class);
-
-	@Serial
-	private static final long serialVersionUID = -3936170599783265569L;
 
 	@Override
 	protected void handleSubmission(@NotNull URI source, @NotNull URI target) {
