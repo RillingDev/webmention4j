@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -172,4 +173,24 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 			.build();
 	}
 
+	private static final class BadRequestException extends Exception {
+
+		@Serial
+		private static final long serialVersionUID = -8108083179786850494L;
+
+		/**
+		 * @param message User-facing error message.
+		 */
+		BadRequestException(String message) {
+			super(message);
+		}
+
+		/**
+		 * @param message User-facing error message.
+		 * @param cause   Exception cause.
+		 */
+		BadRequestException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
 }
