@@ -28,7 +28,7 @@ class WebmentionClientSpecIT {
 	@DisplayName(
 		"'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8)," +
 			" it SHOULD NOT send the Webmention to that endpoint.'")
-	void supportsWebmentionFalse() {
+	void sendWebmentionLocalhost() {
 		Config config = new Config();
 		config.setAllowLocalhostEndpoint(false);
 		WebmentionClient webmentionClient = new WebmentionClient(config);
@@ -45,4 +45,26 @@ class WebmentionClientSpecIT {
 				"Endpoint 'http://.*/endpoint' is localhost or a loopback IP address, refusing to notify\\.");
 	}
 
+	@Test
+	@DisplayName(
+		"'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8)," +
+			" it SHOULD NOT send the Webmention to that endpoint.'")
+	void sendWebmentionLocalhostRedirect() {
+		Config config = new Config();
+		config.setAllowLocalhostEndpoint(false);
+		WebmentionClient webmentionClient = new WebmentionClient(config);
+
+		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
+			"</endpoint>; rel=\"webmention\"")));
+		TARGET_SERVER.stubFor(post("/endpoint").willReturn(permanentRedirect(TARGET_SERVER.url("/real-endpoint"))));
+		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/real-endpoint").willReturn(ok()));
+
+		URI target = URI.create(TARGET_SERVER.url("/post"));
+		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
+			.isInstanceOf(IOException.class)
+			.hasMessageMatching(
+				"Endpoint 'http://.*/endpoint' is localhost or a loopback IP address, refusing to notify\\.");
+	}
+
+	// TODO: add test for localhost found during redirect following for notification.
 }
