@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.client.WebmentionClient;
+import dev.rilling.webmention4j.common.Webmention;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ final class WebmentionClientExample {
 				return;
 			}
 
-			webmentionClient.sendWebmention(source, target);
+			webmentionClient.sendWebmention(new Webmention(source, target));
 			LOGGER.info("Success!");
 		} catch (IOException e) {
 			LOGGER.error("Unhandled error.", e);

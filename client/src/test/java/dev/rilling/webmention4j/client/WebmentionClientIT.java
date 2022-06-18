@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import dev.rilling.webmention4j.client.WebmentionClient.Config;
+import dev.rilling.webmention4j.common.Webmention;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -64,7 +65,8 @@ class WebmentionClientIT {
 		TARGET_SERVER.stubFor(get("/no-content").willReturn(ok()));
 
 		URI target = URI.create(TARGET_SERVER.url("/no-content"));
-		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
+		Webmention webmention = new Webmention(URI.create("https://example.com"), target);
+		assertThatThrownBy(() -> webmentionClient.sendWebmention(webmention)).isNotNull()
 			.isInstanceOf(IOException.class)
 			.hasMessage("Could not find any webmention endpoint URL in the target resource.");
 	}
@@ -78,7 +80,7 @@ class WebmentionClientIT {
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
 		URI source = URI.create("https://example.com");
-		webmentionClient.sendWebmention(source, target);
+		webmentionClient.sendWebmention(new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/endpoint", false), false);
 		String encodedTarget = URLEncoder.encode(target.toString(), StandardCharsets.UTF_8);

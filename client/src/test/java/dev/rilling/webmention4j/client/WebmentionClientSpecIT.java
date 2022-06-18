@@ -3,6 +3,7 @@ package dev.rilling.webmention4j.client;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import dev.rilling.webmention4j.client.WebmentionClient.Config;
+import dev.rilling.webmention4j.common.Webmention;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -39,7 +40,8 @@ class WebmentionClientSpecIT {
 
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
-		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
+		Webmention webmention = new Webmention(URI.create("https://example.com"), target);
+		assertThatThrownBy(() -> webmentionClient.sendWebmention(webmention)).isNotNull()
 			.isInstanceOf(IOException.class)
 			.hasMessageMatching(
 				"Endpoint 'http://.*/endpoint' is localhost or a loopback IP address, refusing to notify\\.");
@@ -60,7 +62,8 @@ class WebmentionClientSpecIT {
 		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/real-endpoint").willReturn(ok()));
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
-		assertThatThrownBy(() -> webmentionClient.sendWebmention(URI.create("https://example.com"), target)).isNotNull()
+		Webmention webmention = new Webmention(URI.create("https://example.com"), target);
+		assertThatThrownBy(() -> webmentionClient.sendWebmention(webmention)).isNotNull()
 			.isInstanceOf(IOException.class)
 			.hasMessageMatching(
 				"Endpoint 'http://.*/endpoint' is localhost or a loopback IP address, refusing to notify\\.");
