@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.impl;
 
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.*;

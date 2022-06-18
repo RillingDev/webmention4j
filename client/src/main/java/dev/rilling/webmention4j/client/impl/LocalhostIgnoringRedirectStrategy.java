@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.client;
+package dev.rilling.webmention4j.client.impl;
 
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  * <p>
  * This may be useful if redirecting to localhost is security sensitive.
  */
-class LocalhostIgnoringRedirectStrategy extends DefaultRedirectStrategy {
+public class LocalhostIgnoringRedirectStrategy extends DefaultRedirectStrategy {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LocalhostIgnoringRedirectStrategy.class);
 
 	@Override
