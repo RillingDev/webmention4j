@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.client.impl;
 
+import org.apache.hc.client5.http.RedirectException;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
@@ -10,21 +11,22 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class LocalhostIgnoringRedirectStrategyTest {
+class LocalhostRejectingRedirectStrategyTest {
 
-	LocalhostIgnoringRedirectStrategy localhostIgnoringRedirectStrategy = new LocalhostIgnoringRedirectStrategy();
+	LocalhostRejectingRedirectStrategy localhostRejectingRedirectStrategy = new LocalhostRejectingRedirectStrategy();
 
 	@Test
-	@DisplayName("#isRedirected ignores redirect locations that are localhost")
-	void isRedirectedIgnoresLocalhost() throws ProtocolException {
+	@DisplayName("#isRedirected rejects redirect locations that are localhost")
+	void isRedirectedIgnoresLocalhost() {
 		HttpRequest request = new BasicClassicHttpRequest(Method.GET, URI.create("https://example.com"));
 		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
 		response.setHeader(HttpHeaders.LOCATION, "https://localhost");
 
-		assertThat(localhostIgnoringRedirectStrategy.isRedirected(request,
+		assertThatThrownBy(() -> localhostRejectingRedirectStrategy.isRedirected(request,
 			response,
-			new HttpClientContext())).isFalse();
+			new HttpClientContext())).isInstanceOf(RedirectException.class);
 	}
 
 	@Test
@@ -34,6 +36,19 @@ class LocalhostIgnoringRedirectStrategyTest {
 		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
 		response.setHeader(HttpHeaders.LOCATION, "https://example.org");
 
-		assertThat(localhostIgnoringRedirectStrategy.isRedirected(request, response, new HttpClientContext())).isTrue();
+		assertThat(localhostRejectingRedirectStrategy.isRedirected(request,
+			response,
+			new HttpClientContext())).isTrue();
+	}
+
+	@Test
+	@DisplayName("#isRedirected keeps non-redirect responses")
+	void isRedirectedKeepsNonRedirect() throws ProtocolException {
+		HttpRequest request = new BasicClassicHttpRequest(Method.GET, URI.create("https://example.com"));
+		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK);
+
+		assertThat(localhostRejectingRedirectStrategy.isRedirected(request,
+			response,
+			new HttpClientContext())).isFalse();
 	}
 }

@@ -2,7 +2,7 @@ package dev.rilling.webmention4j.client;
 
 import dev.rilling.webmention4j.client.impl.EndpointDiscoveryService;
 import dev.rilling.webmention4j.client.impl.EndpointService;
-import dev.rilling.webmention4j.client.impl.LocalhostIgnoringRedirectStrategy;
+import dev.rilling.webmention4j.client.impl.LocalhostRejectingRedirectStrategy;
 import dev.rilling.webmention4j.client.impl.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.impl.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.Webmention;
@@ -88,6 +88,8 @@ public final class WebmentionClient {
 		 * Spec:
 		 * 'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8),
 		 *  it SHOULD NOT send the Webmention to that endpoint.'
+		 *
+		 * Note that this is check needs to also be done following redirects (see #createDefaultHttpClient).
 		 */
 		if (!config.isAllowLocalhostEndpoint() && HttpUtils.isLocalhost(endpoint)) {
 			throw new IOException(("Endpoint '%s' is localhost or a loopback IP address, refusing to notify.").formatted(
@@ -183,7 +185,7 @@ public final class WebmentionClient {
 			 * 'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8),
 			 *  it SHOULD NOT send the Webmention to that endpoint.'
 			 */
-			builder.setRedirectStrategy(new LocalhostIgnoringRedirectStrategy());
+			builder.setRedirectStrategy(new LocalhostRejectingRedirectStrategy());
 		}
 		return builder.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client",
 			WebmentionClient.class.getPackage())).build();
