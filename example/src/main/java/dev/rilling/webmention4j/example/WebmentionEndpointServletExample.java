@@ -19,6 +19,7 @@ public final class WebmentionEndpointServletExample {
 	}
 
 	public static void main(String[] args) {
+		// TODO: harden jetty config
 		Server server = new Server(PORT);
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 

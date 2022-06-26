@@ -62,12 +62,12 @@ class WebmentionClientExternalIT {
 			"https://webmention.rocks/test/16",
 			"https://webmention.rocks/test/17",
 			"https://webmention.rocks/test/18",
-			// Broken due to Link parser issue
+			// TODO: broken due to Link parser issue
 			"https://webmention.rocks/test/19",
 			"https://webmention.rocks/test/20",
 			"https://webmention.rocks/test/21",
 			"https://webmention.rocks/test/22",
-			// Broken due to how webmention.rocks testcase is structured
+			// TODO: broken due to how webmention.rocks testcase is structured
 			"https://webmention.rocks/test/23/page").map(URI::create);
 	}
 }
