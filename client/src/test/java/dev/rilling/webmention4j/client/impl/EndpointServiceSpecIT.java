@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -47,7 +48,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, source, target);
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint", false), false);
 		EqualToPattern contentTypePattern = new EqualToPattern("application/x-www-form-urlencoded; charset=UTF-8");
@@ -67,7 +68,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, source, target);
+		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint?version=1", false), false);
 		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +
@@ -87,8 +88,7 @@ class EndpointServiceSpecIT {
 
 		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
-			source,
-			target)).contains(URI.create("https://example.com/monitoring"));
+			new Webmention(source, target))).contains(URI.create("https://example.com/monitoring"));
 	}
 
 	@Test
@@ -103,8 +103,7 @@ class EndpointServiceSpecIT {
 
 		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
-			source,
-			target)).isEmpty();
+			new Webmention(source, target))).isEmpty();
 	}
 
 	@Test
@@ -119,16 +118,13 @@ class EndpointServiceSpecIT {
 
 		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-ok")),
-			source,
-			target);
+			new Webmention(source, target));
 		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-created")),
-			source,
-			target);
+			new Webmention(source, target));
 		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-accepted")),
-			source,
-			target);
+			new Webmention(source, target));
 	}
 
 	@Test
@@ -144,20 +140,16 @@ class EndpointServiceSpecIT {
 
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-client")),
-			source,
-			target)).isInstanceOf(IOException.class);
+			new Webmention(source, target))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-unauthorized")),
-			source,
-			target)).isInstanceOf(IOException.class);
+			new Webmention(source, target))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-not-found")),
-			source,
-			target)).isInstanceOf(IOException.class);
+			new Webmention(source, target))).isInstanceOf(IOException.class);
 		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-server-error")),
-			source,
-			target)).isInstanceOf(IOException.class);
+			new Webmention(source, target))).isInstanceOf(IOException.class);
 	}
 
 

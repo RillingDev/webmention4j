@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.example;
 
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
@@ -9,38 +10,57 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-
 public final class WebmentionEndpointServletExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
-
-	private static final int PORT = 8080;
 
 	private WebmentionEndpointServletExample() {
 	}
 
+	/**
+	 * Starts endpoint server.
+	 * <p>
+	 * Arguments:
+	 * <ol>
+	 *     <li>Port to listen on.</li>
+	 * </ol>
+	 * <p>
+	 * Security:
+	 * This server is not designed to be exposed directly to the internet.
+	 * Instead, a reverse proxy should be used that directs only HTTP traffic for the POST method to it.
+	 */
 	public static void main(String[] args) {
-		Server server = new Server(PORT);
+		if (args.length != 1) {
+			throw new IllegalArgumentException("Expecting 1 argument.");
+		}
+
+		int port = Integer.parseInt(args[0]);
+		startServer(port);
+	}
+
+	private static void startServer(int port) {
+		Server server = new Server(port);
+
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServletHandler servletHandler = new ServletHandler();
-		servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/endpoint");
+		servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
 		server.setHandler(servletHandler);
 
 		try {
 			server.start();
-			LOGGER.info("Listening on port {}.", PORT);
+			LOGGER.info("Listening on port {}.", port);
 		} catch (Exception e) {
 			LOGGER.error("Unexpected error.", e);
 		}
 	}
 
 	@SuppressWarnings("serial")
-	private static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
+	public static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
 
 		@Override
-		protected void handleSubmission(@NotNull URI source, @NotNull URI target) {
-			LOGGER.info("Received submission from source '{}'  with target '{}'.", source, target);
+		protected void handleWebmention(@NotNull Webmention webmention) {
+			LOGGER.info("Received Webmention from source '{}' with target '{}'.", webmention.source(),
+				webmention.target());
 		}
 	}
 

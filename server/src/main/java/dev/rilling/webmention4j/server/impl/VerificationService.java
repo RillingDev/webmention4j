@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server.impl;
 
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import dev.rilling.webmention4j.server.impl.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -43,14 +44,13 @@ public class VerificationService {
 	 * @param httpClient HTTP client.
 	 *                   Must be configured to follow redirects.
 	 *                   Should be configured to use a fitting UA string.
-	 * @param source     Source URL to check.
-	 * @param target     Target URL to look for.
-	 * @return if the verification of the submission passes,
+	 * @param webmention Webmention to verify.
+	 * @return if the verification of the Webmention passes,
 	 * @throws IOException                     if I/O fails.
 	 * @throws UnsupportedContentTypeException if verification cannot be performed due to an unsupported content type.
 	 */
 	//Spec: https://www.w3.org/TR/webmention/#webmention-verification
-	public boolean isSubmissionValid(@NotNull CloseableHttpClient httpClient, @NotNull URI source, @NotNull URI target)
+	public boolean isWebmentionValid(@NotNull CloseableHttpClient httpClient, @NotNull Webmention webmention)
 		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
@@ -58,20 +58,22 @@ public class VerificationService {
 		 * The receiver SHOULD include an HTTP Accept header indicating its preference of content
 		 * types that are acceptable.'
 		 */
-		ClassicHttpRequest request = ClassicRequestBuilder.get(source).addHeader(createAcceptHeader()).build();
+		ClassicHttpRequest request = ClassicRequestBuilder.get(webmention.source())
+			.addHeader(createAcceptHeader())
+			.build();
 
-		LOGGER.debug("Verifying source '{}'.", source);
+		LOGGER.debug("Verifying source '{}'.", webmention.source());
 		try (ClassicHttpResponse response = httpClient.execute(request)) {
 			if (response.getCode() == HttpStatus.SC_NOT_ACCEPTABLE) {
 				throw new UnsupportedContentTypeException(
 					"Remote server does not support any of the content types supported for verification.");
 			}
 			HttpUtils.validateResponse(response);
-			return isSubmissionResponseValid(response, source, target);
+			return isResponseValid(response, webmention);
 		}
 	}
 
-	private boolean isSubmissionResponseValid(ClassicHttpResponse response, @NotNull URI source, @NotNull URI target)
+	private boolean isResponseValid(ClassicHttpResponse response, @NotNull Webmention webmention)
 		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:
@@ -84,8 +86,8 @@ public class VerificationService {
 			.flatMap(this::findMatchingVerifier);
 		if (verifierOptional.isPresent()) {
 			Verifier verifier = verifierOptional.get();
-			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, source);
-			return verifier.isValid(response, target);
+			LOGGER.debug("Found verifier '{}' for source '{}'.", verifier, webmention.source());
+			return verifier.isValid(response, webmention.target());
 		} else {
 			throw new UnsupportedContentTypeException("Content type of remote server response is not supported.");
 		}

@@ -7,7 +7,7 @@
 	<groupId>dev.rilling</groupId>
 	<artifactId>webmention4j</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<modules>
 		<module>common</module>
 		<module>common-test</module>
@@ -49,6 +49,16 @@
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
 				<version>1.15.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-server</artifactId>
+				<version>11.0.11</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-servlet</artifactId>
+				<version>11.0.11</version>
 			</dependency>
 
 			<dependency>

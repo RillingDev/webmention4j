@@ -2,9 +2,10 @@ package dev.rilling.webmention4j.client;
 
 import dev.rilling.webmention4j.client.impl.EndpointDiscoveryService;
 import dev.rilling.webmention4j.client.impl.EndpointService;
-import dev.rilling.webmention4j.client.impl.LocalhostIgnoringRedirectStrategy;
+import dev.rilling.webmention4j.client.impl.LocalhostRejectingRedirectStrategy;
 import dev.rilling.webmention4j.client.impl.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.impl.link.HtmlLinkParser;
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -56,7 +57,7 @@ public final class WebmentionClient {
 	// TODO: support async requests
 
 	/**
-	 * Checks if a webmention endpoint exists for this target URL.
+	 * Checks if a Webmention endpoint exists for this target URL.
 	 *
 	 * @param target Page to check endpoint of.
 	 * @throws IOException if I/O fails.
@@ -70,17 +71,16 @@ public final class WebmentionClient {
 	/**
 	 * Notifies the target page that it was mention by the source page.
 	 *
-	 * @param source Source page that is mentioning the target.
-	 * @param target Page being mentioned.
+	 * @param webmention Webmention to send.
 	 * @return URL to use to monitor request status (if supported by the endpoint server).
 	 * @throws IOException if I/O fails.
 	 */
 	@NotNull
-	public Optional<URI> sendWebmention(@NotNull URI source, @NotNull URI target) throws IOException {
+	public Optional<URI> sendWebmention(@NotNull Webmention webmention) throws IOException {
 		URI endpoint;
 		try (CloseableHttpClient httpClient = httpClientFactory.create(true)) {
 			// Spec: '3.1.2 Sender discovers receiver Webmention endpoint'
-			endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, target)
+			endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, webmention.target())
 				.orElseThrow(() -> new IOException("Could not find any webmention endpoint URL in the target resource."));
 		}
 
@@ -88,6 +88,8 @@ public final class WebmentionClient {
 		 * Spec:
 		 * 'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8),
 		 *  it SHOULD NOT send the Webmention to that endpoint.'
+		 *
+		 * Note that this is check needs to also be done following redirects (see #createDefaultHttpClient).
 		 */
 		if (!config.isAllowLocalhostEndpoint() && HttpUtils.isLocalhost(endpoint)) {
 			throw new IOException(("Endpoint '%s' is localhost or a loopback IP address, refusing to notify.").formatted(
@@ -95,7 +97,7 @@ public final class WebmentionClient {
 		}
 		try (CloseableHttpClient httpClient = httpClientFactory.create(config.isAllowLocalhostEndpoint())) {
 			// Spec: '3.1.3 Sender notifies receiver'
-			return endpointService.notifyEndpoint(httpClient, endpoint, source, target);
+			return endpointService.notifyEndpoint(httpClient, endpoint, webmention);
 		}
 	}
 
@@ -183,7 +185,7 @@ public final class WebmentionClient {
 			 * 'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8),
 			 *  it SHOULD NOT send the Webmention to that endpoint.'
 			 */
-			builder.setRedirectStrategy(new LocalhostIgnoringRedirectStrategy());
+			builder.setRedirectStrategy(new LocalhostRejectingRedirectStrategy());
 		}
 		return builder.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client",
 			WebmentionClient.class.getPackage())).build();

@@ -1,5 +1,6 @@
 package dev.rilling.webmention4j.server;
 
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import dev.rilling.webmention4j.server.impl.VerificationService;
 import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Servlet handling Webmention submissions.
+ * Servlet handling receiving Webmentions.
  * <p>
  * Serialization of this servlet is NOT supported.
  */
@@ -90,28 +91,22 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	}
 
 	/**
-	 * Allows servlet consumer to react to a successful submission of a Webmention.
+	 * Allows servlet consumer to react to a successfully accepted Webmention.
 	 *
-	 * @param source Source URL of the submission.
-	 * @param target Target URL of the submission.
+	 * @param webmention The received Webmention.
 	 */
-	protected abstract void handleSubmission(@NotNull URI source, @NotNull URI target);
+	protected abstract void handleWebmention(@NotNull Webmention webmention);
 
 	private void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
 			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
 		}
-		URI source = extractParameterAsUri(req, "source");
-		URI target = extractParameterAsUri(req, "target");
 
-		// Spec: 'The receiver MUST reject the request if the source URL is the same as the target URL.'
-		if (source.equals(target)) {
-			throw new BadRequestException("Source and target URL must not be identical.");
-		}
+		Webmention webmention = extractWebmention(req);
 
 		// TODO: allow configuration of allowed target URI hosts.
 
-		LOGGER.debug("Received webmention submission request with source='{}' and target='{}'.", source, target);
+		LOGGER.debug("Received Webmention request '{}'.", webmention);
 
 		// TODO: perform check async
 		/*
@@ -121,10 +116,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 * on source [...] to confirm that it actually mentions the target.
 		 */
 		try {
-			if (verificationService.isSubmissionValid(httpClient, source, target)) {
-				LOGGER.debug("Webmention submission request with source='{}' and target='{}' passed verification.",
-					source,
-					target);
+			if (verificationService.isWebmentionValid(httpClient, webmention)) {
+				LOGGER.debug("Webmention request '{}' passed verification.", webmention);
 			} else {
 				throw new BadRequestException("Source does not contain link to target URL.");
 			}
@@ -138,7 +131,18 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 				e);
 		}
 
-		handleSubmission(source, target);
+		handleWebmention(webmention);
+	}
+
+	private @NotNull Webmention extractWebmention(@NotNull HttpServletRequest req) throws BadRequestException {
+		URI source = extractParameterAsUri(req, "source");
+		URI target = extractParameterAsUri(req, "target");
+
+		// Spec: 'The receiver MUST reject the request if the source URL is the same as the target URL.'
+		if (source.equals(target)) {
+			throw new BadRequestException("Source and target URL must not be identical.");
+		}
+		return new Webmention(source, target);
 	}
 
 	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)

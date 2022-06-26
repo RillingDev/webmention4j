@@ -1,6 +1,7 @@
 package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.client.WebmentionClient;
+import dev.rilling.webmention4j.common.Webmention;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +15,13 @@ final class WebmentionClientExample {
 	}
 
 	/**
-	 * Sends webmention.
+	 * Sends a Webmention.
 	 * <p>
-	 * Argument 1: Source URL.
-	 * Argument 2: Target URL.
+	 * Arguments:
+	 * <ol>
+	 *     <li>Source URL.</li>
+	 *     <li>Target URL.</li>
+	 * </ol>
 	 */
 	public static void main(String[] args) {
 		if (args.length != 2) {
@@ -26,7 +30,10 @@ final class WebmentionClientExample {
 
 		URI source = URI.create(args[0]);
 		URI target = URI.create(args[1]);
+		sendWebmention(source, target);
+	}
 
+	private static void sendWebmention(URI source, URI target) {
 		WebmentionClient webmentionClient = new WebmentionClient();
 		try {
 			if (!webmentionClient.supportsWebmention(target)) {
@@ -34,7 +41,7 @@ final class WebmentionClientExample {
 				return;
 			}
 
-			webmentionClient.sendWebmention(source, target);
+			webmentionClient.sendWebmention(new Webmention(source, target));
 			LOGGER.info("Success!");
 		} catch (IOException e) {
 			LOGGER.error("Unhandled error.", e);

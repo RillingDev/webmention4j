@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
+import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
 import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
@@ -43,7 +44,7 @@ class VerificationServiceSpecIT {
 
 	@Test
 	@DisplayName("'The receiver SHOULD include an HTTP Accept header indicating its preference of content types that are acceptable'")
-	void isSubmissionValidSetsAccept() throws Exception {
+	void isWebmentionValidSetsAccept() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
 			<html lang="en">
@@ -57,7 +58,7 @@ class VerificationServiceSpecIT {
 
 		URI source = URI.create(SOURCE_SERVER.url("/blog/post"));
 		URI target = URI.create("https://example.com");
-		verificationService.isSubmissionValid(HTTP_CLIENT_EXTENSION.get(), source, target);
+		verificationService.isWebmentionValid(HTTP_CLIENT_EXTENSION.get(), new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/blog/post", false), false);
 		SOURCE_SERVER.verify(newRequestPattern(RequestMethod.GET, urlPattern).withHeader(HttpHeaders.ACCEPT,
