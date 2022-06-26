@@ -27,8 +27,15 @@ public final class HttpUtils {
 	 */
 	public static void validateResponse(@NotNull ClassicHttpResponse response) throws IOException {
 		if (!isSuccessful(response.getCode())) {
-			EntityUtils.consume(response.getEntity());
-			throw new IOException("Request failed: %d - %s.".formatted(response.getCode(), response.getReasonPhrase()));
+			String body;
+			try {
+				body = EntityUtils.toString(response.getEntity());
+			} catch (ParseException ignored) {
+				body = "(body omitted)";
+			}
+			throw new IOException("Request failed: %d - %s:%n%s".formatted(response.getCode(),
+				response.getReasonPhrase(),
+				body));
 		}
 	}
 
