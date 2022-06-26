@@ -13,35 +13,53 @@ import org.slf4j.LoggerFactory;
 public final class WebmentionEndpointServletExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
 
-	private static final int PORT = 8080;
-
 	private WebmentionEndpointServletExample() {
 	}
 
+	/**
+	 * Starts endpoint server.
+	 * <p>
+	 * Arguments:
+	 * <ol>
+	 *     <li>Port to listen on.</li>
+	 * </ol>
+	 * <p>
+	 * Security:
+	 * This server is not designed to be exposed directly to the internet.
+	 * Instead, a reverse proxy should be used that directs only HTTP traffic for the POST method to it.
+	 */
 	public static void main(String[] args) {
-		// TODO: harden jetty config
-		Server server = new Server(PORT);
+		if (args.length != 1) {
+			throw new IllegalArgumentException("Expecting 1 argument.");
+		}
+
+		int port = Integer.parseInt(args[0]);
+		startServer(port);
+	}
+
+	private static void startServer(int port) {
+		Server server = new Server(port);
+
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServletHandler servletHandler = new ServletHandler();
-		servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/endpoint");
+		servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
 		server.setHandler(servletHandler);
 
 		try {
 			server.start();
-			LOGGER.info("Listening on port {}.", PORT);
+			LOGGER.info("Listening on port {}.", port);
 		} catch (Exception e) {
 			LOGGER.error("Unexpected error.", e);
 		}
 	}
 
 	@SuppressWarnings("serial")
-	private static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
+	public static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
 
 		@Override
 		protected void handleWebmention(@NotNull Webmention webmention) {
-			LOGGER.info("Received Webmention from source '{}' with target '{}'.",
-				webmention.source(),
+			LOGGER.info("Received Webmention from source '{}' with target '{}'.", webmention.source(),
 				webmention.target());
 		}
 	}

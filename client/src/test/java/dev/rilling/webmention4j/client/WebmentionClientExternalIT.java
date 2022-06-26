@@ -62,7 +62,7 @@ class WebmentionClientExternalIT {
 			"https://webmention.rocks/test/16",
 			"https://webmention.rocks/test/17",
 			"https://webmention.rocks/test/18",
-			// TODO: broken due to Link parser issue
+			// TODO: broken due to Link parser issue, see https://github.com/eclipse-ee4j/jersey/issues/3769
 			"https://webmention.rocks/test/19",
 			"https://webmention.rocks/test/20",
 			"https://webmention.rocks/test/21",

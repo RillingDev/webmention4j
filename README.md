@@ -21,7 +21,7 @@ The `example` module contains example applications that can be executed.
 Webmention client sending Webmention for `http://localhost:8080/somethingelse` being mentioned on `http://localhost:8080/blogpost`:
 
 ```shell
-java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionClientExample http://localhost:8080/somethingelse http://localhost:8080/blogpost
+java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionClientExample https://example.com/somethingelse https://example.org/blogpost
 ```
 
 #### Server Example
@@ -29,5 +29,5 @@ java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionC
 Webmention endpoint server that logs incoming Webmentions:
 
 ```shell
-java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionEndpointServletExample
+java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionEndpointServletExample 8080
 ```
