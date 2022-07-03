@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.client.WebmentionClient;
 import dev.rilling.webmention4j.common.Webmention;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,22 @@ import java.net.URI;
 
 final class WebmentionClientExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionClientExample.class);
+
+	private static final Option SOURCE = Option.builder()
+		.option("s")
+		.longOpt("source")
+		.hasArg(true)
+		.desc("Source URL.")
+		.required(true)
+		.build();
+	private static final Option TARGET = Option.builder()
+		.option("t")
+		.longOpt("target")
+		.hasArg(true)
+		.desc("Target URL.")
+		.required(true)
+		.build();
+	private static final Options OPTIONS = new Options().addOption(SOURCE).addOption(TARGET);
 
 	private WebmentionClientExample() {
 	}
@@ -24,16 +41,21 @@ final class WebmentionClientExample {
 	 * </ol>
 	 */
 	public static void main(String[] args) {
-		if (args.length != 2) {
-			throw new IllegalArgumentException("Expecting 2 arguments.");
+		CommandLine commandLine;
+		try {
+			commandLine = DefaultParser.builder().build().parse(OPTIONS, args);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Failed to parse arguments.", e);
 		}
 
-		URI source = URI.create(args[0]);
-		URI target = URI.create(args[1]);
-		sendWebmention(source, target);
+		URI source = URI.create(commandLine.getOptionValue(SOURCE));
+		URI target = URI.create(commandLine.getOptionValue(TARGET));
+
+		WebmentionClientExample webmentionClientExample = new WebmentionClientExample();
+		webmentionClientExample.sendWebmention(source, target);
 	}
 
-	private static void sendWebmention(URI source, URI target) {
+	private void sendWebmention(URI source, URI target) {
 		WebmentionClient webmentionClient = new WebmentionClient();
 		try {
 			if (!webmentionClient.supportsWebmention(target)) {
