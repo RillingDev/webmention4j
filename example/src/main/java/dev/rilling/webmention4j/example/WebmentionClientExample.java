@@ -2,16 +2,29 @@ package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.client.WebmentionClient;
 import dev.rilling.webmention4j.common.Webmention;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 
+import static dev.rilling.webmention4j.example.CliUtils.parseArgs;
+import static dev.rilling.webmention4j.example.CliUtils.printHelp;
+
 // TODO: Allow crawling all links in a page and send Webmention for them.
 public final class WebmentionClientExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionClientExample.class);
+
+	private static final Option HELP = Option.builder()
+		.option("h")
+		.longOpt("help")
+		.hasArg(false)
+		.desc("Shows this help text.")
+		.required(false)
+		.build();
 
 	private static final Option SOURCE = Option.builder()
 		.option("s")
@@ -27,7 +40,7 @@ public final class WebmentionClientExample {
 		.desc("Target URL.")
 		.required(true)
 		.build();
-	private static final Options OPTIONS = new Options().addOption(SOURCE).addOption(TARGET);
+	private static final Options OPTIONS = new Options().addOption(HELP).addOption(SOURCE).addOption(TARGET);
 
 	private WebmentionClientExample() {
 	}
@@ -35,18 +48,13 @@ public final class WebmentionClientExample {
 	/**
 	 * Sends a Webmention.
 	 * <p>
-	 * Arguments:
-	 * <ol>
-	 *     <li>Source URL.</li>
-	 *     <li>Target URL.</li>
-	 * </ol>
+	 * Call with `--help` for usage information.
 	 */
 	public static void main(String[] args) {
-		CommandLine commandLine;
-		try {
-			commandLine = DefaultParser.builder().build().parse(OPTIONS, args);
-		} catch (ParseException e) {
-			throw new IllegalArgumentException("Failed to parse arguments.", e);
+		CommandLine commandLine = parseArgs(args, OPTIONS);
+		if (commandLine.hasOption(HELP)) {
+			printHelp(OPTIONS);
+			return;
 		}
 
 		URI source = URI.create(commandLine.getOptionValue(SOURCE));
@@ -55,6 +63,7 @@ public final class WebmentionClientExample {
 		WebmentionClientExample webmentionClientExample = new WebmentionClientExample();
 		webmentionClientExample.sendWebmention(source, target);
 	}
+
 
 	private void sendWebmention(URI source, URI target) {
 		WebmentionClient webmentionClient = new WebmentionClient();
