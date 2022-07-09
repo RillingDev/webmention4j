@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
+import org.apache.commons.cli.*;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
@@ -13,6 +14,15 @@ import org.slf4j.LoggerFactory;
 
 public final class WebmentionEndpointServletExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
+
+	private static final Option PORT = Option.builder()
+		.option("p")
+		.longOpt("port")
+		.hasArg(true)
+		.desc("Port to listen on.")
+		.required(false)
+		.build();
+	private static final Options OPTIONS = new Options().addOption(PORT);
 
 	private WebmentionEndpointServletExample() {
 	}
@@ -30,11 +40,14 @@ public final class WebmentionEndpointServletExample {
 	 * Instead, a reverse proxy should be used that directs only HTTP traffic for the POST method to it.
 	 */
 	public static void main(String[] args) {
-		if (args.length != 1) {
-			throw new IllegalArgumentException("Expecting 1 argument.");
+		CommandLine commandLine;
+		try {
+			commandLine = DefaultParser.builder().build().parse(OPTIONS, args);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Failed to parse arguments.", e);
 		}
 
-		int port = Integer.parseInt(args[0]);
+		int port = Integer.parseInt(commandLine.getOptionValue(PORT, "8080"));
 		startServer(port);
 	}
 
