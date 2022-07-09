@@ -9,7 +9,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 
-final class WebmentionClientExample {
+// TODO: Allow crawling all links in a page and send Webmention for them.
+public final class WebmentionClientExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionClientExample.class);
 
 	private static final Option SOURCE = Option.builder()
