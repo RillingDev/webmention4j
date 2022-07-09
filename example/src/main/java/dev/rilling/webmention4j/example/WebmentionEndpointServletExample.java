@@ -14,11 +14,16 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+
 import static dev.rilling.webmention4j.example.CliUtils.parseArgs;
 import static dev.rilling.webmention4j.example.CliUtils.printHelp;
 
 public final class WebmentionEndpointServletExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionEndpointServletExample.class);
+
+	private static final int DEFAULT_PORT = 8080;
+	private static final String DEFAULT_ADDRESS = "0.0.0.0";
 
 	private static final Option HELP = Option.builder()
 		.option("h")
@@ -27,14 +32,21 @@ public final class WebmentionEndpointServletExample {
 		.desc("Shows this help text.")
 		.build();
 
+	private static final Option ADDRESS = Option.builder()
+		.option("a")
+		.longOpt("address")
+		.hasArg(true)
+		.desc("Address to listen on. Defaults to '%s'.".formatted(DEFAULT_ADDRESS))
+		.build();
+
 	private static final Option PORT = Option.builder()
 		.option("p")
 		.longOpt("port")
 		.hasArg(true)
-		.desc("Port to listen on.")
+		.desc("Port to listen on. Defaults to '%s'.".formatted(DEFAULT_PORT))
 		.build();
 
-	private static final Options OPTIONS = new Options().addOption(HELP).addOption(PORT);
+	private static final Options OPTIONS = new Options().addOption(HELP).addOption(ADDRESS).addOption(PORT);
 
 	private WebmentionEndpointServletExample() {
 	}
@@ -55,14 +67,15 @@ public final class WebmentionEndpointServletExample {
 			return;
 		}
 
-		int port = Integer.parseInt(commandLine.getOptionValue(PORT, "8080"));
+		String address = commandLine.getOptionValue(ADDRESS, DEFAULT_ADDRESS);
+		int port = Integer.parseInt(commandLine.getOptionValue(PORT, String.valueOf(DEFAULT_PORT)));
 
 		WebmentionEndpointServletExample servletExample = new WebmentionEndpointServletExample();
-		servletExample.startServer(port);
+		servletExample.startServer(new InetSocketAddress(address, port));
 	}
 
-	private void startServer(int port) {
-		Server server = new Server(port);
+	private void startServer(InetSocketAddress socketAddress) {
+		Server server = new Server(socketAddress);
 
 		server.setErrorHandler(createErrorHandler());
 
@@ -74,7 +87,7 @@ public final class WebmentionEndpointServletExample {
 
 		try {
 			server.start();
-			LOGGER.info("Listening on port {}.", port);
+			LOGGER.info("Listening on '{}'.", socketAddress);
 		} catch (Exception e) {
 			LOGGER.error("Unexpected error.", e);
 		}
