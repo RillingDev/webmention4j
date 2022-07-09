@@ -35,10 +35,10 @@ public class HtmlVerifier implements Verifier {
 
 	private static class HtmlLinkEvaluator extends Evaluator {
 		@NotNull
-		private final String sourceUriString;
+		private final String targetUriString;
 
-		HtmlLinkEvaluator(@NotNull URI source) {
-			sourceUriString = source.toString();
+		HtmlLinkEvaluator(@NotNull URI target) {
+			targetUriString = target.toString();
 		}
 
 		@Override
@@ -50,8 +50,8 @@ public class HtmlVerifier implements Verifier {
 			 */
 			// Note: The spec does state 'exact match', so strict equality is used rather than resolving the URLs.
 			return switch (element.normalName()) {
-				case "a" -> sourceUriString.equals(element.attr("href"));
-				case "img", "video", "audio" -> sourceUriString.equals(element.attr("src"));
+				case "a" -> targetUriString.equals(element.attr("href"));
+				case "img", "video", "audio" -> targetUriString.equals(element.attr("src"));
 				default -> false;
 			};
 		}
