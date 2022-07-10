@@ -46,13 +46,16 @@ class HttpUtilsTest {
 	@DisplayName("#validateResponse throws on error")
 	void validateResponseError() throws IOException {
 		try (ClassicHttpResponse notFoundResponse = new BasicClassicHttpResponse(HttpStatus.SC_NOT_FOUND)) {
-			assertThatThrownBy(() -> validateResponse(notFoundResponse)).isInstanceOf(IOException.class)
-				.hasMessage("Request failed: 404 - Not Found.");
+			assertThatThrownBy(() -> validateResponse(notFoundResponse)).isInstanceOf(IOException.class).hasMessage("""
+				Request failed: 404 - Not Found:
+				<no body>""");
 		}
 
 		try (ClassicHttpResponse internalErrorResponse = new BasicClassicHttpResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR)) {
 			assertThatThrownBy(() -> validateResponse(internalErrorResponse)).isInstanceOf(IOException.class)
-				.hasMessage("Request failed: 500 - Internal Server Error.");
+				.hasMessage("""
+					Request failed: 500 - Internal Server Error:
+					<no body>""");
 		}
 	}
 

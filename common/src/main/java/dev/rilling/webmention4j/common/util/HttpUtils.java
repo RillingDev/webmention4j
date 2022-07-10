@@ -27,15 +27,22 @@ public final class HttpUtils {
 	 */
 	public static void validateResponse(@NotNull ClassicHttpResponse response) throws IOException {
 		if (!isSuccessful(response.getCode())) {
-			String body;
-			try {
-				body = EntityUtils.toString(response.getEntity());
-			} catch (ParseException ignored) {
-				body = "(body omitted)";
-			}
+			String body = extractBody(response);
 			throw new IOException("Request failed: %d - %s:%n%s".formatted(response.getCode(),
 				response.getReasonPhrase(),
 				body));
+		}
+	}
+
+	@NotNull
+	private static String extractBody(@NotNull ClassicHttpResponse response) throws IOException {
+		if (response.getEntity() == null) {
+			return "<no body>";
+		}
+		try {
+			return EntityUtils.toString(response.getEntity());
+		} catch (ParseException ignored) {
+			return "<parsing of body failed>";
 		}
 	}
 
