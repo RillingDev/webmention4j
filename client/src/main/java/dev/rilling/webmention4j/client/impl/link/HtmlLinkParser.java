@@ -1,14 +1,9 @@
 package dev.rilling.webmention4j.client.impl.link;
 
-import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.common.util.HtmlUtils;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,20 +24,14 @@ public final class HtmlLinkParser implements LinkParser {
 
 	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
 		throws IOException {
-		if (!isHtml(httpResponse)) {
+		if (!HtmlUtils.isHtml(httpResponse)) {
 			return List.of();
 		}
 
-		String body;
-		try {
-			body = EntityUtils.toString(httpResponse.getEntity());
-		} catch (ParseException e) {
-			throw new IOException("Could not parse body.", e);
-		}
-
-		Document document = Jsoup.parse(body, location.toString());
+		Document document = HtmlUtils.parse(httpResponse);
 		Elements linkElements = document.select(LINK_ELEMENT_EVALUATOR);
 
+		//	TODO: is location really equal to the response location?
 		try {
 			return linkElements.stream()
 				.map(element -> RuntimeDelegate.getInstance()
@@ -56,12 +45,6 @@ public final class HtmlLinkParser implements LinkParser {
 		} catch (Exception e) {
 			throw new IOException("Could not parse link(s) in HTML.", e);
 		}
-	}
-
-	private boolean isHtml(@NotNull HttpResponse httpResponse) {
-		return HttpUtils.extractContentType(httpResponse)
-			.map(contentType -> contentType.isSameMimeType(ContentType.TEXT_HTML))
-			.orElse(false);
 	}
 
 	private static class LinkElementEvaluator extends Evaluator {

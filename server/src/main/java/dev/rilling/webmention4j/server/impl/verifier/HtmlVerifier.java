@@ -1,12 +1,9 @@
 package dev.rilling.webmention4j.server.impl.verifier;
 
+import dev.rilling.webmention4j.common.util.HtmlUtils;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Evaluator;
 
@@ -23,14 +20,7 @@ public class HtmlVerifier implements Verifier {
 
 	@Override
 	public boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException {
-		Document document;
-		try {
-			String body = EntityUtils.toString(httpResponse.getEntity());
-			document = Jsoup.parse(body, target.toString());
-		} catch (ParseException e) {
-			throw new IOException("Could not parse body.", e);
-		}
-		return document.selectFirst(new HtmlLinkEvaluator(target)) != null;
+		return HtmlUtils.parse(httpResponse).selectFirst(new HtmlLinkEvaluator(target)) != null;
 	}
 
 	private static class HtmlLinkEvaluator extends Evaluator {
