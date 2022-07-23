@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 
 public final class UriUtils {
+
 	private UriUtils() {
 	}
 
@@ -16,5 +17,12 @@ public final class UriUtils {
 	public static boolean isLocalhost(@NotNull URI uri) throws UnknownHostException {
 		// Handles 'localhost' check internally.
 		return InetAddress.getByName(uri.getHost()).isLoopbackAddress();
+	}
+
+	/**
+	 * Checks if the URL is HTTP or HTTPS.
+	 */
+	public static boolean isHttp(@NotNull URI uri) {
+		return "http".equals(uri.getScheme()) || "https".equals(uri.getScheme());
 	}
 }

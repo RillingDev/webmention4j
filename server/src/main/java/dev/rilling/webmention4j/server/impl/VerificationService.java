@@ -2,6 +2,7 @@ package dev.rilling.webmention4j.server.impl;
 
 import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.common.util.UriUtils;
 import dev.rilling.webmention4j.server.impl.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
@@ -16,13 +17,10 @@ import java.io.Serial;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class VerificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VerificationService.class);
-
-	private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
 
 	@NotNull
 	private final List<Verifier> verifiers;
@@ -35,7 +33,7 @@ public class VerificationService {
 	 * Checks if the URLs scheme allows for validation.
 	 */
 	public boolean isUriSchemeSupported(@NotNull URI uri) {
-		return uri.getScheme() != null && SUPPORTED_SCHEMES.contains(uri.getScheme());
+		return UriUtils.isHttp(uri);
 	}
 
 	/**
