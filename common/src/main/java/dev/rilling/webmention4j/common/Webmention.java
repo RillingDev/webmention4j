@@ -19,4 +19,11 @@ import java.net.URI;
  * @param target Page being mentioned. May not be the same as source.
  */
 public record Webmention(@NotNull URI source, @NotNull URI target) {
+	public Webmention(@NotNull URI source, @NotNull URI target) {
+		if (source.equals(target)) {
+			throw new IllegalArgumentException("Source and target URL must not be identical.");
+		}
+		this.source = source;
+		this.target = target;
+	}
 }
