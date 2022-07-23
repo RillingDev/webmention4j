@@ -104,7 +104,9 @@ public final class WebmentionClientExample {
 				LOGGER.info("Skipping link '{}' due to unsupported scheme.", target);
 				continue;
 			}
+
 			// TODO: check for same host
+
 			sendWebmention(source, target);
 		}
 	}
@@ -120,7 +122,7 @@ public final class WebmentionClientExample {
 			}
 			return HtmlUtils.parse(response);
 		} catch (IOException e) {
-			throw new IllegalStateException("Could not crawl URL", e);
+			throw new IllegalStateException("Could not crawl URL.", e);
 		}
 	}
 
