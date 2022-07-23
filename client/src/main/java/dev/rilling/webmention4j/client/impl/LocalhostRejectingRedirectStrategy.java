@@ -1,6 +1,6 @@
 package dev.rilling.webmention4j.client.impl;
 
-import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.common.util.UriUtils;
 import org.apache.hc.client5.http.RedirectException;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.core5.http.HttpException;
@@ -38,7 +38,7 @@ public class LocalhostRejectingRedirectStrategy extends DefaultRedirectStrategy 
 	private boolean isLocalhostRedirect(HttpRequest request, HttpResponse response, HttpContext context)
 		throws ProtocolException {
 		try {
-			return HttpUtils.isLocalhost(getLocationURI(request, response, context));
+			return UriUtils.isLocalhost(getLocationURI(request, response, context));
 		} catch (UnknownHostException | HttpException e) {
 			throw new ProtocolException("Failed to check redirect location.", e);
 		}

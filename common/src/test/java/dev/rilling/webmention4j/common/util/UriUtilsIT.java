@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static dev.rilling.webmention4j.common.util.HttpUtils.isLocalhost;
+import static dev.rilling.webmention4j.common.util.UriUtils.isLocalhost;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class HttpUtilsIT {
+class UriUtilsIT {
 
 	@Test
 	@DisplayName("#isLocalhost returns true for localhost")

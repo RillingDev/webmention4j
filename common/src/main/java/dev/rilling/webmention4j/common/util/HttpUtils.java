@@ -5,10 +5,8 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.Optional;
 
 public final class HttpUtils {
@@ -92,14 +90,6 @@ public final class HttpUtils {
 			return "0.0.0-development";
 		}
 		return implementationPackage.getImplementationVersion();
-	}
-
-	/**
-	 * @return if the given URL is localhost or a loopback IP address.
-	 */
-	public static boolean isLocalhost(@NotNull URI uri) throws UnknownHostException {
-		// Handles 'localhost' check internally.
-		return InetAddress.getByName(uri.getHost()).isLoopbackAddress();
 	}
 
 }

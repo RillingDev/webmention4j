@@ -7,6 +7,7 @@ import dev.rilling.webmention4j.client.impl.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.impl.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.common.util.UriUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -91,7 +92,7 @@ public final class WebmentionClient {
 		 *
 		 * Note that this is check needs to also be done following redirects (see #createDefaultHttpClient).
 		 */
-		if (!config.isAllowLocalhostEndpoint() && HttpUtils.isLocalhost(endpoint)) {
+		if (!config.isAllowLocalhostEndpoint() && UriUtils.isLocalhost(endpoint)) {
 			throw new IOException(("Endpoint '%s' is localhost or a loopback IP address, refusing to notify.").formatted(
 				endpoint));
 		}
