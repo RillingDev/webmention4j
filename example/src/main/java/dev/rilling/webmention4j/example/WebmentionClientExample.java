@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import static dev.rilling.webmention4j.example.CliUtils.parseArgs;
 import static dev.rilling.webmention4j.example.CliUtils.printHelp;
 
-// TODO: Allow crawling all links in a page and send Webmention for them.
 public final class WebmentionClientExample {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebmentionClientExample.class);
 
@@ -38,7 +37,12 @@ public final class WebmentionClientExample {
 		.build();
 
 	private static final Option SOURCE = Option.builder()
-		.option("s").longOpt("source").hasArg(true).desc("Source URL.").required(true).build();
+		.option("s")
+		.longOpt("source")
+		.hasArg(true)
+		.desc("Source URL.")
+		.required(true)
+		.build();
 	private static final Option TARGET = Option.builder()
 		.option("t")
 		.longOpt("target")
@@ -46,6 +50,7 @@ public final class WebmentionClientExample {
 		.desc("Target URL.")
 		.required(false)
 		.build();
+
 	private static final Option CRAWL = Option.builder()
 		.option("c")
 		.longOpt("crawl")
@@ -53,10 +58,20 @@ public final class WebmentionClientExample {
 		.desc("Specifies that the source URL should be crawled and Webmentions should be sent for its links.")
 		.required(false)
 		.build();
+	private static final Option SKIP_IDENTICAL_HOST = Option.builder()
+		.option("sih")
+		.longOpt("skip-identical-host")
+		.hasArg(false)
+		.desc("When used with '--%s', do not sent Webmention for links where the host is the same as the current one.".formatted(
+			CRAWL.getLongOpt()))
+		.required(false)
+		.build();
+
 	private static final Options OPTIONS = new Options().addOption(HELP)
 		.addOption(SOURCE)
 		.addOption(TARGET)
-		.addOption(CRAWL);
+		.addOption(CRAWL)
+		.addOption(SKIP_IDENTICAL_HOST);
 
 	private WebmentionClientExample() {
 	}
@@ -77,7 +92,7 @@ public final class WebmentionClientExample {
 
 		WebmentionClientExample webmentionClientExample = new WebmentionClientExample();
 		if (commandLine.hasOption(CRAWL)) {
-			webmentionClientExample.sendWebmentionForLinked(source);
+			webmentionClientExample.sendWebmentionForLinked(source, commandLine.hasOption(SKIP_IDENTICAL_HOST));
 		} else if (commandLine.hasOption(TARGET)) {
 			URI target = URI.create(commandLine.getOptionValue(TARGET));
 			webmentionClientExample.sendWebmention(source, target);
@@ -87,7 +102,7 @@ public final class WebmentionClientExample {
 		}
 	}
 
-	private void sendWebmentionForLinked(@NotNull URI source) {
+	private void sendWebmentionForLinked(@NotNull URI source, boolean skipIdenticalHost) {
 		Document sourceDocument = readSourceDocument(source);
 		for (Element element : sourceDocument.select(new HtmlUtils.LinkLikeElementEvaluator())) {
 			URI target;
@@ -105,7 +120,10 @@ public final class WebmentionClientExample {
 				continue;
 			}
 
-			// TODO: check for same host
+			if (skipIdenticalHost && target.getHost().equals(source.getHost())) {
+				LOGGER.info("Skipping link '{}' due having the same host as source.", target);
+				continue;
+			}
 
 			sendWebmention(source, target);
 		}
@@ -136,15 +154,16 @@ public final class WebmentionClientExample {
 
 
 	private void sendWebmention(@NotNull URI source, @NotNull URI target) {
+		Webmention webmention = new Webmention(source, target);
 		WebmentionClient webmentionClient = new WebmentionClient();
-		LOGGER.info("Sending webmention with source '{}' and target '{}'.", source, target);
+		LOGGER.info("Sending Webmention '{}'.", webmention);
 		try {
 			if (!webmentionClient.supportsWebmention(target)) {
 				LOGGER.info("No endpoint found for target URL.");
 				return;
 			}
 
-			webmentionClient.sendWebmention(new Webmention(source, target));
+			webmentionClient.sendWebmention(webmention);
 			LOGGER.info("Success!");
 		} catch (IOException e) {
 			LOGGER.error("Unhandled error.", e);
