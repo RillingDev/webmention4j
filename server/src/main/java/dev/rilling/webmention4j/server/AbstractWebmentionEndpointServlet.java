@@ -108,7 +108,9 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 		LOGGER.debug("Received Webmention request '{}'.", webmention);
 
-		// TODO: perform check async
+		// We could perform the verification asynchronously, but this does not seem as important in when servlets
+		// handle requests with one thread each anyways.
+
 		/*
 		 * Spec:
 		 * 'If the receiver is going to use the Webmention in some way, (displaying it as a comment on a post,

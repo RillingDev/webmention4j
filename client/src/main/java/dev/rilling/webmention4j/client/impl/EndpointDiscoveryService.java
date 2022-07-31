@@ -52,6 +52,8 @@ public final class EndpointDiscoveryService {
 	@NotNull
 	public Optional<URI> discoverEndpoint(@NotNull CloseableHttpClient httpClient, @NotNull URI target)
 		throws IOException {
+		// We could make a HEAD request beforehand, but this is not required.
+
 		// Spec: 'The sender MUST fetch the target URL'
 		ClassicHttpRequest request = ClassicRequestBuilder.get(target).build();
 
@@ -65,8 +67,6 @@ public final class EndpointDiscoveryService {
 	private Optional<URI> discoverEndpoint(@NotNull URI target, @NotNull ClassicHttpResponse response)
 		throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
-
-		// TODO: make HEAD request.
 
 		HttpUtils.validateResponse(response);
 

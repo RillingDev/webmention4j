@@ -55,8 +55,6 @@ public final class WebmentionClient {
 		this.httpClientFactory = httpClientFactory;
 	}
 
-	// TODO: support async requests
-
 	/**
 	 * Checks if a Webmention endpoint exists for this target URL.
 	 *
