@@ -107,6 +107,7 @@ public final class EndpointDiscoveryService {
 		 * 'The endpoint MAY contain query string parameters, which MUST be preserved as query string parameters
 		 *  and MUST NOT be sent as POST body parameters when sending the Webmention request.'
 		 */
+		// TODO: is `target` really equal to the response location? e.g. with redirects
 		return linkParser.parse(target, httpResponse)
 			.stream()
 			.filter(link -> link.rel().contains("webmention"))

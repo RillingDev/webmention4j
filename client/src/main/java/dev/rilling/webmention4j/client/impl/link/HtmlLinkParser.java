@@ -31,7 +31,6 @@ public final class HtmlLinkParser implements LinkParser {
 		Document document = HtmlUtils.parse(httpResponse);
 		Elements linkElements = document.select(LINK_ELEMENT_EVALUATOR);
 
-		//	TODO: is location really equal to the response location?
 		try {
 			return linkElements.stream()
 				.map(element -> RuntimeDelegate.getInstance()
