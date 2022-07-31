@@ -58,6 +58,7 @@ public final class WebmentionClientExample {
 		.desc("Specifies that the source URL should be crawled and Webmentions should be sent for its links.")
 		.required(false)
 		.build();
+	// TODO: invert this
 	private static final Option SKIP_IDENTICAL_HOST = Option.builder()
 		.option("sih")
 		.longOpt("skip-identical-host")
@@ -112,6 +113,7 @@ public final class WebmentionClientExample {
 				throw new IllegalStateException("Encountered illegal link.", e);
 			}
 
+			// TODO: check this
 			// Resolve any relative links so we have a full URI.
 			target = source.resolve(target);
 

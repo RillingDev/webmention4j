@@ -92,6 +92,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	/**
 	 * Allows servlet consumer to react to a successfully accepted Webmention.
+	 * As this is performed during the request processing, long running tasks here should be avoided.
 	 *
 	 * @param webmention The received Webmention.
 	 */
