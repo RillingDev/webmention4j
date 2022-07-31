@@ -10,7 +10,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,6 @@ public final class WebmentionEndpointServletExample {
 		.hasArg(true)
 		.desc("Address to listen on. Defaults to '%s'.".formatted(DEFAULT_ADDRESS))
 		.build();
-
 	private static final Option PORT = Option.builder()
 		.option("p")
 		.longOpt("port")
@@ -46,7 +47,18 @@ public final class WebmentionEndpointServletExample {
 		.desc("Port to listen on. Defaults to '%s'.".formatted(DEFAULT_PORT))
 		.build();
 
-	private static final Options OPTIONS = new Options().addOption(HELP).addOption(ADDRESS).addOption(PORT);
+	private static final Option VALID_HOSTS = Option.builder()
+		.option("vh")
+		.longOpt("valid-hosts")
+		.hasArg(true)
+		.desc("Comma-separated list of target hosts to receive Webmentions for. " +
+			"If not set, Webmentions are received regardless of target host.")
+		.build();
+
+	private static final Options OPTIONS = new Options().addOption(HELP)
+		.addOption(ADDRESS)
+		.addOption(PORT)
+		.addOption(VALID_HOSTS);
 
 	private WebmentionEndpointServletExample() {
 	}
@@ -69,12 +81,15 @@ public final class WebmentionEndpointServletExample {
 
 		String address = commandLine.getOptionValue(ADDRESS, DEFAULT_ADDRESS);
 		int port = Integer.parseInt(commandLine.getOptionValue(PORT, String.valueOf(DEFAULT_PORT)));
+		InetSocketAddress socketAddress = new InetSocketAddress(address, port);
+
+		@Nullable String validHosts = commandLine.getOptionValue(VALID_HOSTS);
 
 		WebmentionEndpointServletExample servletExample = new WebmentionEndpointServletExample();
-		servletExample.startServer(new InetSocketAddress(address, port));
+		servletExample.startServer(socketAddress, validHosts);
 	}
 
-	private void startServer(InetSocketAddress socketAddress) {
+	private void startServer(InetSocketAddress socketAddress, String validHosts) {
 		Server server = new Server(socketAddress);
 
 		server.setErrorHandler(createErrorHandler());
@@ -82,7 +97,8 @@ public final class WebmentionEndpointServletExample {
 		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServletHandler servletHandler = new ServletHandler();
-		servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
+		ServletHolder servletHolder = servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
+		servletHolder.setInitParameter("validHosts", validHosts);
 		server.setHandler(servletHandler);
 
 		try {
@@ -106,9 +122,7 @@ public final class WebmentionEndpointServletExample {
 
 		@Override
 		protected void handleWebmention(@NotNull Webmention webmention) {
-			LOGGER.info("Received Webmention from source '{}' with target '{}'.",
-				webmention.source(),
-				webmention.target());
+			LOGGER.info("Received Webmention '{}'.", webmention);
 		}
 	}
 

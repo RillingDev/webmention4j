@@ -15,6 +15,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,11 +23,20 @@ import java.io.IOException;
 import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Servlet handling receiving Webmentions.
+ * <p>
+ * Init parameters:
+ * <ul>
+ *     <li>{@code validHosts}: Comma-separated list of target hosts to receive Webmentions for. If not set, Webmentions
+ *     are received regardless of target host.</li>
+ * </ul>
  * <p>
  * Serialization of this servlet is NOT supported.
  */
@@ -43,6 +53,9 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	private CloseableHttpClient httpClient;
 
+	@Nullable
+	private Set<String> validHosts;
+
 	protected AbstractWebmentionEndpointServlet() {
 		this(AbstractWebmentionEndpointServlet::createDefaultHttpClient,
 			new VerificationService(List.of(new HtmlVerifier(), new TextVerifier(), new JsonVerifier())));
@@ -57,6 +70,11 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+
+		String validHostsParam = config.getInitParameter("validHosts");
+		if (validHostsParam != null) {
+			validHosts = Arrays.stream(validHostsParam.split(",")).collect(Collectors.toUnmodifiableSet());
+		}
 
 		httpClient = httpClientFactory.get();
 	}
@@ -104,10 +122,19 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		}
 
 		Webmention webmention = extractWebmention(req);
+		LOGGER.debug("Processing Webmention '{}'.", webmention);
 
-		// TODO: allow configuration of allowed target URI hosts.
-
-		LOGGER.debug("Received Webmention request '{}'.", webmention);
+		/*
+		 * Spec:
+		 * 'The receiver SHOULD check that target is a valid resource for which it can accept Webmentions.
+		 *  This check SHOULD happen synchronously to reject invalid Webmentions before more in-depth verification begins.
+		 *  What a "valid resource" means is up to the receiver.
+		 *  For example, some receivers may accept Webmentions for multiple domains,
+		 *  others may accept Webmentions for only the same domain the endpoint is on.'
+		 */
+		if (validHosts != null && !validHosts.contains(webmention.target().getHost())) {
+			throw new BadRequestException("The webmention target is not valid for this endpoint.");
+		}
 
 		// We could perform the verification asynchronously, but this does not seem as important in when servlets
 		// handle requests with one thread each anyways.
@@ -120,7 +147,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 */
 		try {
 			if (verificationService.isWebmentionValid(httpClient, webmention)) {
-				LOGGER.debug("Webmention request '{}' passed verification.", webmention);
+				LOGGER.debug("Webmention '{}' passed verification.", webmention);
 			} else {
 				throw new BadRequestException("Source does not contain link to target URL.");
 			}
