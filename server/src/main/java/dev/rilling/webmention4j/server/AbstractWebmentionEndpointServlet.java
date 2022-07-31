@@ -133,7 +133,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		 *  others may accept Webmentions for only the same domain the endpoint is on.'
 		 */
 		if (validHosts != null && !validHosts.contains(webmention.target().getHost())) {
-			throw new BadRequestException("The webmention target is not valid for this endpoint.");
+			throw new BadRequestException("This Webmention target is not valid for this endpoint.");
 		}
 
 		// We could perform the verification asynchronously, but this does not seem as important in when servlets
