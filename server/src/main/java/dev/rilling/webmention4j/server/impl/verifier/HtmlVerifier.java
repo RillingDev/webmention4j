@@ -26,7 +26,6 @@ public class HtmlVerifier implements Verifier {
 			 *  <video src="*"> and other similar links.'
 			 */.select(new LinkLikeElementEvaluator()).stream().map(LinkLikeElementEvaluator::getLink)
 			// Note: The spec does state 'exact match', so strict equality is used rather than resolving the URLs.
-			// TODO: maybe comparing resolved/parsed URIs would make more sense
 			.anyMatch(link -> target.toString().equals(link));
 	}
 

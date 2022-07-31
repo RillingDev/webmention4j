@@ -58,13 +58,12 @@ public final class WebmentionClientExample {
 		.desc("Specifies that the source URL should be crawled and Webmentions should be sent for its links.")
 		.required(false)
 		.build();
-	// TODO: invert this
-	private static final Option SKIP_IDENTICAL_HOST = Option.builder()
-		.option("sih")
-		.longOpt("skip-identical-host")
+	private static final Option INCLUDE_IDENTICAL_HOST = Option.builder()
+		.option("iih")
+		.longOpt("include-identical-host")
 		.hasArg(false)
-		.desc("When used with '--%s', do not sent Webmention for links where the host is the same as the current one.".formatted(
-			CRAWL.getLongOpt()))
+		.desc(("When used with '--%s', send Webmention for links where the host is the same as the current one." +
+			" If omitted, these are skipped.").formatted(CRAWL.getLongOpt()))
 		.required(false)
 		.build();
 
@@ -72,7 +71,7 @@ public final class WebmentionClientExample {
 		.addOption(SOURCE)
 		.addOption(TARGET)
 		.addOption(CRAWL)
-		.addOption(SKIP_IDENTICAL_HOST);
+		.addOption(INCLUDE_IDENTICAL_HOST);
 
 	private WebmentionClientExample() {
 	}
@@ -93,7 +92,7 @@ public final class WebmentionClientExample {
 
 		WebmentionClientExample webmentionClientExample = new WebmentionClientExample();
 		if (commandLine.hasOption(CRAWL)) {
-			webmentionClientExample.sendWebmentionForLinked(source, commandLine.hasOption(SKIP_IDENTICAL_HOST));
+			webmentionClientExample.sendWebmentionForLinked(source, commandLine.hasOption(INCLUDE_IDENTICAL_HOST));
 		} else if (commandLine.hasOption(TARGET)) {
 			URI target = URI.create(commandLine.getOptionValue(TARGET));
 			webmentionClientExample.sendWebmention(source, target);
@@ -103,27 +102,25 @@ public final class WebmentionClientExample {
 		}
 	}
 
-	private void sendWebmentionForLinked(@NotNull URI source, boolean skipIdenticalHost) {
+	private void sendWebmentionForLinked(@NotNull URI source, boolean includeIdenticalHost) {
 		Document sourceDocument = readSourceDocument(source);
 		for (Element element : sourceDocument.select(new HtmlUtils.LinkLikeElementEvaluator())) {
 			URI target;
+			String linkStr = HtmlUtils.LinkLikeElementEvaluator.getLink(element);
 			try {
-				target = new URI(HtmlUtils.LinkLikeElementEvaluator.getLink(element));
+				target = new URI(linkStr);
 			} catch (URISyntaxException e) {
-				throw new IllegalStateException("Encountered illegal link.", e);
-			}
-
-			// TODO: check this
-			// Resolve any relative links so we have a full URI.
-			target = source.resolve(target);
-
-			if (!UriUtils.isHttp(target)) {
-				LOGGER.info("Skipping link '{}' due to unsupported scheme.", target);
+				LOGGER.warn("Skipping link '{}' due to invalid syntax.", linkStr, e);
 				continue;
 			}
 
-			if (skipIdenticalHost && target.getHost().equals(source.getHost())) {
+			if (!includeIdenticalHost && (!target.isAbsolute() || target.getHost().equals(source.getHost()))) {
 				LOGGER.info("Skipping link '{}' due having the same host as source.", target);
+				continue;
+			}
+
+			if (!UriUtils.isHttp(target)) {
+				LOGGER.info("Skipping link '{}' due to unsupported scheme '{}'.", target, target.getScheme());
 				continue;
 			}
 
