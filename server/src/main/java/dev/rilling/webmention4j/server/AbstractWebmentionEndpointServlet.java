@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * Servlet handling receiving Webmentions.
+ * Subclass this to handle successful Webmentions in {@link #handleWebmention(Webmention)}.
  * <p>
  * Init parameters:
  * <ul>

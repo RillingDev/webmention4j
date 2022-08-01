@@ -18,6 +18,9 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Client that allows for Webmention sending and Webmention endpoint discovery.
+ */
 // Spec: '3.1 Sending Webmentions'
 public final class WebmentionClient {
 	private final EndpointDiscoveryService endpointDiscoveryService;
@@ -39,10 +42,7 @@ public final class WebmentionClient {
 	 * @param config Custom configuration.
 	 */
 	public WebmentionClient(@NotNull Config config) {
-		this(new Config(config),
-			WebmentionClient::createDefaultHttpClient,
-			new EndpointService(),
-			new EndpointDiscoveryService(new HeaderLinkParser(), new HtmlLinkParser()));
+		this(new Config(config), WebmentionClient::createDefaultHttpClient, new EndpointService(), new EndpointDiscoveryService(new HeaderLinkParser(), new HtmlLinkParser()));
 	}
 
 	WebmentionClient(@NotNull Config config,
@@ -68,10 +68,10 @@ public final class WebmentionClient {
 	}
 
 	/**
-	 * Notifies the target page that it was mention by the source page.
+	 * Notifies the target page that it was mentioned by the source page.
 	 *
 	 * @param webmention Webmention to send.
-	 * @return URL to use to monitor request status (if supported by the endpoint server).
+	 * @return URL to use to monitor request status, if supported by the endpoint.
 	 * @throws IOException if I/O fails.
 	 */
 	@NotNull
@@ -79,8 +79,7 @@ public final class WebmentionClient {
 		URI endpoint;
 		try (CloseableHttpClient httpClient = httpClientFactory.create(true)) {
 			// Spec: '3.1.2 Sender discovers receiver Webmention endpoint'
-			endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, webmention.target())
-				.orElseThrow(() -> new IOException("Could not find any webmention endpoint URL in the target resource."));
+			endpoint = endpointDiscoveryService.discoverEndpoint(httpClient, webmention.target()).orElseThrow(() -> new IOException("Could not find any webmention endpoint URL in the target resource."));
 		}
 
 		/*
@@ -186,8 +185,7 @@ public final class WebmentionClient {
 			 */
 			builder.setRedirectStrategy(new LocalhostRejectingRedirectStrategy());
 		}
-		return builder.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client",
-			WebmentionClient.class.getPackage())).build();
+		return builder.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client", WebmentionClient.class.getPackage())).build();
 	}
 
 }
