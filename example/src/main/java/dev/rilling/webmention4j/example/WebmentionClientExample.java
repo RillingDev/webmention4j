@@ -67,13 +67,28 @@ public final class WebmentionClientExample {
 		.required(false)
 		.build();
 
+
+	private static final Option ALLOW_LOCALHOST_ENDPOINT = Option.builder()
+		.option("ale")
+		.longOpt("allow-localhost-endpoint")
+		.hasArg(false)
+		.desc(
+			"Configures if the client should send Webmentions to an endpoint that is localhost or a loopback IP address." +
+				" If omitted, these are ignored.")
+		.required(false)
+		.build();
+
 	private static final Options OPTIONS = new Options().addOption(HELP)
 		.addOption(SOURCE)
 		.addOption(TARGET)
 		.addOption(CRAWL)
-		.addOption(INCLUDE_IDENTICAL_HOST);
+		.addOption(INCLUDE_IDENTICAL_HOST)
+		.addOption(ALLOW_LOCALHOST_ENDPOINT);
 
-	private WebmentionClientExample() {
+	private final WebmentionClient webmentionClient;
+
+	private WebmentionClientExample(WebmentionClient.Config config) {
+		webmentionClient = new WebmentionClient(config);
 	}
 
 	/**
@@ -90,7 +105,12 @@ public final class WebmentionClientExample {
 
 		URI source = URI.create(commandLine.getOptionValue(SOURCE));
 
-		WebmentionClientExample webmentionClientExample = new WebmentionClientExample();
+		WebmentionClient.Config config = new WebmentionClient.Config();
+		if (commandLine.hasOption(ALLOW_LOCALHOST_ENDPOINT)) {
+			config.setAllowLocalhostEndpoint(true);
+		}
+		WebmentionClientExample webmentionClientExample = new WebmentionClientExample(config);
+
 		if (commandLine.hasOption(CRAWL)) {
 			webmentionClientExample.sendWebmentionForLinked(source, commandLine.hasOption(INCLUDE_IDENTICAL_HOST));
 		} else if (commandLine.hasOption(TARGET)) {
@@ -154,7 +174,6 @@ public final class WebmentionClientExample {
 
 	private void sendWebmention(@NotNull URI source, @NotNull URI target) {
 		Webmention webmention = new Webmention(source, target);
-		WebmentionClient webmentionClient = new WebmentionClient();
 		LOGGER.info("Sending Webmention '{}'.", webmention);
 		try {
 			if (!webmentionClient.supportsWebmention(target)) {
