@@ -4,7 +4,7 @@ import dev.rilling.webmention4j.client.internal.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.internal.link.HtmlLinkParser;
 import dev.rilling.webmention4j.client.internal.link.Link;
 import dev.rilling.webmention4j.client.internal.link.LinkParser;
-import dev.rilling.webmention4j.common.util.HttpUtils;
+import dev.rilling.webmention4j.common.internal.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;

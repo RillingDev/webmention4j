@@ -1,6 +1,6 @@
 package dev.rilling.webmention4j.client.internal.link;
 
-import dev.rilling.webmention4j.common.util.HtmlUtils;
+import dev.rilling.webmention4j.common.internal.HtmlUtils;
 import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jetbrains.annotations.NotNull;

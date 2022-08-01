@@ -1,8 +1,8 @@
 package dev.rilling.webmention4j.server.internal;
 
 import dev.rilling.webmention4j.common.Webmention;
-import dev.rilling.webmention4j.common.util.HttpUtils;
-import dev.rilling.webmention4j.common.util.UriUtils;
+import dev.rilling.webmention4j.common.internal.HttpUtils;
+import dev.rilling.webmention4j.common.internal.UriUtils;
 import dev.rilling.webmention4j.server.internal.verifier.Verifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;

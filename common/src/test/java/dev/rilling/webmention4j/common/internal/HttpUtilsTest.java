@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.common.util;
+package dev.rilling.webmention4j.common.internal;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import static dev.rilling.webmention4j.common.util.HttpUtils.*;
+import static dev.rilling.webmention4j.common.internal.HttpUtils.*;
 import static org.assertj.core.api.Assertions.*;
 
 class HttpUtilsTest {

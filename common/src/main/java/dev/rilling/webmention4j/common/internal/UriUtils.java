@@ -1,4 +1,4 @@
-package dev.rilling.webmention4j.common.util;
+package dev.rilling.webmention4j.common.internal;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,7 +1,7 @@
 package dev.rilling.webmention4j.server.internal.verifier;
 
-import dev.rilling.webmention4j.common.util.HtmlUtils;
-import dev.rilling.webmention4j.common.util.HtmlUtils.LinkLikeElementEvaluator;
+import dev.rilling.webmention4j.common.internal.HtmlUtils;
+import dev.rilling.webmention4j.common.internal.HtmlUtils.LinkLikeElementEvaluator;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.jetbrains.annotations.NotNull;

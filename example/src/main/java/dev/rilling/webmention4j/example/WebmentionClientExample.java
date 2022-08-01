@@ -2,9 +2,9 @@ package dev.rilling.webmention4j.example;
 
 import dev.rilling.webmention4j.client.WebmentionClient;
 import dev.rilling.webmention4j.common.Webmention;
-import dev.rilling.webmention4j.common.util.HtmlUtils;
-import dev.rilling.webmention4j.common.util.HttpUtils;
-import dev.rilling.webmention4j.common.util.UriUtils;
+import dev.rilling.webmention4j.common.internal.HtmlUtils;
+import dev.rilling.webmention4j.common.internal.HttpUtils;
+import dev.rilling.webmention4j.common.internal.UriUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;

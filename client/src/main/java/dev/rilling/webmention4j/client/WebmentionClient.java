@@ -6,8 +6,8 @@ import dev.rilling.webmention4j.client.internal.LocalhostRejectingRedirectStrate
 import dev.rilling.webmention4j.client.internal.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.internal.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.Webmention;
-import dev.rilling.webmention4j.common.util.HttpUtils;
-import dev.rilling.webmention4j.common.util.UriUtils;
+import dev.rilling.webmention4j.common.internal.HttpUtils;
+import dev.rilling.webmention4j.common.internal.UriUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;

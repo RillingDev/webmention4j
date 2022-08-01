@@ -1,11 +1,11 @@
-package dev.rilling.webmention4j.common.util;
+package dev.rilling.webmention4j.common.internal;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static dev.rilling.webmention4j.common.util.UriUtils.isLocalhost;
+import static dev.rilling.webmention4j.common.internal.UriUtils.isLocalhost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UriUtilsIT {

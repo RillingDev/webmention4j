@@ -1,6 +1,6 @@
 package dev.rilling.webmention4j.client.internal;
 
-import dev.rilling.webmention4j.common.util.UriUtils;
+import dev.rilling.webmention4j.common.internal.UriUtils;
 import org.apache.hc.client5.http.RedirectException;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.core5.http.HttpException;
