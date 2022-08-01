@@ -1,10 +1,10 @@
 package dev.rilling.webmention4j.client;
 
-import dev.rilling.webmention4j.client.impl.EndpointDiscoveryService;
-import dev.rilling.webmention4j.client.impl.EndpointService;
-import dev.rilling.webmention4j.client.impl.LocalhostRejectingRedirectStrategy;
-import dev.rilling.webmention4j.client.impl.link.HeaderLinkParser;
-import dev.rilling.webmention4j.client.impl.link.HtmlLinkParser;
+import dev.rilling.webmention4j.client.internal.EndpointDiscoveryService;
+import dev.rilling.webmention4j.client.internal.EndpointService;
+import dev.rilling.webmention4j.client.internal.LocalhostRejectingRedirectStrategy;
+import dev.rilling.webmention4j.client.internal.link.HeaderLinkParser;
+import dev.rilling.webmention4j.client.internal.link.HtmlLinkParser;
 import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
 import dev.rilling.webmention4j.common.util.UriUtils;

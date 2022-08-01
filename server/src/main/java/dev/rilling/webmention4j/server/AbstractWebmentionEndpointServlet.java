@@ -2,10 +2,10 @@ package dev.rilling.webmention4j.server;
 
 import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.util.HttpUtils;
-import dev.rilling.webmention4j.server.impl.VerificationService;
-import dev.rilling.webmention4j.server.impl.verifier.HtmlVerifier;
-import dev.rilling.webmention4j.server.impl.verifier.JsonVerifier;
-import dev.rilling.webmention4j.server.impl.verifier.TextVerifier;
+import dev.rilling.webmention4j.server.internal.VerificationService;
+import dev.rilling.webmention4j.server.internal.verifier.HtmlVerifier;
+import dev.rilling.webmention4j.server.internal.verifier.JsonVerifier;
+import dev.rilling.webmention4j.server.internal.verifier.TextVerifier;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
