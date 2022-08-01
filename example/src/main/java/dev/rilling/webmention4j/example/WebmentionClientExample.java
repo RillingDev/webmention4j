@@ -67,7 +67,6 @@ public final class WebmentionClientExample {
 		.required(false)
 		.build();
 
-
 	private static final Option ALLOW_LOCALHOST_ENDPOINT = Option.builder()
 		.option("ale")
 		.longOpt("allow-localhost-endpoint")

@@ -14,9 +14,9 @@ import org.jsoup.select.Evaluator;
 import java.io.IOException;
 
 public final class HtmlUtils {
+
 	private HtmlUtils() {
 	}
-
 
 	/**
 	 * @return If the response has a content-type specifying HTML.

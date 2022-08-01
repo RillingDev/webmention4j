@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 public final class HttpUtils {
+
 	private HttpUtils() {
 	}
 

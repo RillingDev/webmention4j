@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.function.Supplier;
 
-public class AutoClosableExtension<T extends AutoCloseable> implements BeforeAllCallback, AfterAllCallback {
+public final class AutoClosableExtension<T extends AutoCloseable> implements BeforeAllCallback, AfterAllCallback {
 	private final Supplier<T> supplier;
 	private T instance;
 
@@ -15,12 +15,12 @@ public class AutoClosableExtension<T extends AutoCloseable> implements BeforeAll
 	}
 
 	@Override
-	public void beforeAll(ExtensionContext context) {
+	public void beforeAll(ExtensionContext extensionContext) {
 		instance = supplier.get();
 	}
 
 	@Override
-	public void afterAll(ExtensionContext context) throws Exception {
+	public void afterAll(ExtensionContext extensionContext) throws Exception {
 		instance.close();
 	}
 

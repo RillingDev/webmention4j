@@ -141,14 +141,14 @@ public final class WebmentionClient {
 		}
 
 		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
+		public boolean equals(Object obj) {
+			if (this == obj) {
 				return true;
 			}
-			if (o == null || getClass() != o.getClass()) {
+			if (obj == null || getClass() != obj.getClass()) {
 				return false;
 			}
-			Config config = (Config) o;
+			Config config = (Config) obj;
 			return allowLocalhostEndpoint == config.allowLocalhostEndpoint;
 		}
 
