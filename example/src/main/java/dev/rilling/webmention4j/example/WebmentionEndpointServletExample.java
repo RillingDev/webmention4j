@@ -90,6 +90,7 @@ public final class WebmentionEndpointServletExample {
 	}
 
 	private void startServer(InetSocketAddress socketAddress, String validHosts) {
+		// TODO: Allow configuration of used threads
 		Server server = new Server(socketAddress);
 
 		server.setErrorHandler(createErrorHandler());
