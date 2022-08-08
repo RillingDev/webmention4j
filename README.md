@@ -8,9 +8,50 @@
 
 The `client` module contains an implementation of a Webmention client which can be used to notify a Webmention endpoint server.
 
+```java
+import dev.rilling.webmention4j.client.WebmentionClient;
+import dev.rilling.webmention4j.common.Webmention;
+
+import java.io.IOException;
+import java.net.URI;
+
+public final class WebmentionClientExample {
+	public static void main(String[] args) {
+		URI source = URI.create("https://example.com/blog-item");
+		URI target = URI.create("https://example.org/something-else");
+
+		WebmentionClient webmentionClient = new WebmentionClient();
+		try {
+			if (!webmentionClient.supportsWebmention(target)) {
+				System.out.println("No endpoint found for target URL.");
+				return;
+			}
+
+			webmentionClient.sendWebmention(new Webmention(source, target));
+			System.out.println("Success!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
 ### Server
 
 The `server` module contains an implementation of a Webmention endpoint servlet which can be used to listen to Webmentions and process them.
+
+```java
+import dev.rilling.webmention4j.common.Webmention;
+import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
+
+public static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
+
+	@Override
+	protected void handleWebmention(Webmention webmention) {
+		System.out.println("Received Webmention '" + webmention + "'.");
+	}
+}
+```
 
 ### Examples
 
