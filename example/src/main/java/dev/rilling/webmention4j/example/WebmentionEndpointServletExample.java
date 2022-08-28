@@ -5,9 +5,7 @@ import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -94,8 +92,6 @@ public final class WebmentionEndpointServletExample {
 		Server server = new Server(socketAddress);
 
 		server.setErrorHandler(createErrorHandler());
-
-		server.setRequestLog(new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT));
 
 		ServletHandler servletHandler = new ServletHandler();
 		ServletHolder servletHolder = servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
