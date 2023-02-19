@@ -3,7 +3,6 @@ package dev.rilling.webmention4j.server;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpStatus;
@@ -39,11 +38,12 @@ class AbstractWebmentionEndpointServletIT {
 			.addHeader("Content-Type", "text/plain")
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
+		HTTP_CLIENT_EXTENSION.get().execute(request, response -> {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
 			String actualMessage = EntityUtils.toString(response.getEntity());
 			assertThat(actualMessage).contains("Content type must be &apos;application/x-www-form-urlencoded&apos;.");
-		}
+			return null;
+		});
 	}
 
 }
