@@ -116,10 +116,11 @@ public final class WebmentionEndpointServletExample {
 
 	@SuppressWarnings("serial")
 	public static class LoggingWebmentionEndpointServlet extends AbstractWebmentionEndpointServlet {
+		private static final Logger SERVLET_LOGGER = LoggerFactory.getLogger(LoggingWebmentionEndpointServlet.class);
 
 		@Override
 		protected void handleWebmention(@NotNull Webmention webmention) {
-			LOGGER.info("Received Webmention '{}'.", webmention);
+			SERVLET_LOGGER.info("Received Webmention '{}'.", webmention);
 		}
 	}
 
