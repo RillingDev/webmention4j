@@ -22,11 +22,9 @@ import java.net.URI;
  *               May not be the same as source.
  */
 public record Webmention(@NotNull URI source, @NotNull URI target) {
-	public Webmention(@NotNull URI source, @NotNull URI target) {
+	public Webmention {
 		if (source.equals(target)) {
 			throw new IllegalArgumentException("Source and target URL must not be identical.");
 		}
-		this.source = source;
-		this.target = target;
 	}
 }

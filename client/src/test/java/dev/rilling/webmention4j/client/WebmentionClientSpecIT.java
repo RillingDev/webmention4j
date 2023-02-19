@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import dev.rilling.webmention4j.client.WebmentionClient.Config;
 import dev.rilling.webmention4j.common.Webmention;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -36,7 +35,7 @@ class WebmentionClientSpecIT {
 
 		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"</endpoint>; rel=\"webmention\"")));
-		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/endpoint").willReturn(ok()));
+		TARGET_SERVER.stubFor(post("/endpoint").willReturn(ok()));
 
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
@@ -59,7 +58,7 @@ class WebmentionClientSpecIT {
 		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"</endpoint>; rel=\"webmention\"")));
 		TARGET_SERVER.stubFor(post("/endpoint").willReturn(permanentRedirect(TARGET_SERVER.url("/real-endpoint"))));
-		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/real-endpoint").willReturn(ok()));
+		TARGET_SERVER.stubFor(post("/real-endpoint").willReturn(ok()));
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
 		Webmention webmention = new Webmention(URI.create("https://example.com"), target);

@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import dev.rilling.webmention4j.client.WebmentionClient.Config;
 import dev.rilling.webmention4j.common.Webmention;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -76,7 +75,7 @@ class WebmentionClientIT {
 	void sendWebmentionSends() throws IOException {
 		TARGET_SERVER.stubFor(get("/post").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"</endpoint>; rel=\"webmention\"")));
-		StubMapping stubMapping = TARGET_SERVER.stubFor(post("/endpoint").willReturn(ok()));
+		TARGET_SERVER.stubFor(post("/endpoint").willReturn(ok()));
 
 		URI target = URI.create(TARGET_SERVER.url("/post"));
 		URI source = URI.create("https://example.com");

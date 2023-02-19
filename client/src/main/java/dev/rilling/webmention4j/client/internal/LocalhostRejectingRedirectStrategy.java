@@ -8,8 +8,6 @@ import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.protocol.HttpContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
 
@@ -19,7 +17,6 @@ import java.net.UnknownHostException;
  * This may be useful if redirecting to localhost is security sensitive.
  */
 public class LocalhostRejectingRedirectStrategy extends DefaultRedirectStrategy {
-	private static final Logger LOGGER = LoggerFactory.getLogger(LocalhostRejectingRedirectStrategy.class);
 
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context)

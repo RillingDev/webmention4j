@@ -15,12 +15,12 @@ public final class AutoClosableExtension<T extends AutoCloseable> implements Bef
 	}
 
 	@Override
-	public void beforeAll(ExtensionContext extensionContext) {
+	public void beforeAll(ExtensionContext context) {
 		instance = supplier.get();
 	}
 
 	@Override
-	public void afterAll(ExtensionContext extensionContext) throws Exception {
+	public void afterAll(ExtensionContext context) throws Exception {
 		instance.close();
 	}
 
