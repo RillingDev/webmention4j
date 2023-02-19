@@ -22,13 +22,13 @@ public final class HtmlLinkParser implements LinkParser {
 
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
-	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
+	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response)
 		throws IOException {
-		if (!HtmlUtils.isHtml(httpResponse)) {
+		if (!HtmlUtils.isHtml(response) || response.getEntity() == null) {
 			return List.of();
 		}
 
-		Document document = HtmlUtils.parse(httpResponse);
+		Document document = HtmlUtils.parse(response.getEntity());
 		Elements linkElements = document.select(LINK_ELEMENT_EVALUATOR);
 
 		try {

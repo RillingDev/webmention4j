@@ -49,8 +49,8 @@ public final class HttpUtils {
 	 * @return The 'Content-Type' header value of the response, if one is defined.
 	 */
 	@NotNull
-	public static Optional<ContentType> extractContentType(@NotNull MessageHeaders httpResponse) {
-		return Optional.ofNullable(httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE))
+	public static Optional<ContentType> extractContentType(@NotNull MessageHeaders messageHeaders) {
+		return Optional.ofNullable(messageHeaders.getFirstHeader(HttpHeaders.CONTENT_TYPE))
 			.map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
 	}
 
@@ -59,8 +59,8 @@ public final class HttpUtils {
 	 * @throws IOException if location URL cannot be parsed.
 	 */
 	@NotNull
-	public static Optional<URI> extractLocation(@NotNull MessageHeaders httpResponse) throws IOException {
-		Header locationHeader = httpResponse.getFirstHeader(HttpHeaders.LOCATION);
+	public static Optional<URI> extractLocation(@NotNull MessageHeaders messageHeaders) throws IOException {
+		Header locationHeader = messageHeaders.getFirstHeader(HttpHeaders.LOCATION);
 		if (locationHeader == null || locationHeader.getValue() == null) {
 			return Optional.empty();
 		}

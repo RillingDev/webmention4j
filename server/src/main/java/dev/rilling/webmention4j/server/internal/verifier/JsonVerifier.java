@@ -23,10 +23,10 @@ public class JsonVerifier implements Verifier {
 	}
 
 	@Override
-	public boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException {
+	public boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException {
 		String body;
 		try {
-			body = EntityUtils.toString(httpResponse.getEntity());
+			body = EntityUtils.toString(response.getEntity());
 		} catch (ParseException e) {
 			throw new IOException("Could not parse body.", e);
 		}

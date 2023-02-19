@@ -15,10 +15,10 @@ import java.util.List;
  */
 public final class HeaderLinkParser implements LinkParser {
 
-	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse)
+	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response)
 		throws IOException {
 		try {
-			return Arrays.stream(httpResponse.getHeaders(HttpHeaders.LINK))
+			return Arrays.stream(response.getHeaders(HttpHeaders.LINK))
 				.map(header -> RuntimeDelegate.getInstance()
 					.createLinkBuilder()
 					.baseUri(location)

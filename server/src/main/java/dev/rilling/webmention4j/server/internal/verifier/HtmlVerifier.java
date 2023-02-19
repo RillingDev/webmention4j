@@ -18,8 +18,8 @@ public class HtmlVerifier implements Verifier {
 	}
 
 	@Override
-	public boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException {
-		return HtmlUtils.parse(httpResponse)
+	public boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException {
+		return HtmlUtils.parse(response.getEntity())
 			/*
 			 * Spec:
 			 * '[...] in an HTML5 document, the receiver should look for <a href="*">, <img href="*">,

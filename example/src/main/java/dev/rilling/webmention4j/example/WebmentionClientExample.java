@@ -152,12 +152,10 @@ public final class WebmentionClientExample {
 			return httpClient.execute(
 				ClassicRequestBuilder.get(source).build(),
 				response -> {
-					HttpUtils.validateResponse(response);
-
-					if (!HtmlUtils.isHtml(response)) {
+					if (!HtmlUtils.isHtml(response) || response.getEntity() == null) {
 						throw new IllegalArgumentException("Response is not HTML.");
 					}
-					return HtmlUtils.parse(response);
+					return HtmlUtils.parse(response.getEntity());
 				});
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not crawl URL.", e);

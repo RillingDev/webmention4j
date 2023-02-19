@@ -18,11 +18,11 @@ public interface Verifier {
 	/**
 	 * Checks if the response mentions the target URL.
 	 *
-	 * @param httpResponse Response to check. Will be a successful response
-	 *                     with a declared content type compatible with {@link #getSupportedMimeType()}.
-	 * @param target       Target URL to look for.
+	 * @param response Response to check. Will be a successful response
+	 *                 with a declared content type compatible with {@link #getSupportedMimeType()}.
+	 * @param target   Target URL to look for.
 	 * @return if the target URL is mentioned by the response.
 	 * @throws IOException if I/O fails.
 	 */
-	boolean isValid(@NotNull ClassicHttpResponse httpResponse, @NotNull URI target) throws IOException;
+	boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException;
 }

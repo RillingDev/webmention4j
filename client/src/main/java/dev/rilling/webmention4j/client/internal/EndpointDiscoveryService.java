@@ -96,7 +96,7 @@ public final class EndpointDiscoveryService {
 	@NotNull
 	private Optional<URI> findWebmentionEndpoint(@NotNull LinkParser linkParser,
 												 @NotNull URI target,
-												 @NotNull ClassicHttpResponse httpResponse) throws IOException {
+												 @NotNull ClassicHttpResponse response) throws IOException {
 		/*
 		 * Spec:
 		 * 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target
@@ -106,7 +106,7 @@ public final class EndpointDiscoveryService {
 		 *  and MUST NOT be sent as POST body parameters when sending the Webmention request.'
 		 */
 		// TODO: is `target` really equal to the response location? e.g. with redirects
-		return linkParser.parse(target, httpResponse)
+		return linkParser.parse(target, response)
 			.stream()
 			.filter(link -> link.rel().contains("webmention"))
 			.findFirst()

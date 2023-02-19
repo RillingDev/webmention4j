@@ -1,8 +1,8 @@
 package dev.rilling.webmention4j.common.internal;
 
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.MessageHeaders;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,21 +21,20 @@ public final class HtmlUtils {
 	/**
 	 * @return If the response has a content-type specifying HTML.
 	 */
-	public static boolean isHtml(@NotNull HttpResponse httpResponse) {
-		return HttpUtils.extractContentType(httpResponse)
+	public static boolean isHtml(@NotNull MessageHeaders messageHeaders) {
+		return HttpUtils.extractContentType(messageHeaders)
 			.map(contentType -> contentType.isSameMimeType(ContentType.TEXT_HTML))
 			.orElse(false);
 	}
 
 	/**
 	 * @return The response as a HTML document.
-	 * @see #isHtml(HttpResponse)
+	 * @see #isHtml(MessageHeaders)
 	 */
 	@NotNull
-	public static Document parse(@NotNull ClassicHttpResponse httpResponse) throws IOException {
+	public static Document parse(@NotNull HttpEntity entity) throws IOException {
 		try {
-			String body = EntityUtils.toString(httpResponse.getEntity());
-			return Jsoup.parse(body);
+			return Jsoup.parse(EntityUtils.toString(entity));
 		} catch (ParseException e) {
 			throw new IOException("Could not parse body.", e);
 		}

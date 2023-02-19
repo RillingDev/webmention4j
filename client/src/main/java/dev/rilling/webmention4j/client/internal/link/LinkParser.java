@@ -17,11 +17,11 @@ public interface LinkParser {
 	 * Parses link elements from the HTTP response.
 	 * All links will have any relative URLs resolved against the location.
 	 *
-	 * @param location     The location of the response.
-	 * @param httpResponse The response.
+	 * @param location The location of the response.
+	 * @param response The response.
 	 * @return A list of link elements, ordered by their position in the response.
 	 * @throws IOException if parsing fails.
 	 */
-	@NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse httpResponse) throws IOException;
+	@NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response) throws IOException;
 
 }
