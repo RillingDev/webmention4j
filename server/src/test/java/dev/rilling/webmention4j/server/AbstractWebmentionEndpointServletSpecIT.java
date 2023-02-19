@@ -3,9 +3,11 @@ package dev.rilling.webmention4j.server;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
@@ -42,25 +44,16 @@ class AbstractWebmentionEndpointServletSpecIT {
 		ClassicHttpRequest request1 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.build();
-
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request1)) {
-			assertErrorResponse(response,
-				HttpStatus.SC_BAD_REQUEST,
-				"Required parameter &apos;source&apos; is missing.");
-		}
+		assertErrorResponse(request1, HttpStatus.SC_BAD_REQUEST, "Required parameter &apos;source&apos; is missing.");
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
 		ClassicHttpRequest request2 = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
 			.addHeader("Content-Type", "application/x-www-form-urlencoded")
 			.addParameter(sourcePair2)
 			.build();
-
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request2)) {
-			assertErrorResponse(response,
-				HttpStatus.SC_BAD_REQUEST,
-				"Required parameter &apos;target&apos; is missing.");
-		}
+		assertErrorResponse(request2, HttpStatus.SC_BAD_REQUEST, "Required parameter &apos;target&apos; is missing.");
 	}
+
 
 	@Test
 	@DisplayName("'The receiver MUST check that source and target are valid URLs' (format)")
@@ -72,9 +65,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
-			assertErrorResponse(response, HttpStatus.SC_BAD_REQUEST, "Invalid URL syntax: &apos;http:/\\//\\&apos;.");
-		}
+		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Invalid URL syntax: &apos;http:/\\//\\&apos;.");
 	}
 
 	@Test
@@ -87,9 +78,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair1, targetPair1)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request1)) {
-			assertErrorResponse(response, HttpStatus.SC_BAD_REQUEST, "URL scheme &apos;ftp&apos; is not supported.");
-		}
+		assertErrorResponse(request1, HttpStatus.SC_BAD_REQUEST, "URL scheme &apos;ftp&apos; is not supported.");
 
 
 		BasicNameValuePair sourcePair2 = new BasicNameValuePair("source", "https://example.com");
@@ -99,9 +88,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair2, targetPair2)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request2)) {
-			assertErrorResponse(response, HttpStatus.SC_BAD_REQUEST, "URL scheme &apos;null&apos; is not supported.");
-		}
+		assertErrorResponse(request2, HttpStatus.SC_BAD_REQUEST, "URL scheme &apos;null&apos; is not supported.");
 	}
 
 	@Test
@@ -114,9 +101,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
-			assertErrorResponse(response, HttpStatus.SC_BAD_REQUEST, "Source and target URL must not be identical.");
-		}
+		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Source and target URL must not be identical.");
 	}
 
 	@Test
@@ -132,11 +117,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
-			assertErrorResponse(response,
-				HttpStatus.SC_BAD_REQUEST,
-				"Verification of source URL could not be performed.");
-		}
+		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Verification of source URL could not be performed.");
 	}
 
 	@Test
@@ -153,11 +134,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
-			assertErrorResponse(response,
-				HttpStatus.SC_BAD_REQUEST,
-				"Verification of source URL failed due to no supported content type being served.");
-		}
+		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Verification of source URL failed due to no supported content type being served.");
 	}
 
 	@Test
@@ -182,9 +159,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
-			assertErrorResponse(response, HttpStatus.SC_BAD_REQUEST, "Source does not contain link to target URL.");
-		}
+		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Source does not contain link to target URL.");
 	}
 
 	@Test
@@ -208,15 +183,18 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		try (CloseableHttpResponse response = HTTP_CLIENT_EXTENSION.get().execute(request)) {
+		HTTP_CLIENT_EXTENSION.get().execute(request, response -> {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_OK);
-		}
+			return null;
+		});
 	}
 
-	private void assertErrorResponse(CloseableHttpResponse response, int statusCode, String message)
-		throws IOException, ParseException {
-		assertThat(response.getCode()).isEqualTo(statusCode);
-		String actualMessage = EntityUtils.toString(response.getEntity());
-		assertThat(actualMessage).contains(message);
+	private void assertErrorResponse(ClassicHttpRequest request, int statusCode, String message) throws IOException {
+		HTTP_CLIENT_EXTENSION.get().execute(request, response -> {
+			assertThat(response.getCode()).isEqualTo(statusCode);
+			String actualMessage = EntityUtils.toString(response.getEntity());
+			assertThat(actualMessage).contains(message);
+			return null;
+		});
 	}
 }
