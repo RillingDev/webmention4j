@@ -10,7 +10,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Document;
@@ -149,14 +148,17 @@ public final class WebmentionClientExample {
 
 	@NotNull
 	private Document readSourceDocument(@NotNull URI source) {
-		try (CloseableHttpClient httpClient = createHttpClient(); ClassicHttpResponse response = httpClient.execute(
-			ClassicRequestBuilder.get(source).build())) {
-			HttpUtils.validateResponse(response);
+		try (CloseableHttpClient httpClient = createHttpClient()) {
+			return httpClient.execute(
+				ClassicRequestBuilder.get(source).build(),
+				response -> {
+					HttpUtils.validateResponse(response);
 
-			if (!HtmlUtils.isHtml(response)) {
-				throw new IllegalArgumentException("Response is not HTML.");
-			}
-			return HtmlUtils.parse(response);
+					if (!HtmlUtils.isHtml(response)) {
+						throw new IllegalArgumentException("Response is not HTML.");
+					}
+					return HtmlUtils.parse(response);
+				});
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not crawl URL.", e);
 		}

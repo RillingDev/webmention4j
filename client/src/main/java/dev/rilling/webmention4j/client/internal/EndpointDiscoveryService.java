@@ -58,9 +58,7 @@ public final class EndpointDiscoveryService {
 		ClassicHttpRequest request = ClassicRequestBuilder.get(target).build();
 
 		LOGGER.debug("Requesting endpoint information from '{}'.", target);
-		try (ClassicHttpResponse response = httpClient.execute(request)) {
-			return discoverEndpoint(target, response);
-		}
+		return httpClient.execute(request, response -> discoverEndpoint(target, response));
 	}
 
 	@NotNull

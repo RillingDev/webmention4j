@@ -4,7 +4,6 @@ import dev.rilling.webmention4j.common.Webmention;
 import dev.rilling.webmention4j.common.internal.HttpUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
@@ -56,7 +55,7 @@ public final class EndpointService {
 			.build();
 
 		LOGGER.debug("Sending request '{}'.", request);
-		try (ClassicHttpResponse response = httpClient.execute(request)) {
+		return httpClient.execute(request, response -> {
 			LOGGER.trace("Received response '{}' from '{}'.", response, endpoint);
 
 			/*
@@ -81,8 +80,6 @@ public final class EndpointService {
 				return HttpUtils.extractLocation(response);
 			}
 			return Optional.empty();
-		}
+		});
 	}
-
-
 }
