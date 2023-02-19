@@ -14,9 +14,6 @@ public final class HttpUtils {
 	private HttpUtils() {
 	}
 
-	private static boolean isSuccessful(int statusCode) {
-		return statusCode >= 200 && statusCode <= 299;
-	}
 
 	/**
 	 * Validates that the response has a 2xx status code.
@@ -25,21 +22,21 @@ public final class HttpUtils {
 	 * @throws IOException if the response has a non-2xx status code.
 	 */
 	public static void validateResponse(@NotNull ClassicHttpResponse response) throws IOException {
-		if (!isSuccessful(response.getCode())) {
-			String body = extractBody(response);
-			throw new IOException("Request failed: %d - %s:%n%s".formatted(response.getCode(),
-				response.getReasonPhrase(),
-				body));
+		// See AbstractHttpClientResponseHandler
+		if (response.getCode() >= HttpStatus.SC_REDIRECTION) {
+			EntityUtils.consume(response.getEntity());
+			String body = extractBody(response.getEntity());
+			throw new IOException("Request failed: %d - %s:%n%s".formatted(response.getCode(), response.getReasonPhrase(), body));
 		}
 	}
 
 	@NotNull
-	private static String extractBody(@NotNull ClassicHttpResponse response) throws IOException {
-		if (response.getEntity() == null) {
+	private static String extractBody(HttpEntity entity) throws IOException {
+		if (entity == null) {
 			return "<no body>";
 		}
 		try {
-			return EntityUtils.toString(response.getEntity());
+			return EntityUtils.toString(entity);
 		} catch (ParseException ignored) {
 			return "<parsing of body failed>";
 		}
@@ -50,8 +47,7 @@ public final class HttpUtils {
 	 */
 	@NotNull
 	public static Optional<ContentType> extractContentType(@NotNull MessageHeaders messageHeaders) {
-		return Optional.ofNullable(messageHeaders.getFirstHeader(HttpHeaders.CONTENT_TYPE))
-			.map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
+		return Optional.ofNullable(messageHeaders.getFirstHeader(HttpHeaders.CONTENT_TYPE)).map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
 	}
 
 	/**
