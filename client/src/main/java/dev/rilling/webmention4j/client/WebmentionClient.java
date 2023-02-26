@@ -112,7 +112,7 @@ public final class WebmentionClient {
 			allowLocalhostEndpoint = false;
 		}
 
-		private Config(@NotNull Config original) {
+		private Config(Config original) {
 			allowLocalhostEndpoint = original.allowLocalhostEndpoint;
 		}
 
@@ -167,7 +167,6 @@ public final class WebmentionClient {
 		CloseableHttpClient create(boolean allowLocalhostRedirect);
 	}
 
-	@NotNull
 	private static CloseableHttpClient createDefaultHttpClient(boolean allowLocalhostRedirect) {
 		/*
 		 * Spec:

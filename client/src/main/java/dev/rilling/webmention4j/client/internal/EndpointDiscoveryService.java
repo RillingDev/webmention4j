@@ -61,8 +61,7 @@ public final class EndpointDiscoveryService {
 		return httpClient.execute(request, response -> discoverEndpoint(target, response));
 	}
 
-	@NotNull
-	private Optional<URI> discoverEndpoint(@NotNull URI target, @NotNull ClassicHttpResponse response)
+	private Optional<URI> discoverEndpoint(URI target, ClassicHttpResponse response)
 		throws IOException {
 		LOGGER.trace("Received response '{}' from '{}'.", response, target);
 
@@ -93,10 +92,9 @@ public final class EndpointDiscoveryService {
 		return Optional.empty();
 	}
 
-	@NotNull
-	private Optional<URI> findWebmentionEndpoint(@NotNull LinkParser linkParser,
-												 @NotNull URI target,
-												 @NotNull ClassicHttpResponse response) throws IOException {
+	private Optional<URI> findWebmentionEndpoint(LinkParser linkParser,
+												 URI target,
+												 ClassicHttpResponse response) throws IOException {
 		/*
 		 * Spec:
 		 * 'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the target
