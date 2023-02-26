@@ -106,7 +106,6 @@ public final class WebmentionEndpointServletExample {
 		}
 	}
 
-	@NotNull
 	private static ErrorHandler createErrorHandler() {
 		ErrorHandler errorHandler = new ErrorHandler();
 		errorHandler.setShowServlet(false);

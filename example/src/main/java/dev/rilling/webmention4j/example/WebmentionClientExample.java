@@ -11,7 +11,6 @@ import org.apache.commons.cli.Options;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -120,7 +119,7 @@ public final class WebmentionClientExample {
 		}
 	}
 
-	private void sendWebmentionForLinked(@NotNull URI source, boolean includeIdenticalHost) {
+	private void sendWebmentionForLinked(URI source, boolean includeIdenticalHost) {
 		Document sourceDocument = readSourceDocument(source);
 		for (Element element : sourceDocument.select(new HtmlUtils.LinkLikeElementEvaluator())) {
 			URI target;
@@ -146,8 +145,7 @@ public final class WebmentionClientExample {
 		}
 	}
 
-	@NotNull
-	private Document readSourceDocument(@NotNull URI source) {
+	private Document readSourceDocument(URI source) {
 		try (CloseableHttpClient httpClient = createHttpClient()) {
 			return httpClient.execute(
 				ClassicRequestBuilder.get(source).build(),
@@ -162,7 +160,6 @@ public final class WebmentionClientExample {
 		}
 	}
 
-	@NotNull
 	private CloseableHttpClient createHttpClient() {
 		return HttpClients.custom()
 			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-client-example",
@@ -171,7 +168,7 @@ public final class WebmentionClientExample {
 	}
 
 
-	private void sendWebmention(@NotNull URI source, @NotNull URI target) {
+	private void sendWebmention(URI source, URI target) {
 		Webmention webmention = new Webmention(source, target);
 		LOGGER.info("Sending Webmention '{}'.", webmention);
 		try {
