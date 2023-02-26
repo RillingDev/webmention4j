@@ -61,14 +61,14 @@ public class VerificationService {
 			.build();
 
 		LOGGER.debug("Verifying source '{}'.", webmention.source());
-		try (ClassicHttpResponse response = httpClient.execute(request)) {
+		return httpClient.execute(request, response -> {
 			if (response.getCode() == HttpStatus.SC_NOT_ACCEPTABLE) {
 				throw new UnsupportedContentTypeException(
 					"Remote server does not support any of the content types supported for verification.");
 			}
 			HttpUtils.validateResponse(response);
 			return isResponseValid(response, webmention);
-		}
+		});
 	}
 
 	private boolean isResponseValid(ClassicHttpResponse response, @NotNull Webmention webmention)
@@ -102,7 +102,7 @@ public class VerificationService {
 			.findFirst();
 	}
 
-	public static class UnsupportedContentTypeException extends Exception {
+	public static class UnsupportedContentTypeException extends IOException {
 		@Serial
 		private static final long serialVersionUID = 7007956002984142094L;
 

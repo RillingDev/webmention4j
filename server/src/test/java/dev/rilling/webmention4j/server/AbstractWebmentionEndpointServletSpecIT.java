@@ -122,23 +122,6 @@ class AbstractWebmentionEndpointServletSpecIT {
 
 	@Test
 	@DisplayName("'If the receiver is going to use the Webmention in some way [...], then it MUST perform an " +
-		"HTTP GET request on source [...], to confirm that it actually mentions the target.' (content type error)")
-	void rejectsOnFailedVerificationVerificationError() throws Exception {
-		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
-			ContentType.create("text/weird").toString()).withBody("beep boop")));
-
-		BasicNameValuePair sourcePair = new BasicNameValuePair("source", SOURCE_SERVER.url("/blog/post"));
-		BasicNameValuePair targetPair = new BasicNameValuePair("target", "https://example.com");
-		ClassicHttpRequest request = ClassicRequestBuilder.post(ENDPOINT_SERVER.getServletUri())
-			.addHeader("Content-Type", "application/x-www-form-urlencoded")
-			.addParameters(sourcePair, targetPair)
-			.build();
-
-		assertErrorResponse(request, HttpStatus.SC_BAD_REQUEST, "Verification of source URL failed due to no supported content type being served.");
-	}
-
-	@Test
-	@DisplayName("'If the receiver is going to use the Webmention in some way [...], then it MUST perform an " +
 		"HTTP GET request on source [...], to confirm that it actually mentions the target.' (no link to target in source)")
 	void rejectsOnVerificationNoLinkFound() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,

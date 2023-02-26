@@ -156,10 +156,6 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 			// In theory I/O failures cold also be issues on our side (e.g. trusted CAs being wrong), but
 			// differentiating between those and issues on the source URIs side (e.g. 404s) seems hard.
 			throw new BadRequestException("Verification of source URL could not be performed.", e);
-		} catch (VerificationService.UnsupportedContentTypeException e) {
-			throw new BadRequestException(
-				"Verification of source URL failed due to no supported content type being served.",
-				e);
 		}
 
 		handleWebmention(webmention);
