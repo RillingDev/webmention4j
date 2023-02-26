@@ -24,20 +24,17 @@ public final class HttpUtils {
 	public static void validateResponse(@NotNull ClassicHttpResponse response) throws IOException {
 		// See AbstractHttpClientResponseHandler
 		if (response.getCode() >= HttpStatus.SC_REDIRECTION) {
-			EntityUtils.consume(response.getEntity());
-			String body = extractBody(response.getEntity());
+			String body;
+			if (response.getEntity() == null) {
+				body = "<no body>";
+			} else {
+				try {
+					body = EntityUtils.toString(response.getEntity());
+				} catch (ParseException ignored) {
+					body = "<parsing of body failed>";
+				}
+			}
 			throw new IOException("Request failed: %d - %s:%n%s".formatted(response.getCode(), response.getReasonPhrase(), body));
-		}
-	}
-
-	private static String extractBody(HttpEntity entity) throws IOException {
-		if (entity == null) {
-			return "<no body>";
-		}
-		try {
-			return EntityUtils.toString(entity);
-		} catch (ParseException ignored) {
-			return "<parsing of body failed>";
 		}
 	}
 
