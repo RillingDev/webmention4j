@@ -19,6 +19,9 @@ public class TextVerifier implements Verifier {
 
 	@Override
 	public boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException {
+		if (response.getEntity() == null) {
+			return false;
+		}
 		String body;
 		try {
 			body = EntityUtils.toString(response.getEntity());
