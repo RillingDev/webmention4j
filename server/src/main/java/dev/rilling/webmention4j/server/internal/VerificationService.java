@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class VerificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VerificationService.class);
 
-	@NotNull
 	private final List<Verifier> verifiers;
 
 	public VerificationService(@NotNull List<Verifier> verifiers) {
@@ -71,8 +70,8 @@ public class VerificationService {
 		});
 	}
 
-	private boolean isResponseValid(ClassicHttpResponse response, @NotNull Webmention webmention)
-		throws IOException, UnsupportedContentTypeException {
+	private boolean isResponseValid(ClassicHttpResponse response, Webmention webmention)
+		throws IOException {
 		/*
 		 * Spec:
 		 * 'The receiver SHOULD use per-media-type rules to determine whether the source document mentions the target URL.
@@ -91,12 +90,12 @@ public class VerificationService {
 		}
 	}
 
-	private @NotNull Header createAcceptHeader() {
+	private Header createAcceptHeader() {
 		String acceptValue = verifiers.stream().map(Verifier::getSupportedMimeType).collect(Collectors.joining(", "));
 		return new BasicHeader(HttpHeaders.ACCEPT, acceptValue);
 	}
 
-	private @NotNull Optional<Verifier> findMatchingVerifier(@NotNull ContentType contentType) {
+	private Optional<Verifier> findMatchingVerifier(ContentType contentType) {
 		return verifiers.stream()
 			.filter(verifier -> verifier.getSupportedMimeType().equals(contentType.getMimeType()))
 			.findFirst();

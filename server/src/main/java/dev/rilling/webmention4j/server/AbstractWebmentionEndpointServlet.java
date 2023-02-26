@@ -117,7 +117,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	 */
 	protected abstract void handleWebmention(@NotNull Webmention webmention);
 
-	private void processRequest(@NotNull HttpServletRequest req) throws BadRequestException {
+	private void processRequest(HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
 			throw new BadRequestException("Content type must be '%s'.".formatted(EXPECTED_CONTENT_TYPE.getMimeType()));
 		}
@@ -161,7 +161,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		handleWebmention(webmention);
 	}
 
-	private @NotNull Webmention extractWebmention(@NotNull HttpServletRequest req) throws BadRequestException {
+	private Webmention extractWebmention(HttpServletRequest req) throws BadRequestException {
 		URI source = extractParameterAsUri(req, "source");
 		URI target = extractParameterAsUri(req, "target");
 
@@ -172,7 +172,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		return new Webmention(source, target);
 	}
 
-	private @NotNull URI extractParameterAsUri(@NotNull HttpServletRequest req, @NotNull String parameterName)
+	private URI extractParameterAsUri(HttpServletRequest req, String parameterName)
 		throws BadRequestException {
 		/*
 		 * Spec:
