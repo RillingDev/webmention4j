@@ -20,7 +20,7 @@ public final class UriUtils {
 	}
 
 	/**
-	 * Checks if the URL is HTTP or HTTPS.
+	 * @return if the URL is HTTP or HTTPS.
 	 */
 	public static boolean isHttp(@NotNull URI uri) {
 		return "http".equals(uri.getScheme()) || "https".equals(uri.getScheme());

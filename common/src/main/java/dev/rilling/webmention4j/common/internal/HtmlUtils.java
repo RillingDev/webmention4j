@@ -57,7 +57,7 @@ public final class HtmlUtils {
 		 * @return Link of this element. May not be a valid URI!
 		 */
 		@NotNull
-		public static String getLink(Element element) {
+		public static String getLink(@NotNull Element element) {
 			if ("a".equals(element.normalName())) {
 				return element.attr("href");
 			}

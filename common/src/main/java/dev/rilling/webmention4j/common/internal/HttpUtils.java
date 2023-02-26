@@ -30,7 +30,6 @@ public final class HttpUtils {
 		}
 	}
 
-	@NotNull
 	private static String extractBody(HttpEntity entity) throws IOException {
 		if (entity == null) {
 			return "<no body>";
@@ -81,8 +80,7 @@ public final class HttpUtils {
 		return "%s/%s".formatted(name, getVersionString(implementationPackage));
 	}
 
-	@NotNull
-	private static String getVersionString(@NotNull Package implementationPackage) {
+	private static String getVersionString(Package implementationPackage) {
 		if (implementationPackage.getImplementationVersion() == null) {
 			return "0.0.0-development";
 		}
