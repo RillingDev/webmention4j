@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LocalhostRejectingRedirectStrategyTest {
 
-	LocalhostRejectingRedirectStrategy localhostRejectingRedirectStrategy = new LocalhostRejectingRedirectStrategy();
+	final LocalhostRejectingRedirectStrategy localhostRejectingRedirectStrategy = new LocalhostRejectingRedirectStrategy();
 
 	@Test
 	@DisplayName("#isRedirected rejects redirect locations that are localhost")

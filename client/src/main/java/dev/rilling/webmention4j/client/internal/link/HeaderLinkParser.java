@@ -18,6 +18,7 @@ public final class HeaderLinkParser implements LinkParser {
 	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response)
 		throws IOException {
 		try {
+			// TODO replace dependency on jersey
 			return Arrays.stream(response.getHeaders(HttpHeaders.LINK))
 				.map(header -> RuntimeDelegate.getInstance()
 					.createLinkBuilder()
