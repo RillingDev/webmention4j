@@ -39,7 +39,7 @@ public final class HtmlLinkParser implements LinkParser {
 					.uri(element.attr("href"))
 					.rel(element.attr("rel"))
 					.build())
-				.map(Link::convert)
+				.map(link -> new Link(link.getUri(), Set.copyOf(link.getRels())))
 				.toList();
 		} catch (Exception e) {
 			throw new IOException("Could not parse link(s) in HTML.", e);

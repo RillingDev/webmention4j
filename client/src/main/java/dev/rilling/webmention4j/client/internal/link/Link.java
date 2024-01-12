@@ -13,8 +13,4 @@ import java.util.Set;
  */
 public record Link(@NotNull URI uri, @NotNull Set<String> rel) {
 
-	static Link convert(jakarta.ws.rs.core.Link link) {
-		return new Link(link.getUri(), Set.copyOf(link.getRels()));
-	}
-
 }
