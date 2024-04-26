@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * Serialization of this servlet is NOT supported.
  */
 // Spec: '3.2 Receiving Webmentions'
-@SuppressWarnings("serial") // Inspired by springs DispatcherServlet. Servlet serialization seems extremely uncommon.
+@SuppressWarnings("serial") // Inspired by springs DispatcherServlet. Servlet serialization seems uncommon.
 public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWebmentionEndpointServlet.class);
@@ -138,7 +138,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		}
 
 		// We could perform the verification asynchronously, but this does not seem as important in when servlets
-		// handle requests with one thread each anyways.
+		// handle requests with one thread each anyway.
 
 		/*
 		 * Spec:
@@ -153,8 +153,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 				throw new BadRequestException("Source does not contain link to target URL.");
 			}
 		} catch (IOException e) {
-			// In theory I/O failures cold also be issues on our side (e.g. trusted CAs being wrong), but
-			// differentiating between those and issues on the source URIs side (e.g. 404s) seems hard.
+			// In theory I/O failures cold also be issues on our side (e.g., trusted CAs being wrong), but
+			// differentiating between those and issues on the source URIs side (e.g., 404s) seems hard.
 			throw new BadRequestException("Verification of source URL could not be performed.", e);
 		}
 

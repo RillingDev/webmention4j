@@ -11,7 +11,7 @@ import java.net.URI;
  */
 public interface Verifier {
 	/**
-	 * Returns the MIME type that is supported by this verifier.
+	 * Returns the MIME type supported by this verifier.
 	 */
 	@NotNull String getSupportedMimeType();
 
