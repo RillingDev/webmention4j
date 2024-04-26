@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HeaderLinkParserTest {
 
-	final HeaderLinkParser headerLinkParser = new HeaderLinkParser();
+	static final HeaderLinkParser PARSER = new HeaderLinkParser();
 
 	@Test
 	@DisplayName("#parse gets links")
@@ -24,7 +24,7 @@ class HeaderLinkParserTest {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.LINK, "<http://aaronpk.example/webmention-endpoint1>; rel=\"webmention\"");
 
-			assertThat(headerLinkParser.parse(URI.create("https://example.com"), response)).containsExactlyInAnyOrder(
+			assertThat(PARSER.parse(URI.create("https://example.com"), response)).containsExactlyInAnyOrder(
 				new Link(URI.create("http://aaronpk.example/webmention-endpoint1"), Set.of("webmention")));
 		}
 	}
@@ -35,7 +35,7 @@ class HeaderLinkParserTest {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.LINK, "huh? this looks wrong.");
 
-			assertThatThrownBy(() -> headerLinkParser.parse(URI.create("https://example.com"), response)).isNotNull()
+			assertThatThrownBy(() -> PARSER.parse(URI.create("https://example.com"), response)).isNotNull()
 				.isInstanceOf(IOException.class);
 		}
 	}

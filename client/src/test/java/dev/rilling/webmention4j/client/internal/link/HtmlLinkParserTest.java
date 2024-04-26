@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HtmlLinkParserTest {
 
-	final HtmlLinkParser htmlLinkParser = new HtmlLinkParser();
+	static final HtmlLinkParser PARSER = new HtmlLinkParser();
 
 	@Test
 	@DisplayName("#parse gets links")
@@ -38,7 +38,7 @@ class HtmlLinkParserTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThat(htmlLinkParser.parse(URI.create("https://example.com"),
+			assertThat(PARSER.parse(URI.create("https://example.com"),
 				response)).containsExactlyInAnyOrder(new Link(URI.create("http://aaronpk.example/webmention-endpoint1"),
 					Set.of("webmention")),
 				new Link(URI.create("http://aaronpk.example/webmention-endpoint2"), Set.of("webmention")),
@@ -61,7 +61,7 @@ class HtmlLinkParserTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThat(htmlLinkParser.parse(URI.create("https://example.com"), response)).isEmpty();
+			assertThat(PARSER.parse(URI.create("https://example.com"), response)).isEmpty();
 		}
 	}
 
@@ -80,7 +80,7 @@ class HtmlLinkParserTest {
 				</body>
 				</html>""", StandardCharsets.UTF_8));
 
-			assertThatThrownBy(() -> htmlLinkParser.parse(URI.create("https://example.com"), response)).isNotNull()
+			assertThatThrownBy(() -> PARSER.parse(URI.create("https://example.com"), response)).isNotNull()
 				.isInstanceOf(IOException.class);
 		}
 	}
