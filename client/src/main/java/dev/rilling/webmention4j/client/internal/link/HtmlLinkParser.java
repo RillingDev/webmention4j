@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.client.internal.link;
 
 import dev.rilling.webmention4j.common.internal.HtmlUtils;
-import jakarta.ws.rs.ext.RuntimeDelegate;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Document;
@@ -33,13 +32,7 @@ public final class HtmlLinkParser implements LinkParser {
 
 		try {
 			return linkElements.stream()
-				.map(element -> RuntimeDelegate.getInstance()
-					.createLinkBuilder()
-					.baseUri(location)
-					.uri(element.attr("href"))
-					.rel(element.attr("rel"))
-					.build())
-				.map(link -> new Link(link.getUri(), Set.copyOf(link.getRels())))
+				.map(element -> LinkUtils.fromElement(location, element.attr("href"), element.attr("rel")))
 				.toList();
 		} catch (Exception e) {
 			throw new IOException("Could not parse link(s) in HTML.", e);
@@ -53,7 +46,7 @@ public final class HtmlLinkParser implements LinkParser {
 		@Override
 		public boolean matches(@NotNull Element root, @NotNull Element element) {
 			return LINK_ELEMENT_NAMES.contains(element.normalName()) && element.hasAttr("href") &&
-				element.hasAttr("rel");
+				   element.hasAttr("rel");
 		}
 	}
 }
