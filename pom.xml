@@ -7,7 +7,7 @@
 	<groupId>dev.rilling</groupId>
 	<artifactId>webmention4j</artifactId>
 	<packaging>pom</packaging>
-	<version>0.5.0</version>
+	<version>0.6.0-SNAPSHOT</version>
 	<url>https://github.com/RillingDev/webmention4j</url>
 
 	<modules>
