@@ -1,8 +1,8 @@
 package dev.rilling.webmention4j.server.internal.verifier;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.ParseException;
@@ -13,8 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 
 public class JsonVerifier implements Verifier {
-
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final JsonFactory JSON_FACTORY = JsonFactory.builder().build();
 
 	@NotNull
 	@Override
@@ -42,7 +41,7 @@ public class JsonVerifier implements Verifier {
 		 * 'In a JSON (RFC7159) document,
 		 *  the receiver should look for properties whose values are an exact match for the URL.'
 		 */
-		try (JsonParser jp = OBJECT_MAPPER.createParser(rootNode)) {
+		try (JsonParser jp = JSON_FACTORY.createParser(rootNode)) {
 			while (jp.nextToken() != null) {
 				if (jp.currentToken() == JsonToken.VALUE_STRING && target.toString().equals(jp.getText())) {
 					return true;
