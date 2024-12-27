@@ -1,7 +1,7 @@
 package dev.rilling.webmention4j.client.internal.link;
 
-import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
