@@ -32,7 +32,12 @@ public final class HtmlLinkParser implements LinkParser {
 
 		try {
 			return linkElements.stream()
-				.map(element -> LinkUtils.fromElement(location, element.attr("href"), element.attr("rel")))
+				.map(element -> LinkUtils.fromElement(
+					location,
+					element.attr("href"),
+					// We treat empty and not-set as the same here but that is probably fine
+					element.attr("rel"))
+				)
 				.toList();
 		} catch (Exception e) {
 			throw new IOException("Could not parse link(s) in HTML.", e);

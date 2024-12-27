@@ -8,8 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.net.URI;
 import java.util.Set;
 
-import static dev.rilling.webmention4j.client.internal.link.LinkUtils.fromElement;
-import static dev.rilling.webmention4j.client.internal.link.LinkUtils.fromHeaderValue;
+import static dev.rilling.webmention4j.client.internal.link.LinkUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -63,7 +62,7 @@ class LinkUtilsTest {
 	@CsvSource(value = {"https://example.com/app/link1>", "<https://example.com/app/link1", "https://example.com/app/link1"})
 	@DisplayName("#fromHeaderValue rejects malformed")
 	void fromHeaderValueRejectsMalformed(String headerValue) {
-		assertThatThrownBy(() -> fromHeaderValue(URI.create("https://example.com"), headerValue)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> fromHeaderValue(URI.create("https://example.com"), headerValue)).isInstanceOf(LinkUtils.LinkException.class);
 	}
 
 	// org.glassfish.jersey.tests.e2e.common.message.internal.LinkProviderTest#testValueOfParams
@@ -79,6 +78,13 @@ class LinkUtilsTest {
 	@DisplayName("#fromHeaderValue parses without quotes")
 	void fromHeaderValueParsesWithoutQuotes() {
 		assertThatIsEqualToLink(fromHeaderValue(URI.create("https://example.com"), "<https://example.com/app/link1>; rel=self; other = bar"), "https://example.com/app/link1", Set.of("self"));
+	}
+
+
+	@Test
+	@DisplayName("#createLink normalizes URI with dot segments unlike URI.normalize()")
+	void createLinkNormalizesUri() {
+		assertThatIsEqualToLink(createLink(URI.create("https://example.com"), "/../a/b", null), "https://example.com/a/b", Set.of());
 	}
 
 	private static void assertThatIsEqualToLink(Link actual, String url, Set<String> rel) {
