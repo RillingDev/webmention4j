@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.server;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
@@ -11,6 +10,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -34,9 +34,8 @@ class AbstractWebmentionEndpointServletSpecIT {
 	static final ServletExtension ENDPOINT_SERVER = new ServletExtension("/endpoint",
 		NoopWebmentionEndpointServlet.class);
 
-	@RegisterExtension
-	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
-		HttpClients::createDefault);
+	@AutoClose
+	static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
 	@Test
 	@DisplayName("'The receiver MUST check that source and target are valid URLs' (presence)")
@@ -166,14 +165,14 @@ class AbstractWebmentionEndpointServletSpecIT {
 			.addParameters(sourcePair, targetPair)
 			.build();
 
-		HTTP_CLIENT_EXTENSION.get().execute(request, response -> {
+		HTTP_CLIENT.execute(request, response -> {
 			assertThat(response.getCode()).isEqualTo(HttpStatus.SC_OK);
 			return null;
 		});
 	}
 
 	private void assertErrorResponse(ClassicHttpRequest request, int statusCode, String message) throws IOException {
-		HTTP_CLIENT_EXTENSION.get().execute(request, response -> {
+		HTTP_CLIENT.execute(request, response -> {
 			assertThat(response.getCode()).isEqualTo(statusCode);
 			String actualMessage = EntityUtils.toString(response.getEntity());
 			assertThat(actualMessage).contains(message);

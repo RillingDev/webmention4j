@@ -2,11 +2,11 @@ package dev.rilling.webmention4j.client.internal;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.common.Webmention;
-import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -26,9 +26,8 @@ class EndpointServiceIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	@RegisterExtension
-	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
-		HttpClients::createDefault);
+	@AutoClose
+	static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
 	final EndpointService endpointService = new EndpointService();
 
@@ -41,7 +40,7 @@ class EndpointServiceIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
 			new Webmention(source, target))).isInstanceOf(IOException.class);
 	}

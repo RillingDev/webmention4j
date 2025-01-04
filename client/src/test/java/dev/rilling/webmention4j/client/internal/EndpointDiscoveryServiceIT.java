@@ -3,10 +3,10 @@ package dev.rilling.webmention4j.client.internal;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.client.internal.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.internal.link.HtmlLinkParser;
-import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -26,9 +26,8 @@ class EndpointDiscoveryServiceIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	@RegisterExtension
-	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
-		HttpClients::createDefault);
+	@AutoClose
+	static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(new HeaderLinkParser(),
 		new HtmlLinkParser());
@@ -42,13 +41,13 @@ class EndpointDiscoveryServiceIT {
 		TARGET_SERVER.stubFor(get("/unauthorized").willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
 		TARGET_SERVER.stubFor(get("/server-error").willReturn(aResponse().withStatus(HttpStatus.SC_SERVER_ERROR)));
 
-		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT,
 			URI.create(TARGET_SERVER.url("/client-error")))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT,
 			URI.create(TARGET_SERVER.url("/not-found")))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT,
 			URI.create(TARGET_SERVER.url("/unauthorized")))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT,
 			URI.create(TARGET_SERVER.url("/server-error")))).isInstanceOf(IOException.class);
 
 	}

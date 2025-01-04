@@ -5,11 +5,11 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import dev.rilling.webmention4j.common.Webmention;
-import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,9 +32,8 @@ class EndpointServiceSpecIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	@RegisterExtension
-	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
-		HttpClients::createDefault);
+	@AutoClose
+	static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
 	final EndpointService endpointService = new EndpointService();
 
@@ -48,7 +47,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, new Webmention(source, target));
+		endpointService.notifyEndpoint(HTTP_CLIENT, endpoint, new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint", false), false);
 		EqualToPattern contentTypePattern = new EqualToPattern("application/x-www-form-urlencoded; charset=UTF-8");
@@ -68,7 +67,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(), endpoint, new Webmention(source, target));
+		endpointService.notifyEndpoint(HTTP_CLIENT, endpoint, new Webmention(source, target));
 
 		UrlPattern urlPattern = new UrlPattern(new EqualToPattern("/webmention-endpoint?version=1", false), false);
 		EqualToPattern bodyPattern = new EqualToPattern("source=https%3A%2F%2Fwaterpigs.example%2Fpost-by-barnaby" +
@@ -86,7 +85,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
 			new Webmention(source, target))).contains(URI.create("https://example.com/monitoring"));
 	}
@@ -101,7 +100,7 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThat(endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint")),
 			new Webmention(source, target))).isEmpty();
 	}
@@ -116,13 +115,13 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-ok")),
 			new Webmention(source, target));
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-created")),
 			new Webmention(source, target));
-		endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-accepted")),
 			new Webmention(source, target));
 	}
@@ -138,16 +137,16 @@ class EndpointServiceSpecIT {
 		URI source = URI.create("https://waterpigs.example/post-by-barnaby");
 		URI target = URI.create("https://aaronpk.example/post-by-aaron");
 
-		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-client")),
 			new Webmention(source, target))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-unauthorized")),
 			new Webmention(source, target))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-not-found")),
 			new Webmention(source, target))).isInstanceOf(IOException.class);
-		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT_EXTENSION.get(),
+		assertThatThrownBy(() -> endpointService.notifyEndpoint(HTTP_CLIENT,
 			URI.create(ENDPOINT_SERVER.url("/webmention-endpoint-server-error")),
 			new Webmention(source, target))).isInstanceOf(IOException.class);
 	}

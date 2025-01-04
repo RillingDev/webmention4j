@@ -3,11 +3,11 @@ package dev.rilling.webmention4j.client.internal;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import dev.rilling.webmention4j.client.internal.link.HeaderLinkParser;
 import dev.rilling.webmention4j.client.internal.link.HtmlLinkParser;
-import dev.rilling.webmention4j.common.test.AutoClosableExtension;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -29,9 +29,8 @@ class EndpointDiscoveryServiceSpecIT {
 		.options(wireMockConfig().dynamicPort())
 		.build();
 
-	@RegisterExtension
-	static final AutoClosableExtension<CloseableHttpClient> HTTP_CLIENT_EXTENSION = new AutoClosableExtension<>(
-		HttpClients::createDefault);
+	@AutoClose
+	static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
 	final EndpointDiscoveryService endpointDiscoveryService = new EndpointDiscoveryService(new HeaderLinkParser(),
 		new HtmlLinkParser());
@@ -45,7 +44,7 @@ class EndpointDiscoveryServiceSpecIT {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron-redirect"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
 	}
@@ -57,7 +56,7 @@ class EndpointDiscoveryServiceSpecIT {
 			"<http://aaronpk.example/webmention-endpoint>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
 	}
@@ -78,7 +77,7 @@ class EndpointDiscoveryServiceSpecIT {
 			</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
 	}
@@ -99,7 +98,7 @@ class EndpointDiscoveryServiceSpecIT {
 			</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint"));
 
 	}
@@ -125,7 +124,7 @@ class EndpointDiscoveryServiceSpecIT {
 				</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 
 	}
@@ -149,7 +148,7 @@ class EndpointDiscoveryServiceSpecIT {
 			</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint1"));
 
 	}
@@ -163,7 +162,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/blog/post-by-aaron"));
 
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create(TARGET_SERVER.url("/webmention-endpoint")));
 
 	}
@@ -184,7 +183,7 @@ class EndpointDiscoveryServiceSpecIT {
 			</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/blog/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create(TARGET_SERVER.url("/webmention-endpoint")));
 
 	}
@@ -197,7 +196,7 @@ class EndpointDiscoveryServiceSpecIT {
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 
 	}
@@ -218,7 +217,7 @@ class EndpointDiscoveryServiceSpecIT {
 			</html>""")));
 
 		URI targetUri = URI.create(TARGET_SERVER.url("/post-by-aaron"));
-		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT_EXTENSION.get(), targetUri);
+		Optional<URI> endpoint = endpointDiscoveryService.discoverEndpoint(HTTP_CLIENT, targetUri);
 		assertThat(endpoint).contains(URI.create("http://aaronpk.example/webmention-endpoint?version=1"));
 	}
 }
