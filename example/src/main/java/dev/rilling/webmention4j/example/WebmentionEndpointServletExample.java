@@ -5,10 +5,10 @@ import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -91,7 +91,7 @@ public final class WebmentionEndpointServletExample {
 		// TODO: Allow configuration of used threads
 		Server server = new Server(socketAddress);
 
-		server.setErrorHandler(createErrorHandler());
+		server.setErrorHandler(new ErrorHandler());
 
 		ServletHandler servletHandler = new ServletHandler();
 		ServletHolder servletHolder = servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
@@ -104,13 +104,6 @@ public final class WebmentionEndpointServletExample {
 		} catch (Exception e) {
 			LOGGER.error("Unexpected error.", e);
 		}
-	}
-
-	private static ErrorHandler createErrorHandler() {
-		ErrorHandler errorHandler = new ErrorHandler();
-		errorHandler.setShowServlet(false);
-		errorHandler.setShowStacks(false);
-		return errorHandler;
 	}
 
 	@SuppressWarnings("serial")
