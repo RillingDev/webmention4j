@@ -18,11 +18,28 @@ final class LinkUtils {
 	private LinkUtils() {
 	}
 
+	/**
+	 * Parses a {@link Link} from a HTML element.
+	 *
+	 * @param baseUri Base URI of the document
+	 * @param href    HREF of the element.
+	 * @param rel     Rel of the element.
+	 * @return The parsed link.
+	 * @throws LinkException if parsing fails
+	 */
 	// https://datatracker.ietf.org/doc/html/rfc8288#appendix-A.1
 	public static @NotNull Link fromElement(@NotNull URI baseUri, @NotNull String href, @Nullable String rel) {
 		return createLink(baseUri, href, rel);
 	}
 
+	/**
+	 * Parses a {@link Link} from a HTTP header.
+	 *
+	 * @param baseUri     Base URI of the request
+	 * @param headerValue The header value.
+	 * @return The parsed link.
+	 * @throws LinkException if parsing fails
+	 */
 	// https://datatracker.ietf.org/doc/html/rfc8288#section-3
 	public static @NotNull Link fromHeaderValue(
 		@NotNull URI baseUri, @NotNull String headerValue) {

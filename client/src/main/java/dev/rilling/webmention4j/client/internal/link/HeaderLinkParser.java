@@ -20,7 +20,7 @@ public final class HeaderLinkParser implements LinkParser {
 			return Arrays.stream(response.getHeaders(HttpHeaders.LINK))
 				.map(header -> LinkUtils.fromHeaderValue(location, header.getValue()))
 				.toList();
-		} catch (Exception e) {
+		} catch (LinkUtils.LinkException e) {
 			throw new IOException("Could not parse link(s) in header.", e);
 		}
 	}

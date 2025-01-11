@@ -35,11 +35,10 @@ public final class HtmlLinkParser implements LinkParser {
 				.map(element -> LinkUtils.fromElement(
 					location,
 					element.attr("href"),
-					// We treat empty and not-set as the same here but that is probably fine
 					element.attr("rel"))
 				)
 				.toList();
-		} catch (Exception e) {
+		} catch (LinkUtils.LinkException e) {
 			throw new IOException("Could not parse link(s) in HTML.", e);
 		}
 	}
