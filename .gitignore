@@ -24,7 +24,7 @@
 # Vendor Files
 
 # Debug Files
-debug/
+.local/
 
 # Temp Files
 
