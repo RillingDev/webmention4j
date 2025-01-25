@@ -62,7 +62,7 @@ class LinkUtilsTest {
 	@CsvSource(value = {"https://example.com/app/link1>", "<https://example.com/app/link1", "https://example.com/app/link1"})
 	@DisplayName("#fromHeaderValue rejects malformed")
 	void fromHeaderValueRejectsMalformed(String headerValue) {
-		assertThatThrownBy(() -> fromHeaderValue(URI.create("https://example.com"), headerValue)).isInstanceOf(LinkUtils.LinkException.class);
+		assertThatThrownBy(() -> fromHeaderValue(URI.create("https://example.com"), headerValue)).isInstanceOf(LinkException.class);
 	}
 
 	// org.glassfish.jersey.tests.e2e.common.message.internal.LinkProviderTest#testValueOfParams
