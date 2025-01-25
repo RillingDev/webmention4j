@@ -5,8 +5,7 @@ import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.eclipse.jetty.ee10.servlet.ServletHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +49,7 @@ public final class WebmentionEndpointServletExample {
 		.longOpt("valid-hosts")
 		.hasArg(true)
 		.desc("Comma-separated list of target hosts to receive Webmentions for. " +
-			"If not set, Webmentions are received regardless of target host.")
+			  "If not set, Webmentions are received regardless of target host.")
 		.build();
 
 	private static final Options OPTIONS = new Options().addOption(HELP)
@@ -93,10 +92,10 @@ public final class WebmentionEndpointServletExample {
 
 		server.setErrorHandler(new ErrorHandler());
 
-		ServletHandler servletHandler = new ServletHandler();
-		ServletHolder servletHolder = servletHandler.addServletWithMapping(LoggingWebmentionEndpointServlet.class, "/");
-		servletHolder.setInitParameter("validHosts", validHosts);
-		server.setHandler(servletHandler);
+		ServletContextHandler servletContextHandler = new ServletContextHandler();
+		servletContextHandler.addServlet(LoggingWebmentionEndpointServlet.class, "/");
+		servletContextHandler.setInitParameter("validHosts", validHosts);
+		server.setHandler(servletContextHandler);
 
 		try {
 			server.start();
