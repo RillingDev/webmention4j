@@ -1,7 +1,7 @@
 package dev.rilling.webmention4j.server.internal.verifier;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,7 +13,7 @@ public interface Verifier {
 	/**
 	 * Returns the MIME type supported by this verifier.
 	 */
-	@NotNull String getSupportedMimeType();
+	@NonNull String getSupportedMimeType();
 
 	/**
 	 * Checks if the response mentions the target URL.
@@ -24,5 +24,5 @@ public interface Verifier {
 	 * @return if the target URL is mentioned by the response.
 	 * @throws IOException if I/O fails.
 	 */
-	boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException;
+	boolean isValid(@NonNull ClassicHttpResponse response, @NonNull URI target) throws IOException;
 }

@@ -2,12 +2,12 @@ package dev.rilling.webmention4j.server;
 
 import jakarta.servlet.Servlet;
 import org.apache.hc.core5.net.URIBuilder;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -21,7 +21,7 @@ class ServletExtension implements BeforeAllCallback, AfterAllCallback {
 	private Server server;
 	private URI servletUri;
 
-	ServletExtension(@NotNull String specPath, @NotNull Class<? extends Servlet> servlet) {
+	ServletExtension(@NonNull String specPath, @NonNull Class<? extends Servlet> servlet) {
 		this.specPath = specPath;
 		this.servlet = servlet;
 	}

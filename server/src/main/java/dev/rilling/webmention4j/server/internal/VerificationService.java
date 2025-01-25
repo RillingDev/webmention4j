@@ -8,7 +8,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicHeader;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,14 +24,14 @@ public class VerificationService {
 
 	private final List<Verifier> verifiers;
 
-	public VerificationService(@NotNull List<Verifier> verifiers) {
+	public VerificationService(@NonNull List<Verifier> verifiers) {
 		this.verifiers = List.copyOf(verifiers);
 	}
 
 	/**
 	 * Checks if the URLs scheme allows for validation.
 	 */
-	public boolean isUriSchemeSupported(@NotNull URI uri) {
+	public boolean isUriSchemeSupported(@NonNull URI uri) {
 		return UriUtils.isHttp(uri);
 	}
 
@@ -47,7 +47,7 @@ public class VerificationService {
 	 * @throws UnsupportedContentTypeException if verification cannot be performed due to an unsupported content type.
 	 */
 	//Spec: https://www.w3.org/TR/webmention/#webmention-verification
-	public boolean isWebmentionValid(@NotNull CloseableHttpClient httpClient, @NotNull Webmention webmention)
+	public boolean isWebmentionValid(@NonNull CloseableHttpClient httpClient, @NonNull Webmention webmention)
 		throws IOException, UnsupportedContentTypeException {
 		/*
 		 * Spec:

@@ -2,7 +2,7 @@ package dev.rilling.webmention4j.client.internal.link;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 public final class HeaderLinkParser implements LinkParser {
 
-	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response)
+	public @NonNull List<Link> parse(@NonNull URI location, @NonNull ClassicHttpResponse response)
 		throws IOException {
 		try {
 			return Arrays.stream(response.getHeaders(HttpHeaders.LINK))

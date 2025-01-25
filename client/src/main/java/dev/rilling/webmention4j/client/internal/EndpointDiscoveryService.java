@@ -9,7 +9,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +23,8 @@ import java.util.Optional;
 public final class EndpointDiscoveryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDiscoveryService.class);
 
-	private final @NotNull HeaderLinkParser headerLinkParser;
-	private final @NotNull HtmlLinkParser htmlLinkParser;
+	private final @NonNull HeaderLinkParser headerLinkParser;
+	private final @NonNull HtmlLinkParser htmlLinkParser;
 
 	/**
 	 * Constructor.
@@ -32,8 +32,8 @@ public final class EndpointDiscoveryService {
 	 * @param headerLinkParser A {@link HeaderLinkParser}.
 	 * @param htmlLinkParser   A {@link HtmlLinkParser}.
 	 */
-	public EndpointDiscoveryService(@NotNull HeaderLinkParser headerLinkParser,
-									@NotNull HtmlLinkParser htmlLinkParser) {
+	public EndpointDiscoveryService(@NonNull HeaderLinkParser headerLinkParser,
+									@NonNull HtmlLinkParser htmlLinkParser) {
 		this.headerLinkParser = headerLinkParser;
 		this.htmlLinkParser = htmlLinkParser;
 	}
@@ -49,8 +49,8 @@ public final class EndpointDiscoveryService {
 	 * @throws IOException if I/O fails.
 	 */
 	// Spec: https://www.w3.org/TR/webmention/#h-sender-discovers-receiver-webmention-endpoint
-	@NotNull
-	public Optional<URI> discoverEndpoint(@NotNull CloseableHttpClient httpClient, @NotNull URI target)
+	@NonNull
+	public Optional<URI> discoverEndpoint(@NonNull CloseableHttpClient httpClient, @NonNull URI target)
 		throws IOException {
 		// We could make a HEAD request beforehand, but this is not required.
 

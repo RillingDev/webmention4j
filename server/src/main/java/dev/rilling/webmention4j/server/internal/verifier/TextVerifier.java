@@ -4,21 +4,21 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
 
 public class TextVerifier implements Verifier {
 
-	@NotNull
+	@NonNull
 	@Override
 	public String getSupportedMimeType() {
 		return ContentType.TEXT_PLAIN.getMimeType();
 	}
 
 	@Override
-	public boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException {
+	public boolean isValid(@NonNull ClassicHttpResponse response, @NonNull URI target) throws IOException {
 		if (response.getEntity() == null) {
 			return false;
 		}
