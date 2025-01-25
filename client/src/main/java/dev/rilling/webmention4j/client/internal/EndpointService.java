@@ -7,7 +7,6 @@ import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +33,9 @@ public final class EndpointService {
 	 * @throws IOException if I/O fails.
 	 */
 	// Spec: https://www.w3.org/TR/webmention/#h-sender-notifies-receiver
-	@NonNull
-	public Optional<URI> notifyEndpoint(@NonNull CloseableHttpClient httpClient,
-										@NonNull URI endpoint,
-										@NonNull Webmention webmention) throws IOException {
+	public Optional<URI> notifyEndpoint(CloseableHttpClient httpClient,
+										URI endpoint,
+										Webmention webmention) throws IOException {
 		/*
 		 * Spec:
 		 * 'The sender MUST post x-www-form-urlencoded source and target parameters to the Webmention endpoint,

@@ -6,7 +6,8 @@
 
 ### Client
 
-The `client` module contains an implementation of a Webmention client which can be used to notify a Webmention endpoint server.
+The `client` module contains an implementation of a Webmention client which can be used to notify a Webmention endpoint
+server.
 
 ```java
 import dev.rilling.webmention4j.client.WebmentionClient;
@@ -38,7 +39,8 @@ public final class WebmentionClientExample {
 
 ### Server
 
-The `server` module contains an implementation of a Webmention endpoint servlet which can be used to listen to Webmentions and process them.
+The `server` module contains an implementation of a Webmention endpoint servlet which can be used to listen to
+Webmentions and process them.
 
 ```java
 import dev.rilling.webmention4j.common.Webmention;
@@ -59,7 +61,8 @@ The `example` module contains example CLI applications that can be executed.
 
 #### Client CLI Example
 
-Webmention client CLI sending Webmention for `http://localhost:8080/somethingelse` being mentioned on `http://localhost:8080/blogpost`:
+Webmention client CLI sending Webmention for `http://localhost:8080/somethingelse` being mentioned
+on `http://localhost:8080/blogpost`:
 
 ```shell
 java -cp webmention4j-example-*.jar dev.rilling.webmention4j.example.WebmentionClientExample --source https://example.com/somethingelse --target https://example.org/blogpost

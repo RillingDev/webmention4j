@@ -27,7 +27,7 @@ class WebmentionClientSpecIT {
 	@Test
 	@DisplayName(
 		"'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8)," +
-			" it SHOULD NOT send the Webmention to that endpoint.'")
+		" it SHOULD NOT send the Webmention to that endpoint.'")
 	void sendWebmentionLocalhost() {
 		Config config = new Config();
 		config.setAllowLocalhostEndpoint(false);
@@ -49,7 +49,7 @@ class WebmentionClientSpecIT {
 	@Test
 	@DisplayName(
 		"'During the discovery step, if the sender discovers the endpoint is localhost or a loopback IP address (127.0.0.0/8)," +
-			" it SHOULD NOT send the Webmention to that endpoint.'")
+		" it SHOULD NOT send the Webmention to that endpoint.'")
 	void sendWebmentionLocalhostRedirect() {
 		Config config = new Config();
 		config.setAllowLocalhostEndpoint(false);

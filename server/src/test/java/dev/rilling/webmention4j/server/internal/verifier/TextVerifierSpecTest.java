@@ -23,7 +23,7 @@ class TextVerifierSpecTest {
 
 	@Test
 	@DisplayName("'If the document is plain text, the receiver should look for the URL by searching for the string' " +
-		"(found)")
+				 "(found)")
 	void isValidTrueIfSubstring() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());
@@ -37,7 +37,7 @@ class TextVerifierSpecTest {
 
 	@Test
 	@DisplayName("'If the document is plain text, the receiver should look for the URL by searching for the string' " +
-		"(not found)")
+				 "(not found)")
 	void isValidFalseIfNoSubstring() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.toString());

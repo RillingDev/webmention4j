@@ -1,7 +1,5 @@
 package dev.rilling.webmention4j.common;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.net.URI;
 
 /**
@@ -21,7 +19,7 @@ import java.net.URI;
  *               Usually this should be HTTP or HTTPS.
  *               May not be the same as source.
  */
-public record Webmention(@NonNull URI source, @NonNull URI target) {
+public record Webmention(URI source, URI target) {
 	public Webmention {
 		if (source.equals(target)) {
 			throw new IllegalArgumentException("Source and target URL must not be identical.");

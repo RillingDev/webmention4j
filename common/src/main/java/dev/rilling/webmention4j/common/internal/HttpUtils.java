@@ -2,7 +2,6 @@ package dev.rilling.webmention4j.common.internal;
 
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,7 +20,7 @@ public final class HttpUtils {
 	 * @param response Response to check.
 	 * @throws IOException if the response has a non-2xx status code.
 	 */
-	public static void validateResponse(@NonNull ClassicHttpResponse response) throws IOException {
+	public static void validateResponse(ClassicHttpResponse response) throws IOException {
 		// See AbstractHttpClientResponseHandler
 		if (response.getCode() >= HttpStatus.SC_REDIRECTION) {
 			String body;
@@ -41,8 +40,8 @@ public final class HttpUtils {
 	/**
 	 * @return The 'Content-Type' header value of the response, if one is defined.
 	 */
-	@NonNull
-	public static Optional<ContentType> extractContentType(@NonNull MessageHeaders messageHeaders) {
+
+	public static Optional<ContentType> extractContentType(MessageHeaders messageHeaders) {
 		return Optional.ofNullable(messageHeaders.getFirstHeader(HttpHeaders.CONTENT_TYPE)).map(contentTypeHeader -> ContentType.parse(contentTypeHeader.getValue()));
 	}
 
@@ -50,8 +49,8 @@ public final class HttpUtils {
 	 * @return The 'Location' header value of the response, if one is defined.
 	 * @throws IOException if location URL cannot be parsed.
 	 */
-	@NonNull
-	public static Optional<URI> extractLocation(@NonNull MessageHeaders messageHeaders) throws IOException {
+
+	public static Optional<URI> extractLocation(MessageHeaders messageHeaders) throws IOException {
 		Header locationHeader = messageHeaders.getFirstHeader(HttpHeaders.LOCATION);
 		if (locationHeader == null || locationHeader.getValue() == null) {
 			return Optional.empty();
@@ -72,8 +71,8 @@ public final class HttpUtils {
 	 *                              version is found, a placeholder is substituted.
 	 * @return a user-agent string.
 	 */
-	@NonNull
-	public static String createUserAgentString(@NonNull String name, @NonNull Package implementationPackage) {
+
+	public static String createUserAgentString(String name, Package implementationPackage) {
 		return "%s/%s".formatted(name, getVersionString(implementationPackage));
 	}
 

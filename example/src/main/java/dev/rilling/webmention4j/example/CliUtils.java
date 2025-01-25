@@ -1,14 +1,13 @@
 package dev.rilling.webmention4j.example;
 
 import org.apache.commons.cli.*;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 final class CliUtils {
 	private CliUtils() {
 	}
 
-	@NonNull
-	public static CommandLine parseArgs(@NonNull String[] args, @NonNull Options options) {
+
+	public static CommandLine parseArgs(String[] args, Options options) {
 		CommandLine commandLine;
 		try {
 			commandLine = DefaultParser.builder().build().parse(options, args);
@@ -19,7 +18,7 @@ final class CliUtils {
 		return commandLine;
 	}
 
-	public static void printHelp(@NonNull Options options) {
+	public static void printHelp(Options options) {
 		new HelpFormatter().printHelp(" ", options);
 	}
 }

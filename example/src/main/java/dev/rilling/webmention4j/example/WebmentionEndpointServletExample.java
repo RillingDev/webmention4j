@@ -5,7 +5,6 @@ import dev.rilling.webmention4j.server.AbstractWebmentionEndpointServlet;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.Server;
@@ -110,7 +109,7 @@ public final class WebmentionEndpointServletExample {
 		private static final Logger SERVLET_LOGGER = LoggerFactory.getLogger(LoggingWebmentionEndpointServlet.class);
 
 		@Override
-		protected void handleWebmention(@NonNull Webmention webmention) {
+		protected void handleWebmention(Webmention webmention) {
 			SERVLET_LOGGER.info("Received Webmention '{}'.", webmention);
 		}
 	}

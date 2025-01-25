@@ -5,7 +5,6 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.MessageHeaders;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,7 +20,7 @@ public final class HtmlUtils {
 	/**
 	 * @return If the response has a content-type specifying HTML.
 	 */
-	public static boolean isHtml(@NonNull MessageHeaders messageHeaders) {
+	public static boolean isHtml(MessageHeaders messageHeaders) {
 		return HttpUtils.extractContentType(messageHeaders)
 			.map(contentType -> contentType.isSameMimeType(ContentType.TEXT_HTML))
 			.orElse(false);
@@ -31,8 +30,8 @@ public final class HtmlUtils {
 	 * @return The response as a HTML document.
 	 * @see #isHtml(MessageHeaders)
 	 */
-	@NonNull
-	public static Document parse(@NonNull HttpEntity entity) throws IOException {
+
+	public static Document parse(HttpEntity entity) throws IOException {
 		try {
 			return Jsoup.parse(EntityUtils.toString(entity));
 		} catch (ParseException e) {
@@ -56,8 +55,8 @@ public final class HtmlUtils {
 		 * @param element Element to parse. Must be an element that {@link #matches(Element, Element)} was true for.
 		 * @return Link of this element. May not be a valid URI!
 		 */
-		@NonNull
-		public static String getLink(@NonNull Element element) {
+
+		public static String getLink(Element element) {
 			if ("a".equals(element.normalName())) {
 				return element.attr("href");
 			}
@@ -65,7 +64,7 @@ public final class HtmlUtils {
 		}
 
 		@Override
-		public boolean matches(@NonNull Element root, @NonNull Element element) {
+		public boolean matches(Element root, Element element) {
 			return switch (element.normalName()) {
 				case "a" -> element.hasAttr("href");
 				case "img", "video", "audio" -> element.hasAttr("src");

@@ -61,7 +61,7 @@ public final class WebmentionClientExample {
 		.longOpt("include-identical-host")
 		.hasArg(false)
 		.desc(("When used with '--%s', send Webmention for links where the host is the same as the current one." +
-			" If omitted, these are skipped.").formatted(CRAWL.getLongOpt()))
+			   " If omitted, these are skipped.").formatted(CRAWL.getLongOpt()))
 		.required(false)
 		.build();
 
@@ -71,7 +71,7 @@ public final class WebmentionClientExample {
 		.hasArg(false)
 		.desc(
 			"Configures if the client should send Webmentions to an endpoint that is localhost or a loopback IP address." +
-				" If omitted, these are ignored.")
+			" If omitted, these are ignored.")
 		.required(false)
 		.build();
 

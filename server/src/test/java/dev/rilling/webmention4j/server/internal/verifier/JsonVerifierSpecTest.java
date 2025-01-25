@@ -23,7 +23,7 @@ class JsonVerifierSpecTest {
 
 	@Test
 	@DisplayName("'In a JSON document, the receiver should look for properties whose values are an exact match for " +
-		"the URL' (found)")
+				 "the URL' (found)")
 	void isValidTrueIfFound() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
@@ -39,7 +39,7 @@ class JsonVerifierSpecTest {
 
 	@Test
 	@DisplayName("'In a JSON document, the receiver should look for properties whose values are an exact match for " +
-		"the URL' (not found)")
+				 "the URL' (not found)")
 	void isValidFalseIfNotFound() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
@@ -56,7 +56,7 @@ class JsonVerifierSpecTest {
 
 	@Test
 	@DisplayName("'In a JSON document, the receiver should look for properties whose values are an exact match for " +
-		"the URL' (found, nested)")
+				 "the URL' (found, nested)")
 	void isValidChecksNested() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());

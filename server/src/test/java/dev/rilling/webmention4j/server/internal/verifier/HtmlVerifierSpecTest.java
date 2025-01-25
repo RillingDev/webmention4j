@@ -23,7 +23,7 @@ class HtmlVerifierSpecTest {
 
 	@Test
 	@DisplayName("'For example, in an HTML5 document, the receiver should look for <a href=\"*\">, <img " +
-		"href=\"*\">, <video src=\"*\"> and other similar links' (anchor)")
+				 "href=\"*\">, <video src=\"*\"> and other similar links' (anchor)")
 	void isValidDetectsAnchorTags() throws IOException {
 		try (ClassicHttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());
@@ -43,7 +43,7 @@ class HtmlVerifierSpecTest {
 
 	@Test
 	@DisplayName("'For example, in an HTML5 document, the receiver should look for <a href=\"*\">, <img " +
-		"href=\"*\">, <video src=\"*\"> and other similar links' (media)")
+				 "href=\"*\">, <video src=\"*\"> and other similar links' (media)")
 	void isValidDetectsMediaTags() throws IOException {
 		try (ClassicHttpResponse imgResponse = new BasicClassicHttpResponse(HttpStatus.SC_OK)) {
 			imgResponse.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_HTML.toString());

@@ -4,21 +4,20 @@ import dev.rilling.webmention4j.common.internal.HtmlUtils;
 import dev.rilling.webmention4j.common.internal.HtmlUtils.LinkLikeElementEvaluator;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
 
 public class HtmlVerifier implements Verifier {
 
-	@NonNull
+
 	@Override
 	public String getSupportedMimeType() {
 		return ContentType.TEXT_HTML.getMimeType();
 	}
 
 	@Override
-	public boolean isValid(@NonNull ClassicHttpResponse response, @NonNull URI target) throws IOException {
+	public boolean isValid(ClassicHttpResponse response, URI target) throws IOException {
 		if (response.getEntity() == null) {
 			return false;
 		}
