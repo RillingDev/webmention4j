@@ -2,8 +2,7 @@ package dev.rilling.webmention4j.client.internal.link;
 
 import org.apache.hc.client5.http.utils.URIUtils;
 import org.apache.hc.core5.net.URIBuilder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.Serial;
 import java.net.URI;
@@ -28,7 +27,7 @@ final class LinkUtils {
 	 * @throws LinkException if parsing fails
 	 */
 	// https://datatracker.ietf.org/doc/html/rfc8288#appendix-A.1
-	public static @NotNull Link fromElement(@NotNull URI baseUri, @NotNull String href, @Nullable String rel) {
+	public static Link fromElement(URI baseUri, String href, @Nullable String rel) {
 		return createLink(baseUri, href, rel);
 	}
 
@@ -41,8 +40,8 @@ final class LinkUtils {
 	 * @throws LinkException if parsing fails
 	 */
 	// https://datatracker.ietf.org/doc/html/rfc8288#section-3
-	public static @NotNull Link fromHeaderValue(
-		@NotNull URI baseUri, @NotNull String headerValue) {
+	public static Link fromHeaderValue(
+		URI baseUri, String headerValue) {
 		String normalizedHeaderValue = headerValue.trim();
 
 		if (!normalizedHeaderValue.startsWith("<")) {
@@ -60,7 +59,7 @@ final class LinkUtils {
 		return createLink(baseUri, uri, rel);
 	}
 
-	private static @Nullable String findRelParam(@NotNull String params) {
+	private static @Nullable String findRelParam(String params) {
 		final StringTokenizer st = new StringTokenizer(params, ";=\"", true);
 		while (st.hasMoreTokens()) {
 			checkToken(st, ";");
@@ -80,7 +79,7 @@ final class LinkUtils {
 		return null;
 	}
 
-	private static void checkToken(@NotNull StringTokenizer st, @NotNull String expected) {
+	private static void checkToken(StringTokenizer st, String expected) {
 		String token;
 		do {
 			token = st.nextToken().trim();
@@ -91,7 +90,7 @@ final class LinkUtils {
 		}
 	}
 
-	private static @NotNull String nextNonEmptyToken(@NotNull StringTokenizer st) {
+	private static String nextNonEmptyToken(StringTokenizer st) {
 		String token;
 		do {
 			token = st.nextToken().trim();
@@ -101,7 +100,7 @@ final class LinkUtils {
 	}
 
 
-	static @NotNull Link createLink(@NotNull URI baseUri, @NotNull String uri, @Nullable String rel) {
+	static Link createLink(URI baseUri, String uri, @Nullable String rel) {
 		Set<String> rels = rel != null ? Set.of(REL_SEPARATOR.split(rel)) : Set.of();
 
 		URI linkUri;
@@ -114,7 +113,7 @@ final class LinkUtils {
 		return new Link(linkUri, rels);
 	}
 
-	private static URI resolveLinkUri(@NotNull URI baseUri, @NotNull String uri) throws URISyntaxException {
+	private static URI resolveLinkUri(URI baseUri, String uri) throws URISyntaxException {
 		URIBuilder uriBuilder = new URIBuilder(uri);
 		if (uriBuilder.isAbsolute()) {
 			return uriBuilder.optimize().build();

@@ -7,7 +7,6 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,14 +14,14 @@ import java.net.URI;
 public class JsonVerifier implements Verifier {
 	private static final JsonFactory JSON_FACTORY = JsonFactory.builder().build();
 
-	@NotNull
+
 	@Override
 	public String getSupportedMimeType() {
 		return ContentType.APPLICATION_JSON.getMimeType();
 	}
 
 	@Override
-	public boolean isValid(@NotNull ClassicHttpResponse response, @NotNull URI target) throws IOException {
+	public boolean isValid(ClassicHttpResponse response, URI target) throws IOException {
 		if (response.getEntity() == null) {
 			return false;
 		}
@@ -35,7 +34,7 @@ public class JsonVerifier implements Verifier {
 		return containsUri(body, target);
 	}
 
-	private boolean containsUri(String rootNode, @NotNull URI target) throws IOException {
+	private boolean containsUri(String rootNode, URI target) throws IOException {
 		/*
 		 * Spec:
 		 * 'In a JSON (RFC7159) document,

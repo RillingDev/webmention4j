@@ -63,7 +63,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'If the content type of the document is HTML, then the sender MUST look for an HTML <link> " +
-		"[...] element with a rel value of webmention' (link element)")
+				 "[...] element with a rel value of webmention' (link element)")
 	void usesLinkHtmlElement() throws IOException {
 		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
@@ -84,7 +84,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'If the content type of the document is HTML, then the sender MUST look for an HTML [...] <a> " +
-		"element with a rel value of webmention' (anchor element)")
+				 "element with a rel value of webmention' (anchor element)")
 	void usesAnchorHtmlElement() throws IOException {
 		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
@@ -131,7 +131,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'If more than one of these is present, [...] takes precedence, followed by the first <link> " +
-		"or <a> element in document order'")
+				 "or <a> element in document order'")
 	void prioritizesFirstElement() throws IOException {
 		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
@@ -155,7 +155,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the " +
-		"target URL' (header)")
+				 "target URL' (header)")
 	void adaptsRelativeUriForHeader() throws IOException {
 		TARGET_SERVER.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<../webmention-endpoint>; rel=\"webmention\"")));
@@ -169,7 +169,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'The endpoint MAY be a relative URL, in which case the sender MUST resolve it relative to the " +
-		"target URL' (element)")
+				 "target URL' (element)")
 	void adaptsRelativeUriForElement() throws IOException {
 		TARGET_SERVER.stubFor(get("/blog/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""
@@ -190,7 +190,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'The endpoint MAY contain query string parameters, which MUST be preserved as query string " +
-		"parameters' (header)")
+				 "parameters' (header)")
 	void preservesQueryParamsForHeader() throws IOException {
 		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.LINK,
 			"<http://aaronpk.example/webmention-endpoint?version=1>; rel=\"webmention\"")));
@@ -203,7 +203,7 @@ class EndpointDiscoveryServiceSpecIT {
 
 	@Test
 	@DisplayName("'The endpoint MAY contain query string parameters, which MUST be preserved as query string " +
-		"parameters' (element)")
+				 "parameters' (element)")
 	void preservesQueryParamsForElement() throws IOException {
 		TARGET_SERVER.stubFor(get("/post-by-aaron").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""

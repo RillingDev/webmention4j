@@ -7,7 +7,6 @@ import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -21,7 +20,7 @@ class ServletExtension implements BeforeAllCallback, AfterAllCallback {
 	private Server server;
 	private URI servletUri;
 
-	ServletExtension(@NotNull String specPath, @NotNull Class<? extends Servlet> servlet) {
+	ServletExtension(String specPath, Class<? extends Servlet> servlet) {
 		this.specPath = specPath;
 		this.servlet = servlet;
 	}

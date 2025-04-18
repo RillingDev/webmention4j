@@ -11,7 +11,6 @@ import dev.rilling.webmention4j.common.internal.UriUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,14 +40,14 @@ public final class WebmentionClient {
 	 *
 	 * @param config Custom configuration.
 	 */
-	public WebmentionClient(@NotNull Config config) {
+	public WebmentionClient(Config config) {
 		this(new Config(config), WebmentionClient::createDefaultHttpClient, new EndpointService(), new EndpointDiscoveryService(new HeaderLinkParser(), new HtmlLinkParser()));
 	}
 
-	WebmentionClient(@NotNull Config config,
-					 @NotNull HttpClientFactory httpClientFactory,
-					 @NotNull EndpointService endpointService,
-					 @NotNull EndpointDiscoveryService endpointDiscoveryService) {
+	WebmentionClient(Config config,
+					 HttpClientFactory httpClientFactory,
+					 EndpointService endpointService,
+					 EndpointDiscoveryService endpointDiscoveryService) {
 		this.config = config;
 		this.endpointDiscoveryService = endpointDiscoveryService;
 		this.endpointService = endpointService;
@@ -61,7 +60,7 @@ public final class WebmentionClient {
 	 * @param target Page to check endpoint of.
 	 * @throws IOException if I/O fails.
 	 */
-	public boolean supportsWebmention(@NotNull URI target) throws IOException {
+	public boolean supportsWebmention(URI target) throws IOException {
 		try (CloseableHttpClient httpClient = httpClientFactory.create(true)) {
 			return endpointDiscoveryService.discoverEndpoint(httpClient, target).isPresent();
 		}
@@ -74,8 +73,8 @@ public final class WebmentionClient {
 	 * @return URL to use to monitor request status, if supported by the endpoint.
 	 * @throws IOException if I/O fails.
 	 */
-	@NotNull
-	public Optional<URI> sendWebmention(@NotNull Webmention webmention) throws IOException {
+
+	public Optional<URI> sendWebmention(Webmention webmention) throws IOException {
 		URI endpoint;
 		try (CloseableHttpClient httpClient = httpClientFactory.create(true)) {
 			// Spec: '3.1.2 Sender discovers receiver Webmention endpoint'

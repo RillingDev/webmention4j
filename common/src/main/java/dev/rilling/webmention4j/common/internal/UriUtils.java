@@ -1,7 +1,5 @@
 package dev.rilling.webmention4j.common.internal;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -14,7 +12,7 @@ public final class UriUtils {
 	/**
 	 * @return if the given URL is localhost or a loopback IP address.
 	 */
-	public static boolean isLocalhost(@NotNull URI uri) throws UnknownHostException {
+	public static boolean isLocalhost(URI uri) throws UnknownHostException {
 		// Handles 'localhost' check internally.
 		return InetAddress.getByName(uri.getHost()).isLoopbackAddress();
 	}
@@ -22,7 +20,7 @@ public final class UriUtils {
 	/**
 	 * @return if the URL is HTTP or HTTPS.
 	 */
-	public static boolean isHttp(@NotNull URI uri) {
+	public static boolean isHttp(URI uri) {
 		return "http".equals(uri.getScheme()) || "https".equals(uri.getScheme());
 	}
 }

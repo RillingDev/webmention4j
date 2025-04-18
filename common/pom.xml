@@ -13,8 +13,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jetbrains</groupId>
-			<artifactId>annotations</artifactId>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>checker-qual</artifactId>
 		</dependency>
 
 		<dependency>

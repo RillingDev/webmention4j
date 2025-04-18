@@ -1,7 +1,5 @@
 package dev.rilling.webmention4j.common;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.net.URI;
 
 /**
@@ -21,7 +19,7 @@ import java.net.URI;
  *               Usually this should be HTTP or HTTPS.
  *               May not be the same as source.
  */
-public record Webmention(@NotNull URI source, @NotNull URI target) {
+public record Webmention(URI source, URI target) {
 	public Webmention {
 		if (source.equals(target)) {
 			throw new IllegalArgumentException("Source and target URL must not be identical.");

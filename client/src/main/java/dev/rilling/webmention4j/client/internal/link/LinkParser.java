@@ -1,7 +1,6 @@
 package dev.rilling.webmention4j.client.internal.link;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,6 +21,6 @@ public interface LinkParser {
 	 * @return A list of link elements, ordered by their position in the response.
 	 * @throws IOException if parsing fails.
 	 */
-	@NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response) throws IOException;
+	List<Link> parse(URI location, ClassicHttpResponse response) throws IOException;
 
 }

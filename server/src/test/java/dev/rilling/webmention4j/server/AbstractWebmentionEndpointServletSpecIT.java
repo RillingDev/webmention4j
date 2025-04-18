@@ -105,7 +105,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 
 	@Test
 	@DisplayName("'If the receiver is going to use the Webmention in some way [...], then it MUST perform an " +
-		"HTTP GET request on source [...], to confirm that it actually mentions the target.' (I/O error)")
+				 "HTTP GET request on source [...], to confirm that it actually mentions the target.' (I/O error)")
 	void rejectsOnFailedVerificationIoError() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(notFound()));
 
@@ -121,7 +121,7 @@ class AbstractWebmentionEndpointServletSpecIT {
 
 	@Test
 	@DisplayName("'If the receiver is going to use the Webmention in some way [...], then it MUST perform an " +
-		"HTTP GET request on source [...], to confirm that it actually mentions the target.' (no link to target in source)")
+				 "HTTP GET request on source [...], to confirm that it actually mentions the target.' (no link to target in source)")
 	void rejectsOnVerificationNoLinkFound() throws Exception {
 		SOURCE_SERVER.stubFor(get("/blog/post").willReturn(ok().withHeader(HttpHeaders.CONTENT_TYPE,
 			ContentType.TEXT_HTML.toString()).withBody("""

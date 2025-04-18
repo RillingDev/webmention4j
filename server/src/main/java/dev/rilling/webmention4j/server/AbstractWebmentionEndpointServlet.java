@@ -14,8 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +61,8 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 			new VerificationService(List.of(new HtmlVerifier(), new TextVerifier(), new JsonVerifier())));
 	}
 
-	private AbstractWebmentionEndpointServlet(@NotNull Supplier<CloseableHttpClient> httpClientFactory,
-											  @NotNull VerificationService verificationService) {
+	private AbstractWebmentionEndpointServlet(Supplier<CloseableHttpClient> httpClientFactory,
+											  VerificationService verificationService) {
 		this.httpClientFactory = httpClientFactory;
 		this.verificationService = verificationService;
 	}
@@ -115,7 +114,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 	 *
 	 * @param webmention The received Webmention.
 	 */
-	protected abstract void handleWebmention(@NotNull Webmention webmention);
+	protected abstract void handleWebmention(Webmention webmention);
 
 	private void processRequest(HttpServletRequest req) throws BadRequestException {
 		if (!EXPECTED_CONTENT_TYPE.isSameMimeType(ContentType.parse(req.getContentType()))) {
@@ -196,7 +195,7 @@ public abstract class AbstractWebmentionEndpointServlet extends HttpServlet {
 		return uri;
 	}
 
-	@NotNull
+
 	private static CloseableHttpClient createDefaultHttpClient() {
 		return HttpClients.custom()
 			.setUserAgent(HttpUtils.createUserAgentString("webmention4j-server",

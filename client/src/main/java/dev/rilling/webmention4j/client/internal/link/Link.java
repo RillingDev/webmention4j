@@ -1,7 +1,5 @@
 package dev.rilling.webmention4j.client.internal.link;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.net.URI;
 import java.util.Set;
 
@@ -11,6 +9,6 @@ import java.util.Set;
  * <p>
  * The URL is always in the resolved, absolute form.
  */
-public record Link(@NotNull URI uri, @NotNull Set<String> rel) {
+public record Link(URI uri, Set<String> rel) {
 
 }

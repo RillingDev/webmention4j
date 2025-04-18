@@ -2,7 +2,6 @@ package dev.rilling.webmention4j.client.internal.link;
 
 import dev.rilling.webmention4j.common.internal.HtmlUtils;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -21,7 +20,7 @@ public final class HtmlLinkParser implements LinkParser {
 
 	private static final LinkElementEvaluator LINK_ELEMENT_EVALUATOR = new LinkElementEvaluator();
 
-	public @NotNull List<Link> parse(@NotNull URI location, @NotNull ClassicHttpResponse response)
+	public List<Link> parse(URI location, ClassicHttpResponse response)
 		throws IOException {
 		if (!HtmlUtils.isHtml(response) || response.getEntity() == null) {
 			return List.of();
@@ -48,7 +47,7 @@ public final class HtmlLinkParser implements LinkParser {
 		private static final Set<String> LINK_ELEMENT_NAMES = Set.of("link", "a");
 
 		@Override
-		public boolean matches(@NotNull Element root, @NotNull Element element) {
+		public boolean matches(Element root, Element element) {
 			return LINK_ELEMENT_NAMES.contains(element.normalName()) && element.hasAttr("href") &&
 				   element.hasAttr("rel");
 		}
