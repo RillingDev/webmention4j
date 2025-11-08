@@ -1,6 +1,12 @@
 package dev.rilling.webmention4j.example;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
+
+import java.io.IOException;
 
 final class CliUtils {
 	private CliUtils() {
@@ -18,6 +24,11 @@ final class CliUtils {
 	}
 
 	public static void printHelp(Options options) {
-		new HelpFormatter().printHelp(" ", options);
+		HelpFormatter formatter = HelpFormatter.builder().setShowSince(false).get();
+		try {
+			formatter.printHelp("<command>", "", options, "", true);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed to print help.", e);
+		}
 	}
 }
