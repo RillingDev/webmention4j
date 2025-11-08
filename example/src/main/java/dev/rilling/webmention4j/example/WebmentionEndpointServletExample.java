@@ -28,20 +28,20 @@ public final class WebmentionEndpointServletExample {
 		.longOpt("help")
 		.hasArg(false)
 		.desc("Shows this help text.")
-		.build();
+		.get();
 
 	private static final Option ADDRESS = Option.builder()
 		.option("a")
 		.longOpt("address")
 		.hasArg(true)
 		.desc("Address to listen on. Defaults to '%s'.".formatted(DEFAULT_ADDRESS))
-		.build();
+		.get();
 	private static final Option PORT = Option.builder()
 		.option("p")
 		.longOpt("port")
 		.hasArg(true)
 		.desc("Port to listen on. Defaults to '%s'.".formatted(DEFAULT_PORT))
-		.build();
+		.get();
 
 	private static final Option VALID_HOSTS = Option.builder()
 		.option("vh")
@@ -49,7 +49,7 @@ public final class WebmentionEndpointServletExample {
 		.hasArg(true)
 		.desc("Comma-separated list of target hosts to receive Webmentions for. " +
 			  "If not set, Webmentions are received regardless of target host.")
-		.build();
+		.get();
 
 	private static final Options OPTIONS = new Options().addOption(HELP)
 		.addOption(ADDRESS)

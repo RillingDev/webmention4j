@@ -32,7 +32,7 @@ public final class WebmentionClientExample {
 		.hasArg(false)
 		.desc("Shows this help text.")
 		.required(false)
-		.build();
+		.get();
 
 	private static final Option SOURCE = Option.builder()
 		.option("s")
@@ -40,14 +40,14 @@ public final class WebmentionClientExample {
 		.hasArg(true)
 		.desc("Source URL.")
 		.required(true)
-		.build();
+		.get();
 	private static final Option TARGET = Option.builder()
 		.option("t")
 		.longOpt("target")
 		.hasArg(true)
 		.desc("Target URL.")
 		.required(false)
-		.build();
+		.get();
 
 	private static final Option CRAWL = Option.builder()
 		.option("c")
@@ -55,7 +55,7 @@ public final class WebmentionClientExample {
 		.hasArg(false)
 		.desc("Specifies that the source URL should be crawled and Webmentions should be sent for its links.")
 		.required(false)
-		.build();
+		.get();
 	private static final Option INCLUDE_IDENTICAL_HOST = Option.builder()
 		.option("iih")
 		.longOpt("include-identical-host")
@@ -63,7 +63,7 @@ public final class WebmentionClientExample {
 		.desc(("When used with '--%s', send Webmention for links where the host is the same as the current one." +
 			   " If omitted, these are skipped.").formatted(CRAWL.getLongOpt()))
 		.required(false)
-		.build();
+		.get();
 
 	private static final Option ALLOW_LOCALHOST_ENDPOINT = Option.builder()
 		.option("ale")
@@ -73,7 +73,7 @@ public final class WebmentionClientExample {
 			"Configures if the client should send Webmentions to an endpoint that is localhost or a loopback IP address." +
 			" If omitted, these are ignored.")
 		.required(false)
-		.build();
+		.get();
 
 	private static final Options OPTIONS = new Options().addOption(HELP)
 		.addOption(SOURCE)

@@ -6,11 +6,10 @@ final class CliUtils {
 	private CliUtils() {
 	}
 
-
 	public static CommandLine parseArgs(String[] args, Options options) {
 		CommandLine commandLine;
 		try {
-			commandLine = DefaultParser.builder().build().parse(options, args);
+			commandLine = DefaultParser.builder().get().parse(options, args);
 		} catch (ParseException e) {
 			printHelp(options);
 			throw new IllegalArgumentException("Failed to parse arguments.", e);
